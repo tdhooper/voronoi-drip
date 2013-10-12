@@ -1,3 +1,5 @@
+// Rename resistance to slope
+
 describe("a Fluid Pipe Network", function() {
     var fpn,
         pipes;
@@ -15,10 +17,19 @@ describe("a Fluid Pipe Network", function() {
     /*
         Test pipe layout
 
-              |
-        _ _ | |
-             \|
-             /
+                    | 3
+                    |
+                    |
+              0 |   |
+        2       |   |
+        _ _ _ _ |   |
+                 \  |
+                  \ |
+                1  \|
+                   /
+                  /
+                 /  4
+
     */
 
     beforeEach(function() {
@@ -671,174 +682,29 @@ describe("a Fluid Pipe Network", function() {
     describe("when equalisePressuresForPipesAtVertex is called", function() {
 
         beforeEach(function() {
-            fpn.setMetrics();
-        });
-
-        it("pressure at each point is removed and redistributed according to resistance", function() {
-            // The following share a vertex
-            fpn.pipes[0].fluids = [{
-                volume: 5,
-                position: fpn.getLength(fpn.pipes[0]) - 3
-            }];
-            fpn.pipes[1].fluids = [{
-                volume: 5,
-                position: fpn.getLength(fpn.pipes[1]) - 2
-            }];
-            fpn.pipes[2].fluids = [{
-                volume: 5,
-                position: -4
-            }];
-
+            spyOn(fpn, 'removePressureInPipeAtVertex').andReturn(5);
+            spyOn(fpn, 'getPipesToDistributePressureInto').andReturn([{
+                pipe: fpn.pipes[1],
+                vertex: fpn.pipes[1].vb
+            }]);
+            spyOn(fpn, 'addFluid');
             fpn.equalisePressuresForPipesAtVertex([2, 1, 0], fpn.pipes[0].vb);
-
-            expect(round5dp(
-                fpn.pipes[0].fluids[0].volume
-                + fpn.pipes[1].fluids[0].volume
-                + fpn.pipes[2].fluids[0].volume
-            )).toBe(15);
-
-            expect(fpn.pipes[0].fluids.length).toBe(1);
-            expect(fpn.pipes[1].fluids.length).toBe(1);
-            expect(fpn.pipes[2].fluids.length).toBe(1);
-
-            expect(
-                fpn.removePressureInPipeAtVertex(fpn.pipes[0], fpn.pipes[0].vb)
-            ).toBe(0);
-            expect(
-                fpn.removePressureInPipeAtVertex(fpn.pipes[1], fpn.pipes[0].vb)
-            ).toBe(0);
-            expect(
-                fpn.removePressureInPipeAtVertex(fpn.pipes[2], fpn.pipes[0].va)
-            ).toBe(0);
         });
 
-        it("pressure at a dead end is sent back", function() {
-            // Capacity 14.142
-            fpn.pipes[4].fluids = [{
-                volume: 8,
-                position: 10
-            }];
-
-            fpn.equalisePressuresForPipesAtVertex([4], fpn.pipes[4].vb);
-
-            expect(fpn.pipes[4].fluids.length).toBe(1);
-            expect(fpn.pipes[4].fluids[0].volume).toBe(8);
-            expect(fpn.pipes[4].fluids[0].position).toBe(fpn.pipes[4].capacity - 8);
+        it("calls getPipesToDistributePressureInto", function() {
+            expect(fpn.getPipesToDistributePressureInto).toHaveBeenCalledWith([2, 1, 0], fpn.pipes[0].vb);
         });
 
-        it("pressure that is less than the pipe's resistance is distributed as expected", function() {
-            fpn.pipes[0].fluids = [{
-                volume: 0.001,
-                position: fpn.getLength(fpn.pipes[0]) - 0.0005
-            }];
-
-            fpn.equalisePressuresForPipesAtVertex([2, 1, 0], fpn.pipes[0].vb);
-
-            expect(round5dp(
-                fpn.pipes[0].fluids[0].volume
-                + fpn.pipes[1].fluids[0].volume
-            )).toBe(0.001);
-
-            expect(fpn.pipes[0].fluids.length).toBe(1);
-            expect(fpn.pipes[1].fluids.length).toBe(1);
-
-            expect(
-                fpn.removePressureInPipeAtVertex(fpn.pipes[0], fpn.pipes[0].vb)
-            ).toBe(0);
-            expect(
-                fpn.removePressureInPipeAtVertex(fpn.pipes[1], fpn.pipes[0].vb)
-            ).toBe(0);
+        it("removes the pressure from each pipe", function() {
+            expect(fpn.removePressureInPipeAtVertex).toHaveBeenCalledWith(fpn.pipes[0], fpn.pipes[1].vb)
+            expect(fpn.removePressureInPipeAtVertex).toHaveBeenCalledWith(fpn.pipes[1], fpn.pipes[1].vb)
+            expect(fpn.removePressureInPipeAtVertex).toHaveBeenCalledWith(fpn.pipes[2], fpn.pipes[1].vb)
         });
 
-        it("pressure that is equal to the total resistances is distributed as expected", function() {
-            var totalResistances = fpn.pipes[0].rb + fpn.pipes[1].rb + fpn.pipes[2].ra
-
-            fpn.pipes[0].fluids = [{
-                volume: 1 + totalResistances,
-                position: fpn.getLength(fpn.pipes[0]) - 1
-            }];
-
-            fpn.equalisePressuresForPipesAtVertex([2, 1, 0], fpn.pipes[0].vb);
-
-            expect(round5dp(
-                fpn.pipes[0].fluids[0].volume
-                + fpn.pipes[1].fluids[0].volume
-                + fpn.pipes[2].fluids[0].volume
-            )).toBe(1 + totalResistances);
-
-            expect(fpn.pipes[0].fluids.length).toBe(1);
-            expect(fpn.pipes[1].fluids.length).toBe(1);
-            expect(fpn.pipes[2].fluids.length).toBe(1);
-
-            expect(
-                fpn.removePressureInPipeAtVertex(fpn.pipes[0], fpn.pipes[0].vb)
-            ).toBe(0);
-            expect(
-                fpn.removePressureInPipeAtVertex(fpn.pipes[1], fpn.pipes[0].vb)
-            ).toBe(0);
-            expect(
-                fpn.removePressureInPipeAtVertex(fpn.pipes[2], fpn.pipes[0].vb)
-            ).toBe(0);
+        it("moves the pressure into the returned pipe", function() {
+            expect(fpn.addFluid).toHaveBeenCalledWith(fpn.pipes[1], fpn.pipes[1].vb, 15)
         });
 
-        it("doesn't add fluid to full pipes when they are the last pipe", function() {
-
-            // Pressure of 2
-            fpn.pipes[0].fluids = [{
-                volume: 5,
-                position: fpn.getLength(fpn.pipes[0]) - 3
-            }];
-            // full, but not last
-            fpn.pipes[1].fluids = [{
-                volume: fpn.pipes[1].capacity,
-                position: 0
-            }];
-            // full
-            fpn.pipes[2].fluids = [{
-                volume: fpn.pipes[2].capacity,
-                position: 0
-            }];
-
-            fpn.equalisePressuresForPipesAtVertex([2, 1, 0], fpn.pipes[0].vb);
-
-            expect(fpn.pipes[1].fluids[0].volume).not.toBe(fpn.pipes[1].capacity);
-            expect(fpn.pipes[2].fluids[0].volume).toBe(fpn.pipes[2].capacity);
-        });
-
-        it("doesn't add fluid to full pipes if all the subsequent pipes are full", function() {
-
-            // Pressure of 1000
-            fpn.pipes[0].fluids = [{
-                volume: 1000,
-                position: fpn.getLength(fpn.pipes[0])
-            }];
-            // full, but not last
-            fpn.pipes[1].fluids = [{
-                volume: fpn.pipes[1].capacity,
-                position: 0
-            }];
-            // full, and last
-            fpn.pipes[3].fluids = [{
-                volume: fpn.pipes[3].capacity,
-                position: 0
-            }];
-            // full and last
-            fpn.pipes[4].fluids = [{
-                volume: fpn.pipes[4].capacity,
-                position: 0
-            }];
-
-            fpn.equalisePressuresForPipesAtVertex([2, 1, 0], fpn.pipes[0].vb);
-
-            expect(
-                fpn.pipes[0].fluids[0].volume
-                + fpn.pipes[2].fluids[0].volume
-            ).toBe(1000);
-
-            expect(fpn.pipes[1].fluids[0].volume).toBe(fpn.pipes[1].capacity);
-            expect(fpn.pipes[3].fluids[0].volume).toBe(fpn.pipes[3].capacity);
-            expect(fpn.pipes[4].fluids[0].volume).toBe(fpn.pipes[4].capacity);
-        });
     });
 
     describe("when equalisePressures is called", function() {
@@ -860,13 +726,13 @@ describe("a Fluid Pipe Network", function() {
                 y: 0
             });
             expect(equaliseSpy).toHaveBeenCalledWith([
-                2, 1, 0
+                1, 0, 2
             ],{
                 x: 0,
                 y: 10
             });
             expect(equaliseSpy).toHaveBeenCalledWith([
-                4, 3, 1
+                3, 1, 4
             ],{
                 x: 10,
                 y: 20
@@ -890,6 +756,313 @@ describe("a Fluid Pipe Network", function() {
                 y: 30
             });
         });
+    });
+
+    describe("when getFluidAtVertex is called", function() {
+
+        beforeEach(function() {
+            fpn.setMetrics();
+            fpn.pipes[0].fluids = [{
+                volume: fpn.getLength(fpn.pipes[0]),
+                position: 0
+            }];
+        });
+
+        it("returns the fluid touching vertex A", function() {
+            expect(fpn.getFluidAtVertex(fpn.pipes[0], fpn.pipes[0].va)).toBe(fpn.pipes[0].fluids[0]);
+        });
+
+        it("returns the fluid touching vertex B", function() {
+            expect(fpn.getFluidAtVertex(fpn.pipes[0], fpn.pipes[0].vb)).toBe(fpn.pipes[0].fluids[0]);
+        });
+
+    });
+
+    describe("when getAvaliableConnectedPipesWithLowestFluidLevel is called", function() {
+
+        beforeEach(function() {
+            fpn.setMetrics();
+        });
+
+        describe("with two empty connected pipes", function() {
+
+            beforeEach(function() {
+                fpn.pipes[0].fluids = [{
+                    volume: fpn.getLength(fpn.pipes[0]),
+                    position: 0
+                }];
+            });
+
+            it("returns the most downward pointing pipe", function() {
+                var results = fpn.getAvaliableConnectedPipesWithLowestFluidLevel(0, fpn.pipes[0].va);
+                expect(results.length).toBe(1);
+                expect(results).toContain({
+                    pipe: fpn.pipes[1],
+                    vertex: fpn.pipes[0].vb
+                });
+            });
+        });
+
+        describe("with two connected pipes containing fluid", function() {
+
+            beforeEach(function() {
+                fpn.pipes[0].fluids = [{
+                    volume: fpn.getLength(fpn.pipes[0]),
+                    position: 0
+                }];
+                fpn.pipes[1].fluids = [{
+                    volume: 6,
+                    position: fpn.getLength(fpn.pipes[1]) - 6
+                }];
+                fpn.pipes[2].fluids = [{
+                    volume: 7,
+                    position: 0
+                }];
+            });
+
+            it("returns the connected pipe and end with the lowest fluid level", function() {
+                var result = fpn.getAvaliableConnectedPipesWithLowestFluidLevel(0, fpn.pipes[0].va);
+                expect(result[0].pipe).toBe(fpn.pipes[1]);
+                expect(result[0].vertex).toBe(fpn.pipes[0].vb);
+            });
+        });
+
+        describe("with two connected pipes containing fluid, pointing up", function() {
+
+            beforeEach(function() {
+                fpn.pipes[4].fluids = [{
+                    volume: fpn.getLength(fpn.pipes[4]),
+                    position: 0
+                }];
+                fpn.pipes[1].fluids = [{
+                    volume: 6,
+                    position: 0
+                }];
+                fpn.pipes[3].fluids = [{
+                    volume: 1,
+                    position: 0
+                }];
+            });
+
+            it("returns the connected pipe and end with the lowest fluid level", function() {
+                var result = fpn.getAvaliableConnectedPipesWithLowestFluidLevel(4, fpn.pipes[4].vb);
+                expect(result[0].pipe).toBe(fpn.pipes[3]);
+                expect(result[0].vertex).toBe(fpn.pipes[4].va);
+            });
+        });
+
+        describe("with two connected pipes containing fluid, pointing up, one being full", function() {
+
+            beforeEach(function() {
+                fpn.pipes[4].fluids = [{
+                    volume: fpn.getLength(fpn.pipes[4]),
+                    position: 0
+                }];
+                fpn.pipes[1].fluids = [{
+                    volume: fpn.getLength(fpn.pipes[1]),
+                    position: 0
+                }];
+                fpn.pipes[2].fluids = [{
+                    volume: fpn.getLength(fpn.pipes[2]),
+                    position: 0
+                }];
+                fpn.pipes[0].fluids = [{
+                    volume: 1,
+                    position: fpn.getLength(fpn.pipes[0]) - 1
+                }];
+                fpn.pipes[3].fluids = [{
+                    volume: 20,
+                    position: 0
+                }];
+            });
+
+            it("returns the connected pipe and end with the lowest fluid level", function() {
+                var result = fpn.getAvaliableConnectedPipesWithLowestFluidLevel(4, fpn.pipes[4].vb);
+                expect(result[0].pipe).toBe(fpn.pipes[0]);
+                expect(result[0].vertex).toEqual(fpn.pipes[0].vb);
+            });
+        });
+
+        describe("with the lowest fluid pipe being full", function() {
+
+            beforeEach(function() {
+                fpn.pipes[0].fluids = [{
+                    volume: fpn.getLength(fpn.pipes[0]),
+                    position: 0
+                }];
+                fpn.pipes[1].fluids = [{
+                    volume: fpn.getLength(fpn.pipes[1]),
+                    position: 0
+                }];
+                fpn.pipes[2].fluids = [{
+                    volume: 7,
+                    position: 0
+                }];
+            });
+
+            it("returns the most downward pointing pipe", function() {
+                var results = fpn.getAvaliableConnectedPipesWithLowestFluidLevel(0, fpn.pipes[0].va);
+                expect(results.length).toBe(1);
+                expect(results).toContain({
+                    pipe: fpn.pipes[4],
+                    vertex: fpn.pipes[4].va
+                });
+            });
+        });
+    });
+
+    // Pipes try to equalise the height of fluids
+    // after movement, if there is leftover PRESSURE at each pipe
+    // that PRESSURE is redistributed
+
+    // PRESSURE at a vertex is summed and removed
+    // this PRESSURE is moved into the pipe of least RESISTANCE
+    // or DISTRIBUTED between the pipes that are OCCUPIED
+
+    // RESISTANCE is the ANGLE of the pipe, pointing downward being lower
+
+    // Empty pipes are always preferred, a pipe is considered OCCUPIED if
+    // there is fluid at the side of the current vertex
+
+    // When fluid is moved into an occupied pipe, it is added to the end
+    // of the chain of fluids
+
+    // Fluid is DISTRIBUTED in such a way to minimise the difference between
+    // fluid heights
+
+    // There should be no leftover PRESSURE caused by this step. if PRESSURE
+    // exceeds the capacity of the pipes, it is added to the next pipe in
+    // the chain
+
+
+    describe("when getPipesToDistributePressureInto is called", function() {
+
+        beforeEach(function() {
+            fpn.setMetrics();
+        });
+
+        describe("and there are empty pipes at the vertex", function() {
+
+            it("returns the most downward pointing pipe", function() {
+                var pipes = fpn.getPipesToDistributePressureInto([2, 1, 0], fpn.pipes[0].vb);
+                expect(pipes[0]).toEqual({
+                    pipe: fpn.pipes[1],
+                    vertex: fpn.pipes[0].vb
+                });
+            });
+        });
+
+        describe("and the most downward pointing pipe contains fluid at the vertex", function() {
+
+            beforeEach(function() {
+                fpn.pipes[1].fluids = [{
+                    volume: 2,
+                    position: fpn.getLength(fpn.pipes[1]) - 2
+                }];
+            });
+
+            it("returns the next most downward pointing pipe", function() {
+                var pipes = fpn.getPipesToDistributePressureInto([2, 1, 0], fpn.pipes[0].vb);
+                expect(pipes[0]).toEqual({
+                    pipe: fpn.pipes[2],
+                    vertex: fpn.pipes[0].vb
+                });
+            });
+        });
+
+        describe("and all of the pipes contain fluid at their vertex", function() {
+
+            var fluidSpy;
+
+            beforeEach(function() {
+                fpn.pipes[0].fluids = [{
+                    volume: 6,
+                    position: fpn.getLength(fpn.pipes[0]) - 6
+                }];
+                fpn.pipes[1].fluids = [{
+                    volume: 2,
+                    position: fpn.getLength(fpn.pipes[1]) - 2
+                }];
+                fpn.pipes[2].fluids = [{
+                    volume: 3,
+                    position: 0
+                }];
+                fluidSpy = spyOn(fpn, 'getAvaliableConnectedPipesWithLowestFluidLevel').andCallFake(function(index) {
+                    switch (index) {
+                        case 0:
+                            return [{
+                                pipe: fpn.pipes[0],
+                                vertex: fpn.pipes[0].vb
+                            }];
+                        case 1:
+                            return [{
+                                pipe: fpn.pipes[1],
+                                vertex: fpn.pipes[0].vb
+                            }];
+                        case 2:
+                            return [{
+                                pipe: fpn.pipes[2],
+                                vertex: fpn.pipes[0].vb
+                            }];
+                    }
+                });
+            });
+
+            it("calls getAvaliableConnectedPipesWithLowestFluidLevel for each pipe", function() {
+                var pipes = fpn.getPipesToDistributePressureInto([2, 1, 0], fpn.pipes[0].vb);
+                expect(fpn.getAvaliableConnectedPipesWithLowestFluidLevel).toHaveBeenCalledWith(0, fpn.pipes[0].vb);
+                expect(fpn.getAvaliableConnectedPipesWithLowestFluidLevel).toHaveBeenCalledWith(1, fpn.pipes[0].vb);
+                expect(fpn.getAvaliableConnectedPipesWithLowestFluidLevel).toHaveBeenCalledWith(2, fpn.pipes[0].vb);
+            });
+
+            it("returns the pipe with the lowest available fluid level", function() {
+                var pipes = fpn.getPipesToDistributePressureInto([2, 1, 0], fpn.pipes[0].vb);
+                expect(pipes[0]).toEqual({
+                    pipe: fpn.pipes[1],
+                    vertex: fpn.pipes[0].vb
+                });
+            });
+
+            describe("there are multiple pipes with the lowest fluid level", function() {
+
+                beforeEach(function() {
+                    fpn.pipes[1].fluids = [{
+                        volume: fpn.getLength(fpn.pipes[1]),
+                        position: 0
+                    }];
+                    fluidSpy.andCallFake(function(index) {
+                        switch (index) {
+                            case 0:
+                                return [{
+                                    pipe: fpn.pipes[0],
+                                    vertex: fpn.pipes[0].vb
+                                }];
+                            case 1:
+                                return [{
+                                    pipe: fpn.pipes[4],
+                                    vertex: fpn.pipes[4].va
+                                },{
+                                    pipe: fpn.pipes[3],
+                                    vertex: fpn.pipes[3].va
+                                }];
+                            case 2:
+                                return [{
+                                    pipe: fpn.pipes[2],
+                                    vertex: fpn.pipes[0].vb
+                                }];
+                        }
+                    });
+                });
+
+                it("returns the most downward pointing pipe", function() {
+                    var pipes = fpn.getPipesToDistributePressureInto([2, 1, 0], fpn.pipes[0].vb);
+                    expect(pipes[0]).toEqual({
+                        pipe: fpn.pipes[4],
+                        vertex: fpn.pipes[4].va
+                    });
+                });
+            });
+        })
     });
 
     it("should calculate metrics when start is called", function() {

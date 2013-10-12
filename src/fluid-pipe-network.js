@@ -268,92 +268,32 @@ vd.createFluidPipeNetwork = function(spec) {
             }
             return false;
         }
-    }
+    };
 
     that.equalisePressuresForPipesAtVertex = function(pipeIndexes, vertex) {
+        var pipeCount = pipeIndexes.length,
+            totalPressure = 0;
 
-        var resistanceHighToLow = function(a, b) {
-            var pipeA = that.pipes[a],
-                pipeB = that.pipes[b],
-                resistanceA = that.pointsMatch(pipeA.va, vertex) ? pipeA.ra : pipeA.rb,
-                resistanceB = that.pointsMatch(pipeB.va, vertex) ? pipeB.ra : pipeB.rb;
-
-            return resistanceB - resistanceA;
-        };
-
-        var removeAndSumPressure = function() {
-            var pipeCount = pipeIndexes.length,
-                totalPressure = 0;
-
-            while (pipeCount--) {
-                pipe = that.pipes[pipeIndexes[pipeCount]];
-                totalPressure += that.removePressureInPipeAtVertex(pipe, vertex);
-            }
-
-            return totalPressure;
-        };
-
-        var totalPressure = removeAndSumPressure(),
-            availablePressure = totalPressure,
-            pipe,
-            nextPipe,
-            distributePipeCount,
-            distributePipe,
-            resistance,
-            nextResistance,
-            resistanceDiff,
-            pressureToAdd,
-            volumeToAdd;
-
-        pipeIndexes = pipeIndexes.filter(function(pipeIndex) {
-            return that.hasCapacityAvailable(pipeIndex, vertex);
-        });
-        pipeIndexes = pipeIndexes.sort(resistanceHighToLow);
-
-        var pipeCount = pipeIndexes.length;
-
-        while (availablePressure > 0) {
-            pipeCount = pipeCount - 1;
-            pipeCount = pipeCount < 0 ? 0 : pipeCount;
-
-            pipe = that.pipes[pipeIndexes[pipeCount]];
-            distributePipeCount = pipeIndexes.length - pipeCount;
-
-            nextPipe = pipeCount !== 0 ? that.pipes[pipeIndexes[pipeCount - 1]] : null;
-            if (nextPipe) {
-                // There is a next pipe with more resistance
-                resistance = that.pointsMatch(pipe.va, vertex) ? pipe.ra : pipe.rb;
-                nextResistance = that.pointsMatch(nextPipe.va, vertex) ? nextPipe.ra : nextPipe.rb;
-                resistanceDiff = nextResistance - resistance;
-                pressureToAdd = resistanceDiff * distributePipeCount;
-                if (pressureToAdd > availablePressure) {
-                    // Tried to add more than the avaliable pressure
-                    pressureToAdd = availablePressure / distributePipeCount;
-                }
-            } else {
-                // This is the last pipe or pipes, with the highest resistance
-                pressureToAdd = availablePressure;
-            }
-
-            pressureToAdd = pressureToAdd / distributePipeCount
-            availablePressure = availablePressure - (pressureToAdd * distributePipeCount);
-
-            while (distributePipeCount--) {
-                distributePipe = that.pipes[pipeIndexes[pipeCount + distributePipeCount]];
-                distributePipe.volumeToAdd = distributePipe.volumeToAdd || 0;
-                distributePipe.volumeToAdd += pressureToAdd;
-            }
-        }
-
-        pipeCount = pipeIndexes.length;
         while (pipeCount--) {
             pipe = that.pipes[pipeIndexes[pipeCount]];
-            if (pipe.hasOwnProperty("volumeToAdd")) {
-                volumeToAdd = pipe.volumeToAdd;
-                delete pipe.volumeToAdd;
-                that.addFluid(pipe, vertex, volumeToAdd);
-            }
+            totalPressure += that.removePressureInPipeAtVertex(pipe, vertex);
         }
+
+        var targetPipes = that.getPipesToDistributePressureInto(pipeIndexes, vertex),
+            targetPipe = targetPipes[0];
+
+        that.addFluid(targetPipe.pipe, targetPipe.vertex, totalPressure);
+    };
+
+    that.getConnectedPipeIndexes = function(pipeIndex, vertex) {
+        var pipes = [],
+            pipe = that.pipes[pipeIndex],
+            connectedPipes = (pipe.va == vertex) ? pipe.ca : pipe.cb,
+            connectedPipeCount = connectedPipes ? connectedPipes.length : 0;
+        while (connectedPipeCount--) {
+            pipes.push(connectedPipes[connectedPipeCount]);
+        }
+        return pipes;
     };
 
     that.equalisePressures = function() {
@@ -362,7 +302,7 @@ vd.createFluidPipeNetwork = function(spec) {
             pipe;
 
         var processPipeAndVertex = function(pipeIndex, vertex) {
-            var pipes = [],
+            var pipes,
                 pipe = that.pipes[pipeIndex],
                 connectedPipes,
                 connectedPipeCount;
@@ -371,15 +311,8 @@ vd.createFluidPipeNetwork = function(spec) {
             if ( ! vertices[vertex.x].hasOwnProperty(vertex.y)) {
                 vertices[vertex.x][vertex.y] = true;
 
-                // This is an unprocessed vertex
+                pipes = that.getConnectedPipeIndexes(pipeIndex, vertex);
                 pipes.push(pipeIndex);
-
-                // Add connected pipes
-                connectedPipes = (pipe.va == vertex) ? pipe.ca : pipe.cb;
-                connectedPipeCount = connectedPipes ? connectedPipes.length : 0;
-                while (connectedPipeCount--) {
-                    pipes.push(connectedPipes[connectedPipeCount]);
-                }
                 that.equalisePressuresForPipesAtVertex(pipes, vertex)
             }
         }
@@ -389,6 +322,170 @@ vd.createFluidPipeNetwork = function(spec) {
             processPipeAndVertex(pipeCount, pipe.va);
             processPipeAndVertex(pipeCount, pipe.vb);
         }
+    };
+
+    that.getFluidAtVertex = function(pipe, vertex) {
+        var fluidCount = pipe.fluids ? pipe.fluids.length : 0,
+            fluid;
+
+        while (fluidCount--) {
+            fluid = pipe.fluids[fluidCount];
+
+            if (
+                that.pointsMatch(pipe.va, vertex)
+                && fluid.position <= 0
+            ) {
+                return fluid;
+            }
+
+            if (
+                that.pointsMatch(pipe.vb, vertex)
+                && fluid.volume + fluid.position >= pipe.capacity
+            ) {
+                return fluid;
+            }
+        }
+    };
+
+    that.getResistance = function(pipe, vertex) {
+        return that.pointsMatch(pipe.va, vertex) ? pipe.ra : pipe.rb;
+    };
+
+    that.getFluidLevel = function(pipe, vertex) {
+        var fluid = that.getFluidAtVertex(pipe, vertex),
+            vertexA = that.pointsMatch(pipe.va, vertex) ? pipe.va : pipe.vb,
+            vertexB = that.pointsMatch(pipe.va, vertex) ? pipe.vb : pipe.va,
+            pipeHeight = vertexA.y - vertexB.y,
+            fluidHeight = fluid ? (fluid.volume / pipe.capacity) * pipeHeight : 0;
+
+        return (vertexA.y * -1) + fluidHeight;
+    };
+
+    that.getAvaliableConnectedPipesWithLowestFluidLevel = function(pipeIndex, vertex) {
+        var pipe = that.pipes[pipeIndex],
+            otherVertex = that.pointsMatch(pipe.va, vertex) ? pipe.vb : pipe.va,
+            fluid = that.getFluidAtVertex(pipe, otherVertex),
+            connectedIndexes = that.getConnectedPipeIndexes(pipeIndex, otherVertex),
+            connectedCount = connectedIndexes.length;
+
+        if ( ! connectedCount && fluid && fluid.volume >= pipe.capacity) {
+            return false;
+        }
+
+        if ( ! fluid || ! connectedCount) {
+            return [{
+                pipe: pipe,
+                vertex: vertex
+            }];
+        }
+
+        var connectedIndex,
+            connectedPipe,
+            results,
+            lowestFluidResults = [];
+        while (connectedCount--) {
+            connectedIndex = connectedIndexes[connectedCount];
+            results = that.getAvaliableConnectedPipesWithLowestFluidLevel(connectedIndex, otherVertex);
+            if (results) {
+                lowestFluidResults = lowestFluidResults.concat(results);
+            }
+        }
+
+        var lowestFluidResultCount = lowestFluidResults.length,
+            level,
+            lowestLevel = null,
+            lowestResults;
+        while (lowestFluidResultCount--) {
+            result = lowestFluidResults[lowestFluidResultCount];
+            level = that.getFluidLevel(result.pipe, result.vertex);
+            if (lowestLevel == null || level < lowestLevel) {
+                lowestLevel = level;
+                lowestResults = [result];
+            } else {
+                lowestResults.push(result);
+            }
+        }
+
+        var lowestResult = lowestResults[0];
+
+        var lowestResultCount = lowestResults.length,
+            result,
+            resistance,
+            lowestResistance = null,
+            lastResult;
+        while (lowestResultCount--) {
+            result = lowestResults[lowestResultCount];
+            fluid = that.getFluidAtVertex(result.pipe, result.vertex);
+            if (
+                lastResult
+                && ! fluid
+                && that.pointsMatch(result.vertex, lastResult.vertex)
+            ) {
+                resistance = that.getResistance(result.pipe, result.vertex);
+                if (lowestResistance == null) {
+                    lastResistance = that.getResistance(lastResult.pipe, lastResult.vertex);
+                    if (resistance < lastResistance) {
+                        lowestResult = result;
+                    } else {
+                        lowestResult = lastResult;
+                    }
+                } else if (resistance < lowestResistance) {
+                    lowestResult = result;
+                }
+            }
+            lastResult = result;
+        }
+
+        return [lowestResult];
+    }
+
+    that.getPipesToDistributePressureInto = function(pipeIndexes, vertex) {
+        var results = pipeIndexes.map(function(pipeIndex) {
+            return {
+                pipe: that.pipes[pipeIndex],
+                vertex: vertex
+            };
+        });
+
+        var excludePipesWithFluidAtVertex = function(result) {
+            var fluid = that.getFluidAtVertex(result.pipe, result.vertex);
+            return ! fluid;
+        };
+
+        var resistanceLowToHigh = function(resultA, resultB) {
+            var resistanceA = that.getResistance(resultA.pipe, resultA.vertex),
+                resistanceB = that.getResistance(resultB.pipe, resultB.vertex);
+            return resistanceA - resistanceB;
+        };
+
+        resultsWithoutFluid = results.filter(excludePipesWithFluidAtVertex);
+
+        if (resultsWithoutFluid.length) {
+            results = resultsWithoutFluid;
+        } else {
+            var pipeCount = pipeIndexes.length,
+                availableResults = [];
+            while(pipeCount--) {
+                availableResults = availableResults.concat(that.getAvaliableConnectedPipesWithLowestFluidLevel(pipeIndexes[pipeCount], vertex));
+            }
+            var resultCount = availableResults.length,
+                fluidLevel,
+                lowestLevel = null,
+                results;
+            while(resultCount--) {
+                result = availableResults[resultCount];
+                fluidLevel = that.getFluidLevel(result.pipe, result.vertex);
+                if (lowestLevel == null || fluidLevel < lowestLevel) {
+                    lowestLevel = fluidLevel;
+                    results = [result];
+                } else if (fluidLevel == lowestLevel) {
+                    results.push(result);
+                }
+            }
+        }
+
+        results = results.sort(resistanceLowToHigh);
+        return [results[0]];
     };
 
     that.start = function() {
