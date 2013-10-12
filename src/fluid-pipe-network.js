@@ -270,60 +270,6 @@ vd.createFluidPipeNetwork = function(spec) {
         }
     };
 
-    that.equalisePressuresForPipesAtVertex = function(pipeIndexes, vertex) {
-        var pipeCount = pipeIndexes.length,
-            totalPressure = 0;
-
-        while (pipeCount--) {
-            pipe = that.pipes[pipeIndexes[pipeCount]];
-            totalPressure += that.removePressureInPipeAtVertex(pipe, vertex);
-        }
-
-        var targetPipes = that.getPipesToDistributePressureInto(pipeIndexes, vertex),
-            targetPipe = targetPipes[0];
-
-        that.addFluid(targetPipe.pipe, targetPipe.vertex, totalPressure);
-    };
-
-    that.getConnectedPipeIndexes = function(pipeIndex, vertex) {
-        var pipes = [],
-            pipe = that.pipes[pipeIndex],
-            connectedPipes = (pipe.va == vertex) ? pipe.ca : pipe.cb,
-            connectedPipeCount = connectedPipes ? connectedPipes.length : 0;
-        while (connectedPipeCount--) {
-            pipes.push(connectedPipes[connectedPipeCount]);
-        }
-        return pipes;
-    };
-
-    that.equalisePressures = function() {
-        var vertices = {},
-            pipeCount = that.pipes.length,
-            pipe;
-
-        var processPipeAndVertex = function(pipeIndex, vertex) {
-            var pipes,
-                pipe = that.pipes[pipeIndex],
-                connectedPipes,
-                connectedPipeCount;
-
-            vertices[vertex.x] = vertices.hasOwnProperty(vertex.x) ? vertices[vertex.x] : {};
-            if ( ! vertices[vertex.x].hasOwnProperty(vertex.y)) {
-                vertices[vertex.x][vertex.y] = true;
-
-                pipes = that.getConnectedPipeIndexes(pipeIndex, vertex);
-                pipes.push(pipeIndex);
-                that.equalisePressuresForPipesAtVertex(pipes, vertex)
-            }
-        }
-
-        while (pipeCount--) {
-            pipe = that.pipes[pipeCount];
-            processPipeAndVertex(pipeCount, pipe.va);
-            processPipeAndVertex(pipeCount, pipe.vb);
-        }
-    };
-
     that.getFluidAtVertex = function(pipe, vertex) {
         var fluidCount = pipe.fluids ? pipe.fluids.length : 0,
             fluid;
@@ -347,8 +293,15 @@ vd.createFluidPipeNetwork = function(spec) {
         }
     };
 
-    that.getResistance = function(pipe, vertex) {
-        return that.pointsMatch(pipe.va, vertex) ? pipe.ra : pipe.rb;
+    that.getConnectedPipeIndexes = function(pipeIndex, vertex) {
+        var pipes = [],
+            pipe = that.pipes[pipeIndex],
+            connectedPipes = (pipe.va == vertex) ? pipe.ca : pipe.cb,
+            connectedPipeCount = connectedPipes ? connectedPipes.length : 0;
+        while (connectedPipeCount--) {
+            pipes.push(connectedPipes[connectedPipeCount]);
+        }
+        return pipes;
     };
 
     that.getFluidLevel = function(pipe, vertex) {
@@ -359,6 +312,10 @@ vd.createFluidPipeNetwork = function(spec) {
             fluidHeight = fluid ? (fluid.volume / pipe.capacity) * pipeHeight : 0;
 
         return (vertexA.y * -1) + fluidHeight;
+    };
+
+    that.getResistance = function(pipe, vertex) {
+        return that.pointsMatch(pipe.va, vertex) ? pipe.ra : pipe.rb;
     };
 
     that.getAvaliableConnectedPipesWithLowestFluidLevel = function(pipeIndex, vertex) {
@@ -486,6 +443,49 @@ vd.createFluidPipeNetwork = function(spec) {
 
         results = results.sort(resistanceLowToHigh);
         return [results[0]];
+    };
+
+    that.equalisePressuresForPipesAtVertex = function(pipeIndexes, vertex) {
+        var pipeCount = pipeIndexes.length,
+            totalPressure = 0;
+
+        while (pipeCount--) {
+            pipe = that.pipes[pipeIndexes[pipeCount]];
+            totalPressure += that.removePressureInPipeAtVertex(pipe, vertex);
+        }
+
+        var targetPipes = that.getPipesToDistributePressureInto(pipeIndexes, vertex),
+            targetPipe = targetPipes[0];
+
+        that.addFluid(targetPipe.pipe, targetPipe.vertex, totalPressure);
+    };
+
+    that.equalisePressures = function() {
+        var vertices = {},
+            pipeCount = that.pipes.length,
+            pipe;
+
+        var processPipeAndVertex = function(pipeIndex, vertex) {
+            var pipes,
+                pipe = that.pipes[pipeIndex],
+                connectedPipes,
+                connectedPipeCount;
+
+            vertices[vertex.x] = vertices.hasOwnProperty(vertex.x) ? vertices[vertex.x] : {};
+            if ( ! vertices[vertex.x].hasOwnProperty(vertex.y)) {
+                vertices[vertex.x][vertex.y] = true;
+
+                pipes = that.getConnectedPipeIndexes(pipeIndex, vertex);
+                pipes.push(pipeIndex);
+                that.equalisePressuresForPipesAtVertex(pipes, vertex)
+            }
+        }
+
+        while (pipeCount--) {
+            pipe = that.pipes[pipeCount];
+            processPipeAndVertex(pipeCount, pipe.va);
+            processPipeAndVertex(pipeCount, pipe.vb);
+        }
     };
 
     that.start = function() {

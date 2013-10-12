@@ -679,85 +679,6 @@ describe("a Fluid Pipe Network", function() {
         });
     });
 
-    describe("when equalisePressuresForPipesAtVertex is called", function() {
-
-        beforeEach(function() {
-            spyOn(fpn, 'removePressureInPipeAtVertex').andReturn(5);
-            spyOn(fpn, 'getPipesToDistributePressureInto').andReturn([{
-                pipe: fpn.pipes[1],
-                vertex: fpn.pipes[1].vb
-            }]);
-            spyOn(fpn, 'addFluid');
-            fpn.equalisePressuresForPipesAtVertex([2, 1, 0], fpn.pipes[0].vb);
-        });
-
-        it("calls getPipesToDistributePressureInto", function() {
-            expect(fpn.getPipesToDistributePressureInto).toHaveBeenCalledWith([2, 1, 0], fpn.pipes[0].vb);
-        });
-
-        it("removes the pressure from each pipe", function() {
-            expect(fpn.removePressureInPipeAtVertex).toHaveBeenCalledWith(fpn.pipes[0], fpn.pipes[1].vb)
-            expect(fpn.removePressureInPipeAtVertex).toHaveBeenCalledWith(fpn.pipes[1], fpn.pipes[1].vb)
-            expect(fpn.removePressureInPipeAtVertex).toHaveBeenCalledWith(fpn.pipes[2], fpn.pipes[1].vb)
-        });
-
-        it("moves the pressure into the returned pipe", function() {
-            expect(fpn.addFluid).toHaveBeenCalledWith(fpn.pipes[1], fpn.pipes[1].vb, 15)
-        });
-
-    });
-
-    describe("when equalisePressures is called", function() {
-
-        var equaliseSpy;
-
-        beforeEach(function() {
-            fpn.setMetrics();
-        });
-
-        it("equalisePressuresForPipesAtVertex is called for each vertex", function() {
-            equaliseSpy = spyOn(fpn, "equalisePressuresForPipesAtVertex");
-            fpn.equalisePressures();
-            expect(equaliseSpy.callCount).toBe(6);
-            expect(equaliseSpy).toHaveBeenCalledWith([
-                0
-            ],{
-                x: 0,
-                y: 0
-            });
-            expect(equaliseSpy).toHaveBeenCalledWith([
-                1, 0, 2
-            ],{
-                x: 0,
-                y: 10
-            });
-            expect(equaliseSpy).toHaveBeenCalledWith([
-                3, 1, 4
-            ],{
-                x: 10,
-                y: 20
-            });
-            expect(equaliseSpy).toHaveBeenCalledWith([
-                2
-            ],{
-                x: -20,
-                y: 10
-            });
-            expect(equaliseSpy).toHaveBeenCalledWith([
-                3
-            ],{
-                x: 10,
-                y: -10
-            });
-            expect(equaliseSpy).toHaveBeenCalledWith([
-                4
-            ],{
-                x: 0,
-                y: 30
-            });
-        });
-    });
-
     describe("when getFluidAtVertex is called", function() {
 
         beforeEach(function() {
@@ -1063,6 +984,85 @@ describe("a Fluid Pipe Network", function() {
                 });
             });
         })
+    });
+
+    describe("when equalisePressuresForPipesAtVertex is called", function() {
+
+        beforeEach(function() {
+            spyOn(fpn, 'removePressureInPipeAtVertex').andReturn(5);
+            spyOn(fpn, 'getPipesToDistributePressureInto').andReturn([{
+                pipe: fpn.pipes[1],
+                vertex: fpn.pipes[1].vb
+            }]);
+            spyOn(fpn, 'addFluid');
+            fpn.equalisePressuresForPipesAtVertex([2, 1, 0], fpn.pipes[0].vb);
+        });
+
+        it("calls getPipesToDistributePressureInto", function() {
+            expect(fpn.getPipesToDistributePressureInto).toHaveBeenCalledWith([2, 1, 0], fpn.pipes[0].vb);
+        });
+
+        it("removes the pressure from each pipe", function() {
+            expect(fpn.removePressureInPipeAtVertex).toHaveBeenCalledWith(fpn.pipes[0], fpn.pipes[1].vb)
+            expect(fpn.removePressureInPipeAtVertex).toHaveBeenCalledWith(fpn.pipes[1], fpn.pipes[1].vb)
+            expect(fpn.removePressureInPipeAtVertex).toHaveBeenCalledWith(fpn.pipes[2], fpn.pipes[1].vb)
+        });
+
+        it("moves the pressure into the returned pipe", function() {
+            expect(fpn.addFluid).toHaveBeenCalledWith(fpn.pipes[1], fpn.pipes[1].vb, 15)
+        });
+
+    });
+
+    describe("when equalisePressures is called", function() {
+
+        var equaliseSpy;
+
+        beforeEach(function() {
+            fpn.setMetrics();
+        });
+
+        it("equalisePressuresForPipesAtVertex is called for each vertex", function() {
+            equaliseSpy = spyOn(fpn, "equalisePressuresForPipesAtVertex");
+            fpn.equalisePressures();
+            expect(equaliseSpy.callCount).toBe(6);
+            expect(equaliseSpy).toHaveBeenCalledWith([
+                0
+            ],{
+                x: 0,
+                y: 0
+            });
+            expect(equaliseSpy).toHaveBeenCalledWith([
+                1, 0, 2
+            ],{
+                x: 0,
+                y: 10
+            });
+            expect(equaliseSpy).toHaveBeenCalledWith([
+                3, 1, 4
+            ],{
+                x: 10,
+                y: 20
+            });
+            expect(equaliseSpy).toHaveBeenCalledWith([
+                2
+            ],{
+                x: -20,
+                y: 10
+            });
+            expect(equaliseSpy).toHaveBeenCalledWith([
+                3
+            ],{
+                x: 10,
+                y: -10
+            });
+            expect(equaliseSpy).toHaveBeenCalledWith([
+                4
+            ],{
+                x: 0,
+                y: 30
+            });
+        });
     });
 
     it("should calculate metrics when start is called", function() {
