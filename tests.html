@@ -9,8 +9,9 @@
         <script src="src/display.js"></script>
         <script src="src/fluid-pipe-network.js"></script>
         <script src="src/voronoi-drip.js"></script>
+
         <script>
-            var edges1 = [
+            var edges = [
                 {
                     va: {x: 200, y: 0},
                     vb: {x: 200, y: 100},
@@ -47,14 +48,15 @@
                 startVolume: 200,
                 gravity: 10,
                 timeout: 10,
-                network: edges1
+                network: edges
             });
 
             voronoiDrip1.start();
-            voronoiDrip1.addFluid(100, edges1[0], edges1[0].va);
+            voronoiDrip1.addFluid(100, edges[0], edges[0].va);
         </script>
+
         <script>
-            var edges2 = [
+            var edges = [
                 {
                     va: {x: 100, y: 200},
                     vb: {x: 250, y: 250},
@@ -76,14 +78,14 @@
                 startVolume: 200,
                 gravity: 10,
                 timeout: 10,
-                network: edges2
+                network: edges
             });
 
             voronoiDrip2.start();
-            voronoiDrip2.addFluid(100, edges2[0], edges2[0].va);
+            voronoiDrip2.addFluid(100, edges[0], edges[0].va);
         </script>
         <script>
-            var edges3 = [
+            var edges = [
                 {
                     va: {x: 260, y: 240},
                     vb: {x: 250, y: 250},
@@ -123,14 +125,139 @@
                 pipeColour: "#eee",
                 fluidColour: "#000",
                 startVolume: 200,
-                gravity: 30,
-                timeout: 30,
-                network: edges3
+                gravity: 10,
+                timeout: 10,
+                network: edges
             });
 
             voronoiDrip3.start();
-            voronoiDrip3.addFluid(140, edges3[4], edges3[4].va);
+            voronoiDrip3.addFluid(140, edges[4], edges[4].va);
         </script>
+        <script>
+            var edges = [
+                {
+                    va: {x: 50, y: 50},
+                    vb: {x: 150, y: 250},
+                    ca: null,
+                    cb: [1],
+                },{
+                    va: {x: 250, y: 50},
+                    vb: {x: 150, y: 250},
+                    ca: null,
+                    cb: [0],
+                }
+            ];
 
+            var voronoiDrip4 = vd.createVoronoiDrip({
+                width: 300,
+                height: 300,
+                pipeColour: "#eee",
+                fluidColour: "#000",
+                startVolume: 200,
+                gravity: 90,
+                timeout: 500,
+                network: edges
+            });
+
+            voronoiDrip4.start();
+            voronoiDrip4.addFluid(140, edges[0], edges[0].va);
+        </script>
+        <script>
+            var edges = [
+                {
+                    va: {x: 50, y: 50},
+                    vb: {x: 150, y: 250},
+                    ca: null,
+                    cb: [1],
+                },{
+                    va: {x: 250, y: 50},
+                    vb: {x: 150, y: 250},
+                    ca: null,
+                    cb: [0],
+                }
+            ];
+
+            var voronoiDrip4 = vd.createVoronoiDrip({
+                width: 300,
+                height: 300,
+                pipeColour: "#eee",
+                fluidColour: "#000",
+                startVolume: 200,
+                gravity: 10,
+                timeout: 10,
+                network: edges
+            });
+
+            voronoiDrip4.start();
+            voronoiDrip4.addFluid(140, edges[0], edges[0].va);
+        </script>
+        <script>
+            var edges = [
+                {
+                    va: {x: 50, y: 50},
+                    vb: {x: 150, y: 250},
+                    ca: null,
+                    cb: null
+                }
+            ];
+
+            var voronoiDrip5 = vd.createVoronoiDrip({
+                width: 300,
+                height: 300,
+                pipeColour: "#eee",
+                fluidColour: "#000",
+                startVolume: 200,
+                gravity: 100,
+                timeout: 500,
+                network: edges
+            });
+
+            voronoiDrip5.start();
+            voronoiDrip5.addFluid(140, edges[0], edges[0].va);
+        </script>
+        <script>
+            var edges = [
+                {
+                    va: {x: 80, y: 50},
+                    vb: {x: 80, y: 250},
+                    ca: null,
+                    cb: [1],
+                },{
+                    va: {x: 80, y: 250},
+                    vb: {x: 120, y: 290},
+                    ca: [0],
+                    cb: [2],
+                },{
+                    va: {x: 120, y: 290},
+                    vb: {x: 180, y: 290},
+                    ca: [1],
+                    cb: [3],
+                },{
+                    va: {x: 180, y: 290},
+                    vb: {x: 220, y: 250},
+                    ca: [2],
+                    cb: [4],
+                },{
+                    va: {x: 220, y: 250},
+                    vb: {x: 220, y: 50},
+                    ca: [3],
+                    cb: null,
+                }
+            ];
+
+            var voronoiDrip5 = vd.createVoronoiDrip({
+                width: 300,
+                height: 300,
+                pipeColour: "#eee",
+                fluidColour: "#000",
+                startVolume: 200,
+                gravity: 10,
+                timeout: 500,
+                network: edges
+            });
+
+            voronoiDrip5.start();
+            voronoiDrip5.addFluid(300, edges[0], edges[0].va);
+        </script>
     </body>
 </html>
