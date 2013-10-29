@@ -19,17 +19,21 @@
             });
 
             var voronoiDrip = vd.createVoronoiDrip({
-                width: 600,
-                height: 600,
+                width: 500,
+                height: 500,
                 pipeColour: "#eee",
                 fluidColour: "#000",
                 gravity: 10,
                 timeout: 5,
-                network: networkGenerator.generate(50, 600, 600)
+                network: networkGenerator.generate(20, 500, 500)
             });
 
             voronoiDrip.start();
-            voronoiDrip.addFluid(600);
+            setInterval(function() {
+                var pipe = Math.floor(Math.random() * voronoiDrip.fpn.pipes.length);
+                // voronoiDrip.fpn.addFluid(voronoiDrip.fpn.pipes[pipe], voronoiDrip.fpn.pipes[pipe].va, 30);
+                voronoiDrip.addFluid(50);
+            }, 500)
         </script>
     </body>
 </html>
