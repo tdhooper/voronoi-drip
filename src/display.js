@@ -1,6 +1,7 @@
-var vd = vd || {};
+var VoronoiDrip = VoronoiDrip || {};
+VoronoiDrip.Display = VoronoiDrip.Display || {};
 
-vd.createDisplay = function(spec) {
+VoronoiDrip.Display.create = function(spec) {
     var that = {};
 
     that.start = function() {
@@ -34,5 +35,5 @@ vd.createDisplay = function(spec) {
         that.ctx.clearRect(0, 0, spec.width, spec.height);
     };
 
-    return that; 
+    return that;
 };

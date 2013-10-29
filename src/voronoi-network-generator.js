@@ -12,9 +12,10 @@
 
 */
 
-var vd = vd || {};
+var VoronoiDrip = VoronoiDrip || {};
+VoronoiDrip.VoronoiNetworkGenerator = {};
 
-vd.createVoronoiNetworkGenerator = function(spec) {
+VoronoiDrip.VoronoiNetworkGenerator.create = function(spec) {
     var that = {};
 
     that.voronoi = spec.voronoi;

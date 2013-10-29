@@ -39,9 +39,9 @@
 
 */
 
-var vd = vd || {};
+var VoronoiDrip = VoronoiDrip || {};
 
-vd.createVoronoiDrip = function(spec) {
+VoronoiDrip.create = function(spec) {
     var that = {},
         tickerTimeout;
 
@@ -87,7 +87,7 @@ vd.createVoronoiDrip = function(spec) {
     };
 
     that.drawFluids = function() {
-        var pipeCount = that.fpn.pipes.length,
+        var pipeCount = that.fluidNetworkSimulation.pipes.length,
             pipe,
             fluidCount,
             fluids,
@@ -97,7 +97,7 @@ vd.createVoronoiDrip = function(spec) {
             yDiff;
 
         while (pipeCount--) {
-            pipe = that.fpn.pipes[pipeCount];
+            pipe = that.fluidNetworkSimulation.pipes[pipeCount];
             if ( ! pipe.hasOwnProperty('fluids')) {
                 continue;
             }
@@ -128,13 +128,13 @@ vd.createVoronoiDrip = function(spec) {
     };
 
     that.start = function() {
-        that.fpn = vd.createFluidPipeNetwork({
+        that.fluidNetworkSimulation = VoronoiDrip.FluidNetworkSimulation.create({
             pipes: that.network,
             gravity: spec.gravity
         });
-        that.fpn.start();
+        that.fluidNetworkSimulation.start();
 
-        that.display = vd.createDisplay({
+        that.display = VoronoiDrip.Display.create({
             width: spec.width,
             height: spec.height
         });
@@ -150,7 +150,7 @@ vd.createVoronoiDrip = function(spec) {
             edge = highestEdgeAndVertex.edge;
             vertex = highestEdgeAndVertex.vertex;
         }
-        that.fpn.addFluid(edge, vertex, volume);
+        that.fluidNetworkSimulation.addFluid(edge, vertex, volume);
     };
 
     that.stop = function() {
@@ -158,7 +158,7 @@ vd.createVoronoiDrip = function(spec) {
     };
 
     that.update = function() {
-        that.fpn.update();
+        that.fluidNetworkSimulation.update();
         that.display.clear();
         that.drawNetwork();
         that.drawFluids();

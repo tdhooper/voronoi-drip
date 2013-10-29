@@ -44,7 +44,7 @@ describe("a Voronoi Drip simulation", function() {
             network: edges
         };
 
-        voronoiDrip = vd.createVoronoiDrip(spec);
+        voronoiDrip = VoronoiDrip.create(spec);
     });
 
     describe("when drawNetwork is called", function() {
@@ -93,28 +93,28 @@ describe("a Voronoi Drip simulation", function() {
 
     describe("when start is called", function() {
 
-        var mockFPN = jasmine.createSpyObj('fpn', ['start', 'addFluid']),
+        var mockSimulation = jasmine.createSpyObj('fluidNetworkSimulation', ['start', 'addFluid']),
             mockDisplay = jasmine.createSpyObj('display', ['start']);
 
         beforeEach(function() {
-            spyOn(vd, 'createFluidPipeNetwork').andReturn(mockFPN);
-            spyOn(vd, 'createDisplay').andReturn(mockDisplay);
+            spyOn(VoronoiDrip.FluidNetworkSimulation, 'create').andReturn(mockSimulation);
+            spyOn(VoronoiDrip.Display, 'create').andReturn(mockDisplay);
             spyOn(voronoiDrip, 'drawNetwork');
             spyOn(voronoiDrip, 'tick');
             voronoiDrip.start();
         });
 
-        it("creates a new fluid pipe network with the edges and gravity, and attaches it to the voronoiDrip", function() {
+        it("creates a new fluid network simulation with the edges and gravity, and attaches it to the voronoiDrip", function() {
             var expectedSpec = {
                 pipes: spec.network,
                 gravity: 3
             }
-            expect(vd.createFluidPipeNetwork).toHaveBeenCalledWith(expectedSpec);
-            expect(voronoiDrip.fpn).toBe(mockFPN);
+            expect(VoronoiDrip.FluidNetworkSimulation.create).toHaveBeenCalledWith(expectedSpec);
+            expect(voronoiDrip.fluidNetworkSimulation).toBe(mockSimulation);
         });
 
-        it("starts the fluid pipe network", function() {
-            expect(mockFPN.start).toHaveBeenCalled();
+        it("starts the fluid network simulation", function() {
+            expect(mockSimulation.start).toHaveBeenCalled();
         });
 
         it("creates a new display at the specified width and height, and attaches it to the voronoiDrip", function() {
@@ -122,7 +122,7 @@ describe("a Voronoi Drip simulation", function() {
                 width: 300,
                 height: 300
             }
-            expect(vd.createDisplay).toHaveBeenCalledWith(expectedSpec);
+            expect(VoronoiDrip.Display.create).toHaveBeenCalledWith(expectedSpec);
             expect(voronoiDrip.display).toBe(mockDisplay);
         });
 
@@ -141,11 +141,11 @@ describe("a Voronoi Drip simulation", function() {
 
     describe("when addFluid is called", function() {
 
-        var mockFPN;
+        var mockSimulation;
 
         beforeEach(function() {
-            mockFPN = jasmine.createSpyObj('fpn', ['addFluid']);
-            voronoiDrip.fpn = mockFPN;
+            mockSimulation = jasmine.createSpyObj('fluidNetworkSimulation', ['addFluid']);
+            voronoiDrip.fluidNetworkSimulation = mockSimulation;
         });
 
         describe("with no pipe and vertex specified", function() {
@@ -161,7 +161,7 @@ describe("a Voronoi Drip simulation", function() {
             });
 
             it("adds the specified volume of fluid at the highest point", function() {
-                expect(mockFPN.addFluid).toHaveBeenCalledWith(
+                expect(mockSimulation.addFluid).toHaveBeenCalledWith(
                     highestEdgeAndVertex.edge,
                     highestEdgeAndVertex.vertex,
                     50
@@ -176,7 +176,7 @@ describe("a Voronoi Drip simulation", function() {
             });
 
             it("adds the specified volume of fluid at the specified point", function() {
-                expect(mockFPN.addFluid).toHaveBeenCalledWith(
+                expect(mockSimulation.addFluid).toHaveBeenCalledWith(
                     'some edge',
                     'some vertex',
                     50
@@ -216,11 +216,11 @@ describe("a Voronoi Drip simulation", function() {
     });
 
     describe("when drawFluids is called", function() {
-        var mockFPN = jasmine.createSpyObj('fpn', ['update']),
+        var mockSimulation = jasmine.createSpyObj('fluidNetworkSimulation', ['update']),
             mockDisplay = jasmine.createSpyObj('display', ['drawLine', 'clear']);
 
         beforeEach(function() {
-            mockFPN.pipes = [
+            mockSimulation.pipes = [
             {
                 va: {x: 0, y: 0},
                 vb: {x: 0, y: 10},
@@ -245,7 +245,7 @@ describe("a Voronoi Drip simulation", function() {
                 vb: {x: 15, y: 15},
                 capacity: 30
             }];
-            voronoiDrip.fpn = mockFPN;
+            voronoiDrip.fluidNetworkSimulation = mockSimulation;
             voronoiDrip.display = mockDisplay;
             voronoiDrip.drawFluids();
         });
@@ -270,19 +270,19 @@ describe("a Voronoi Drip simulation", function() {
     });
 
     describe("when update is called", function() {
-        var mockFPN = jasmine.createSpyObj('fpn', ['update']),
+        var mockSimulation = jasmine.createSpyObj('fluidNetworkSimulation', ['update']),
             mockDisplay = jasmine.createSpyObj('display', ['drawLine', 'clear']);
 
         beforeEach(function() {
             spyOn(voronoiDrip, 'drawNetwork');
             spyOn(voronoiDrip, 'drawFluids');
-            voronoiDrip.fpn = mockFPN;
+            voronoiDrip.fluidNetworkSimulation = mockSimulation;
             voronoiDrip.display = mockDisplay;
             voronoiDrip.update();
         });
 
-        it("updates the fluid pipe network", function() {
-            expect(mockFPN.update).toHaveBeenCalled();
+        it("updates the fluid network simulation", function() {
+            expect(mockSimulation.update).toHaveBeenCalled();
         });
 
         it("clears the display", function() {

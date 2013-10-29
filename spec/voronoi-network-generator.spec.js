@@ -4,7 +4,7 @@ describe("a Voronoi Network Generator", function() {
 
     beforeEach(function() {
         voronoi = new Voronoi();
-        vng = vd.createVoronoiNetworkGenerator({
+        vng = VoronoiDrip.VoronoiNetworkGenerator.create({
             voronoi: voronoi
         });
     });

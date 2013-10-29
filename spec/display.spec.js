@@ -8,7 +8,7 @@ describe("a Display", function() {
         };
 
     beforeEach(function() {
-        display = vd.createDisplay({
+        display = VoronoiDrip.Display.create({
             width: 300,
             height: 300
         });
@@ -89,7 +89,7 @@ describe("a Display", function() {
             expect(mockContext.lineWidth).toBe(5);
             expect(mockContext.moveTo).toHaveBeenCalledWith(10, 12);
             expect(mockContext.lineTo).toHaveBeenCalledWith(39, 53);
-            expect(mockContext.stroke.callCount).toBe(1);       
+            expect(mockContext.stroke.callCount).toBe(1);
         });
     });
 

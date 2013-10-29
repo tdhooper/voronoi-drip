@@ -9,16 +9,21 @@
         <script src="lib/Javascript-Voronoi/rhill-voronoi-core.js"></script>
         <script src="src/voronoi-network-generator.js"></script>
         <script src="src/display.js"></script>
-        <script src="src/fluid-pipe-network.js"></script>
+        <script src="src/fluid-adder.js"></script>
+        <script src="src/fluid-mover.js"></script>
+        <script src="src/metrics.js"></script>
+        <script src="src/pressure-solver.js"></script>
+        <script src="src/overlap-solver.js"></script>
+        <script src="src/fluid-network-simulation.js"></script>
         <script src="src/voronoi-drip.js"></script>
         <script>
             var voronoi = new Voronoi();
 
-            var networkGenerator = vd.createVoronoiNetworkGenerator({
+            var networkGenerator = VoronoiDrip.VoronoiNetworkGenerator.create({
                 voronoi: voronoi
             });
 
-            var voronoiDrip = vd.createVoronoiDrip({
+            var voronoiDrip = VoronoiDrip.create({
                 width: 500,
                 height: 500,
                 pipeColour: "#eee",
@@ -30,7 +35,7 @@
 
             voronoiDrip.start();
             setInterval(function() {
-                var pipe = Math.floor(Math.random() * voronoiDrip.fpn.pipes.length);
+                var pipe = Math.floor(Math.random() * voronoiDrip.network.length);
                 // voronoiDrip.fpn.addFluid(voronoiDrip.fpn.pipes[pipe], voronoiDrip.fpn.pipes[pipe].va, 30);
                 voronoiDrip.addFluid(50);
             }, 500)
