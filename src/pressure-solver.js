@@ -83,10 +83,10 @@ VoronoiDrip.FluidNetworkSimulation.PressureSolver.create = function(spec) {
         return lowestFluidResults;
     };
 
-    that.getPipesToDistributePressureInto = function(pipeIndexes, vertex) {
-        var results = pipeIndexes.map(function(pipeIndex) {
+    that.getPipesToDistributePressureInto = function(pipes, vertex) {
+        var results = pipes.map(function(pipe) {
             return {
-                pipe: that.pipes[pipeIndex],
+                pipe: pipe,
                 vertex: vertex
             };
         });
@@ -108,13 +108,13 @@ VoronoiDrip.FluidNetworkSimulation.PressureSolver.create = function(spec) {
             resultsWithoutFluid = resultsWithoutFluid.sort(resistanceLowToHigh);
             return [resultsWithoutFluid[0]];
         } else {
-            var pipeCount = pipeIndexes.length,
+            var pipeCount = pipes.length,
                 results = [];
             that.pipeCount = pipeCount;
             while(pipeCount--) {
-
                 that.connectedPipesChecked = [];
-                var availablePipes = that.getAvaliableConnectedPipesWithLowestFluidLevel(pipeIndexes[pipeCount], vertex);
+                var pipeIndex = that.pipes.indexOf(pipes[pipeCount]);
+                var availablePipes = that.getAvaliableConnectedPipesWithLowestFluidLevel(pipeIndex, vertex);
                 if (availablePipes) {
                     results = results.concat(availablePipes);
                 }
@@ -122,13 +122,6 @@ VoronoiDrip.FluidNetworkSimulation.PressureSolver.create = function(spec) {
         }
 
         return results;
-    };
-
-    that.getPipesToDistributePressureIntoX = function(pipes, vertex) {
-        var pipeIndexes = pipes.map(function(pipe) {
-            return that.pipes.indexOf(pipe);
-        });
-        return that.getPipesToDistributePressureInto(pipeIndexes, vertex);
     };
 
     that.getVolumeNeededToReachLevel = function(pipe, vertex, level) {
@@ -144,14 +137,8 @@ VoronoiDrip.FluidNetworkSimulation.PressureSolver.create = function(spec) {
     };
 
     that.redistributePressure = function(pipes, vertex, pressure) {
-        var targets = that.getPipesToDistributePressureIntoX(pipes, vertex),
+        var targets = that.getPipesToDistributePressureInto(pipes, vertex),
             availablePressure = pressure;
-
-        if (targets.length == 1) {
-            var targetPipe = targets[0];
-            that.fluidAdder.add(targetPipe.pipe, targetPipe.vertex, pressure);
-            return;
-        }
 
         var addFluidLevels = function(target) {
             target.level = that.metrics.getFluidLevel(target.pipe, target.vertex);

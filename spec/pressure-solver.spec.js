@@ -379,9 +379,12 @@ describe("a Pressure Solver", function() {
         describe("and there are empty pipes at the vertex", function() {
 
             it("returns the most downward pointing pipe", function() {
-                var pipes = pressureSolver.getPipesToDistributePressureInto([2, 1, 0], pressureSolver.pipes[0].vb);
-                expect(pipes.length).toBe(1);
-                expect(pipes[0]).toEqual({
+                var targets = pressureSolver.getPipesToDistributePressureInto(
+                    [pipes[2], pipes[1], pipes[0]],
+                    pressureSolver.pipes[0].vb
+                );
+                expect(targets.length).toBe(1);
+                expect(targets[0]).toEqual({
                     pipe: pressureSolver.pipes[1],
                     vertex: pressureSolver.pipes[0].vb
                 });
@@ -398,9 +401,12 @@ describe("a Pressure Solver", function() {
             });
 
             it("returns the next most downward pointing pipe", function() {
-                var pipes = pressureSolver.getPipesToDistributePressureInto([2, 1, 0], pressureSolver.pipes[0].vb);
-                expect(pipes.length).toBe(1);
-                expect(pipes[0]).toEqual({
+                var targets = pressureSolver.getPipesToDistributePressureInto(
+                    [pipes[2], pipes[1], pipes[0]],
+                    pressureSolver.pipes[0].vb
+                );
+                expect(targets.length).toBe(1);
+                expect(targets[0]).toEqual({
                     pipe: pressureSolver.pipes[2],
                     vertex: pressureSolver.pipes[0].vb
                 });
@@ -446,24 +452,30 @@ describe("a Pressure Solver", function() {
             });
 
             it("calls getAvaliableConnectedPipesWithLowestFluidLevel for each pipe", function() {
-                var pipes = pressureSolver.getPipesToDistributePressureInto([2, 1, 0], pressureSolver.pipes[0].vb);
+                var targets = pressureSolver.getPipesToDistributePressureInto(
+                    [pipes[2], pipes[1], pipes[0]],
+                    pressureSolver.pipes[0].vb
+                );
                 expect(pressureSolver.getAvaliableConnectedPipesWithLowestFluidLevel).toHaveBeenCalledWith(0, pressureSolver.pipes[0].vb);
                 expect(pressureSolver.getAvaliableConnectedPipesWithLowestFluidLevel).toHaveBeenCalledWith(1, pressureSolver.pipes[0].vb);
                 expect(pressureSolver.getAvaliableConnectedPipesWithLowestFluidLevel).toHaveBeenCalledWith(2, pressureSolver.pipes[0].vb);
             });
 
             it("returns all of the results", function() {
-                var pipes = pressureSolver.getPipesToDistributePressureInto([2, 1, 0], pressureSolver.pipes[0].vb);
-                expect(pipes.length).toBe(3);
-                expect(pipes).toContain({
+                var targets = pressureSolver.getPipesToDistributePressureInto(
+                    [pipes[2], pipes[1], pipes[0]],
+                    pressureSolver.pipes[0].vb
+                );
+                expect(targets.length).toBe(3);
+                expect(targets).toContain({
                     pipe: pressureSolver.pipes[0],
                     vertex: pressureSolver.pipes[0].vb
                 });
-                expect(pipes).toContain({
+                expect(targets).toContain({
                     pipe: pressureSolver.pipes[1],
                     vertex: pressureSolver.pipes[0].vb
                 });
-                expect(pipes).toContain({
+                expect(targets).toContain({
                     pipe: pressureSolver.pipes[2],
                     vertex: pressureSolver.pipes[0].vb
                 });
@@ -652,16 +664,16 @@ describe("a Pressure Solver", function() {
                 pressureSolver.pipes[4]
             ],
             vertex = pressureSolver.pipes[1].va;
-            distributeSpy = spyOn(pressureSolver, 'getPipesToDistributePressureIntoX').andReturn([{
+            distributeSpy = spyOn(pressureSolver, 'getPipesToDistributePressureInto').andReturn([{
                 pipe: pressureSolver.pipes[4],
                 vertex: pressureSolver.pipes[4].vb
             }]);
             spyOn(fluidAdder, 'add');
         });
 
-        it("calls getPipesToDistributePressureIntoX", function() {
+        it("calls getPipesToDistributePressureInto", function() {
             pressureSolver.redistributePressure(pipes, vertex, 5);
-            expect(pressureSolver.getPipesToDistributePressureIntoX).toHaveBeenCalledWith(pipes, vertex);
+            expect(pressureSolver.getPipesToDistributePressureInto).toHaveBeenCalledWith(pipes, vertex);
         });
 
         describe("and there is no fluid in the returned pipe", function() {
@@ -708,6 +720,13 @@ describe("a Pressure Solver", function() {
                     pressureSolver.redistributePressure(pipes, vertex, 5);
                     var volume = fluidAdder.add.mostRecentCall.args[2];
                     expect(volume).toBe(5);
+                });
+
+                it("doesn't put any pipe over capacity", function() {
+                    spyOn(metrics, 'getAvailableCapacity').andReturn(2);
+                    pressureSolver.redistributePressure(pipes, vertex, 5);
+                    var args = fluidAdder.add.calls[0].args;
+                    expect(args[2]).toBe(2);
                 });
             });
 
@@ -763,15 +782,9 @@ describe("a Pressure Solver", function() {
                     expect(levelA).toBeCloseTo(levelB);
                 });
 
-                it("doesn't put any pipe over capacity", function() {
-
-                });
-
                 // also test when they are pointing in different directions
 
                 // also test they match the next level
-
-                // test they dont' put pipe over capacity
 
             });
         });
