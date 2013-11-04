@@ -120,7 +120,7 @@ describe("a Network Designer", function() {
             });
 
             it("makes the edge active", function() {
-                expect(designer.activeTarget.edge).toBe(designer.network[0]);
+                expect(designer.selectedEdge).toBe(designer.network[0]);
             });
 
             it("makes the vertex movable", function() {
@@ -273,7 +273,7 @@ describe("a Network Designer", function() {
                 });
 
                 it("activates the edge", function() {
-                    expect(designer.activeTarget.edge).toEqual(designer.network[3]);
+                    expect(designer.selectedEdge).toEqual(designer.network[3]);
                 });
 
                 it("keeps the edge highlighted", function() {
@@ -309,13 +309,13 @@ describe("a Network Designer", function() {
                     var activeEdge;
 
                     beforeEach(function() {
-                        activeEdge = designer.activeTarget.edge;
+                        activeEdge = designer.selectedEdge;
                         keyEvent(46); // delete
                     });
 
                     it("deletes the edge", function() {
                         expect(designer.network.indexOf(activeEdge)).toBe(-1);
-                        expect(designer.activeTarget).toBe(null);
+                        expect(designer.selectedEdge).toBe(null);
                     });
                 });
 
@@ -324,13 +324,13 @@ describe("a Network Designer", function() {
                     var activeEdge;
 
                     beforeEach(function() {
-                        activeEdge = designer.activeTarget.edge;
+                        activeEdge = designer.selectedEdge;
                         keyEvent(8); // backspace
                     });
 
                     it("deletes the edge", function() {
                         expect(designer.network.indexOf(activeEdge)).toBe(-1);
-                        expect(designer.activeTarget).toBe(null);
+                        expect(designer.selectedEdge).toBe(null);
                     });
                 });
 
@@ -342,7 +342,7 @@ describe("a Network Designer", function() {
                     });
 
                     it("deactivates the edge", function() {
-                        expect(designer.activeTarget).toBe(null);
+                        expect(designer.selectedEdge).toBe(null);
                     });
                 });
             });
@@ -374,10 +374,6 @@ describe("a Network Designer", function() {
 
                 beforeEach(function() {
                     mouseEvent(canvas, 'mousedown', 12, 5);
-                });
-
-                it("activates the vertex", function() {
-                    expect(designer.activeTarget.vertex).toEqual(designer.network[3].va);
                 });
 
                 it("makes the vertex movable", function() {
@@ -428,13 +424,10 @@ describe("a Network Designer", function() {
                 });
             });
 
-            describe("and an edge and vertex are active", function() {
+            describe("and an edge is active", function() {
 
                 beforeEach(function() {
-                    designer.activeTarget = {
-                        edge: designer.network[1],
-                        vertex: designer.network[1].vb
-                    };
+                    designer.selectedEdge = designer.network[1];
                 });
 
                 it("draws the highlighted edge in the highlight colour", function() {

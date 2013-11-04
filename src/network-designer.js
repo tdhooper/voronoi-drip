@@ -5,7 +5,6 @@ VoronoiDrip.NetworkDesigner.EDGE_COLOUR = '#000',
 VoronoiDrip.NetworkDesigner.EDGE_HIGHLIGHT_COLOUR = '#5df';
 VoronoiDrip.NetworkDesigner.EDGE_ACTIVE_COLOUR = '#09f';
 VoronoiDrip.NetworkDesigner.VERTEX_HIGHLIGHT_COLOUR = VoronoiDrip.NetworkDesigner.EDGE_HIGHLIGHT_COLOUR;
-VoronoiDrip.NetworkDesigner.VERTEX_ACTIVE_COLOUR = VoronoiDrip.NetworkDesigner.EDGE_ACTIVE_COLOUR;
 VoronoiDrip.NetworkDesigner.VERTEX_SIZE = 10;
 VoronoiDrip.NetworkDesigner.HIGHLIGHT_DISTANCE = 10;
 
@@ -16,14 +15,14 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
         startVertex = null;
 
     that.highlightTarget = null;
-    that.activeTarget = null;
+    that.selectedEdge = null;
     that.moveTarget = null;
     that.network = [];
 
     that.drawNetwork = function() {
         that.network.forEach(function(edge) {
             var isHighlighted = that.highlightTarget && that.highlightTarget.edge && that.highlightTarget.edge == edge,
-                isActive = that.activeTarget && that.activeTarget.edge && that.activeTarget.edge == edge,
+                isActive = that.selectedEdge == edge,
                 colour = VoronoiDrip.NetworkDesigner.EDGE_COLOUR;
 
             if (isHighlighted) {
@@ -98,9 +97,9 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
     };
 
     var mouseDownListener = function(evt) {
-        that.activeTarget = null;
+        that.selectedEdge = null;
         if (that.highlightTarget) {
-            that.activeTarget = that.highlightTarget;
+            that.selectedEdge = that.highlightTarget.edge;
             if (that.highlightTarget.vertex) {
                 that.moveTarget = {
                     edge: that.highlightTarget.edge,
@@ -119,10 +118,11 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
                 vb: {x: evt.offsetX, y: evt.offsetY}
             };
             that.network.push(edge);
-            that.highlightTarget = that.moveTarget = that.activeTarget = {
+            that.highlightTarget = that.moveTarget = {
                 edge: edge,
                 vertex: edge.vb
             };
+            that.selectedEdge = edge;
             startVertex = null;
             return;
         }
@@ -155,19 +155,14 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
     var mouseUpListener = function(evt) {
         startVertex = null;
         that.moveTarget = null;
-        if (that.activeTarget) {
-            that.activeTarget = {
-                edge: that.activeTarget.edge
-            };
-        }
     };
 
     var keydownListener = function(evt) {
         if (evt.which == 46 || evt.which == 8) {
-            if (that.activeTarget && that.activeTarget.edge) {
-                var index = that.network.indexOf(that.activeTarget.edge);
+            if (that.selectedEdge) {
+                var index = that.network.indexOf(that.selectedEdge);
                 that.network.splice(index, 1);
-                that.activeTarget = null;
+                that.selectedEdge = null;
                 evt.preventDefault();
             }
         }
