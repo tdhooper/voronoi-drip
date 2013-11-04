@@ -3,8 +3,8 @@ VoronoiDrip.NetworkDesigner = VoronoiDrip.NetworkDesigner || {};
 
 VoronoiDrip.NetworkDesigner.EDGE_COLOUR = '#000',
 VoronoiDrip.NetworkDesigner.EDGE_HIGHLIGHT_COLOUR = '#5df';
-VoronoiDrip.NetworkDesigner.EDGE_ACTIVE_COLOUR = '#09f';
-VoronoiDrip.NetworkDesigner.VERTEX_HIGHLIGHT_COLOUR = VoronoiDrip.NetworkDesigner.EDGE_HIGHLIGHT_COLOUR;
+VoronoiDrip.NetworkDesigner.SELECTED_COLOUR = '#09f';
+VoronoiDrip.NetworkDesigner.VERTEX_HIGHLIGHT_COLOUR = VoronoiDrip.NetworkDesigner.MOVE_COLOUR = VoronoiDrip.NetworkDesigner.EDGE_HIGHLIGHT_COLOUR;
 VoronoiDrip.NetworkDesigner.VERTEX_SIZE = 10;
 VoronoiDrip.NetworkDesigner.HIGHLIGHT_DISTANCE = 10;
 
@@ -14,21 +14,23 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
         display,
         startVertex = null;
 
-    that.highlightTarget = null;
+    that.highlightEdges = [];
+    that.highlightVertex = null;
     that.selectedEdge = null;
     that.moveTarget = null;
     that.network = [];
 
     that.drawNetwork = function() {
         that.network.forEach(function(edge) {
-            var isHighlighted = that.highlightTarget && that.highlightTarget.edge && that.highlightTarget.edge == edge,
+            var isHighlighted = that.highlightEdges.indexOf(edge) !== -1
+                    || that.moveTarget && that.moveTarget.edge == edge,
                 isActive = that.selectedEdge == edge,
                 colour = VoronoiDrip.NetworkDesigner.EDGE_COLOUR;
 
             if (isHighlighted) {
                 colour = VoronoiDrip.NetworkDesigner.EDGE_HIGHLIGHT_COLOUR;
             } else if (isActive) {
-                colour = VoronoiDrip.NetworkDesigner.EDGE_ACTIVE_COLOUR;
+                colour = VoronoiDrip.NetworkDesigner.SELECTED_COLOUR;
             }
 
             display.drawLine(
@@ -38,21 +40,21 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
             );
         });
 
-        if (that.highlightTarget && that.highlightTarget.vertex) {
+        var drawVertex = that.highlightVertex ? that.highlightVertex : that.moveTarget ? that.moveTarget.vertex : null;
+        if (drawVertex) {
             display.drawPoint(
-                that.highlightTarget.vertex.x,
-                that.highlightTarget.vertex.y,
+                drawVertex.x,
+                drawVertex.y,
                 VoronoiDrip.NetworkDesigner.VERTEX_SIZE,
                 VoronoiDrip.NetworkDesigner.VERTEX_HIGHLIGHT_COLOUR
             );
         }
     };
 
-    var findCloseTarget = function(x, y, excludeTarget) {
-        var target = null,
-            vertex = new toxi.geom.Vec2D(x, y);
+    var findCloseTargets = function(x, y) {
+        var vertex = new toxi.geom.Vec2D(x, y);
 
-        var edgeDistances = that.network.map(function(edge) {
+        var targets = that.network.map(function(edge) {
             var va = new toxi.geom.Vec2D(edge.va.x, edge.va.y),
                 vb = new toxi.geom.Vec2D(edge.vb.x, edge.vb.y),
                 edgeLine = new toxi.geom.Line2D(va, vb),
@@ -60,51 +62,57 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
 
             return {
                 distance: closestPoint.distanceTo(vertex),
-                originalEdge: edge
-            };
-        });
-
-        edgeDistances = edgeDistances.filter(function(edge) {
-            var withinRange = edge.distance < VoronoiDrip.NetworkDesigner.HIGHLIGHT_DISTANCE,
-                isExcluded = excludeTarget && excludeTarget.edge && excludeTarget.edge == edge.originalEdge;
-            return withinRange && ! isExcluded;
-        });
-
-        edgeDistances = edgeDistances.sort(function(edgeA, edgeB) {
-            return edgeA.distance > edgeB.distance;
-        });
-
-        if (edgeDistances.length) {
-            var edge = edgeDistances[0].originalEdge;
-            target = {
                 edge: edge
             };
+        });
 
+        targets = targets.filter(function(target) {
+            var withinRange = target.distance < VoronoiDrip.NetworkDesigner.HIGHLIGHT_DISTANCE;
+            return withinRange;
+        });
+
+        targets = targets.sort(function(targetA, targetB) {
+            return targetA.distance > targetB.distance;
+        });
+
+        targets = targets.map(function(target) {
+            var edge = target.edge;
             var va = new toxi.geom.Vec2D(edge.va.x, edge.va.y);
             if (va.distanceTo(vertex) < VoronoiDrip.NetworkDesigner.HIGHLIGHT_DISTANCE) {
                 target.vertex = edge.va;
-                return target;
             }
-
             var vb = new toxi.geom.Vec2D(edge.vb.x, edge.vb.y);
             if (vb.distanceTo(vertex) < VoronoiDrip.NetworkDesigner.HIGHLIGHT_DISTANCE) {
                 target.vertex = edge.vb;
-                return target;
             }
-        };
+            return target;
+        });
 
-        return target;
+        return targets;
+    };
+
+    var highlightEdgesWithVertex = function(vertex) {
+        that.network.forEach(function(edge) {
+            if (
+                (edge.va.x == vertex.x && edge.va.y == vertex.y)
+                || (edge.vb.x == vertex.x && edge.vb.y == vertex.y)
+            ) {
+                that.highlightEdges.push(edge);
+            }
+        });
     };
 
     var mouseDownListener = function(evt) {
         that.selectedEdge = null;
-        if (that.highlightTarget) {
-            that.selectedEdge = that.highlightTarget.edge;
-            if (that.highlightTarget.vertex) {
+        if (that.highlightEdges.length > 0) {
+            that.selectedEdge = that.highlightEdges[0];
+            if (that.highlightVertex) {
                 that.moveTarget = {
-                    edge: that.highlightTarget.edge,
-                    vertex: that.highlightTarget.vertex
+                    edge: that.selectedEdge,
+                    vertex: that.highlightVertex
                 };
+                that.highlightEdges = [];
+                that.highlightVertex = null;
             }
         } else {
             startVertex = {x: evt.offsetX, y: evt.offsetY};
@@ -118,38 +126,41 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
                 vb: {x: evt.offsetX, y: evt.offsetY}
             };
             that.network.push(edge);
-            that.highlightTarget = that.moveTarget = {
+            that.selectedEdge = edge;
+            that.moveTarget = {
                 edge: edge,
                 vertex: edge.vb
             };
-            that.selectedEdge = edge;
             startVertex = null;
             return;
         }
 
-        if (that.moveTarget) {
-            var closeTarget = findCloseTarget(evt.offsetX, evt.offsetY, that.moveTarget);
-        } else {
-            var closeTarget = findCloseTarget(evt.offsetX, evt.offsetY);
-        }
+        var closeTargets = findCloseTargets(evt.offsetX, evt.offsetY);
 
         if (that.moveTarget) {
-            if (closeTarget && closeTarget.vertex) {
-                that.moveTarget.vertex.x = closeTarget.vertex.x;
-                that.moveTarget.vertex.y = closeTarget.vertex.y;
+            var otherCloseTargets = closeTargets.filter(function(target) {
+                return target.edge !== that.moveTarget.edge;
+            });
+            var closeVertex = otherCloseTargets.length > 0 ? otherCloseTargets[0].vertex : 0;
+            if (closeVertex) {
+                highlightEdgesWithVertex(closeVertex);
+                that.moveTarget.vertex.x = closeVertex.x;
+                that.moveTarget.vertex.y = closeVertex.y;
             } else {
+                that.highlightEdges = [];
                 that.moveTarget.vertex.x = evt.offsetX;
                 that.moveTarget.vertex.y = evt.offsetY;
             }
             return;
-        }
+        };
 
-        if (closeTarget) {
-            that.highlightTarget = closeTarget;
+        if (closeTargets.length > 0) {
+            that.highlightEdges = [closeTargets[0].edge];
+            that.highlightVertex = closeTargets[0].vertex;
         } else {
-            that.highlightTarget = null;
+            that.highlightEdges = [];
+            that.highlightVertex = null;
         }
-
     };
 
     var mouseUpListener = function(evt) {

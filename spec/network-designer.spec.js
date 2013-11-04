@@ -2,7 +2,7 @@ describe("a Network Designer", function() {
 
     var designer,
         mockUpdateLoop = jasmine.createSpyObj('updateLoop', ['start', 'stop']),
-        mockDisplay = jasmine.createSpyObj('display', ['start', 'drawLine', 'drawPoint', 'clear']),
+        mockDisplay,
         canvas;
 
     var mouseEvent = function(target, type, x, y) {
@@ -40,6 +40,7 @@ describe("a Network Designer", function() {
 
     beforeEach(function() {
         spyOn(VoronoiDrip.UpdateLoop, 'create').andReturn(mockUpdateLoop);
+        mockDisplay = jasmine.createSpyObj('display', ['start', 'drawLine', 'drawPoint', 'clear']);
         spyOn(VoronoiDrip.Display, 'create').andReturn(mockDisplay);
 
         canvas = document.createElement('canvas');
@@ -104,27 +105,27 @@ describe("a Network Designer", function() {
         describe("when the mouse moves", function() {
 
             beforeEach(function() {
-                mouseEvent(canvas, 'mousemove', 18, 60);
+                mouseEvent(canvas, 'mousemove', 18, 160);
             });
 
             it("creates a new edge between the pressed and moved to points", function() {
                 expect(designer.network[0]).toEqual({
                     va: {x: 10, y: 20},
-                    vb: {x: 18, y: 60}
+                    vb: {x: 18, y: 160}
                 });
             });
 
-            it("highlights the edge and other vertex", function() {
-                expect(designer.highlightTarget.edge).toBe(designer.network[0]);
-                expect(designer.highlightTarget.vertex).toBe(designer.network[0].vb);
-            });
-
-            it("makes the edge active", function() {
+            it("selects the edge", function() {
                 expect(designer.selectedEdge).toBe(designer.network[0]);
             });
 
-            it("makes the vertex movable", function() {
+            it("makes the edge's vertex movable", function() {
+                expect(designer.moveTarget.edge).toBe(designer.network[0]);
                 expect(designer.moveTarget.vertex).toBe(designer.network[0].vb);
+            });
+
+            it("doesn't highlight the edge", function() {
+                expect(designer.highlightEdges.length).toBe(0);
             });
 
             describe("when the mouse moves again", function() {
@@ -139,17 +140,12 @@ describe("a Network Designer", function() {
                         vb: {x: 3, y: 5}
                     });
                 });
-
-                it("highlights the edge and other vertex", function() {
-                    expect(designer.highlightTarget.edge).toBe(designer.network[0]);
-                    expect(designer.highlightTarget.vertex).toBe(designer.network[0].vb);
-                });
             });
 
             describe("when the mouse is released", function() {
 
                 beforeEach(function() {
-                    mouseEvent(canvas, 'mouseup', 18, 60);
+                    mouseEvent(canvas, 'mouseup', 18, 160);
                 });
 
                 it("makes the vertex unmovable", function() {
@@ -180,13 +176,20 @@ describe("a Network Designer", function() {
                             });
                         });
 
-                        it("highlights the edge and other vertex", function() {
-                            expect(designer.highlightTarget.edge).toBe(designer.network[1]);
-                            expect(designer.highlightTarget.vertex).toBe(designer.network[1].vb);
+                        it("makes the edge's vertex movable", function() {
+                            expect(designer.moveTarget.edge).toBe(designer.network[1]);
+                            expect(designer.moveTarget.vertex).toBe(designer.network[1].vb);
                         });
 
-                        it("makes the vertex movable", function() {
-                            expect(designer.moveTarget.vertex).toBe(designer.network[1].vb);
+                        describe("and the mouse moves near an existing edge", function() {
+
+                            beforeEach(function() {
+                                mouseEvent(canvas, 'mousemove', 6, 90);
+                            });
+
+                            it("doesn't highlight the edge", function() {
+                                expect(designer.highlightEdges.length).toBe(0);
+                            });
                         });
 
                         describe("when the mouse moves near an existing vertex", function() {
@@ -199,6 +202,21 @@ describe("a Network Designer", function() {
                                 expect(designer.network[1]).toEqual({
                                     va: {x: 80, y: 92},
                                     vb: {x: 10, y: 20}
+                                });
+                            });
+
+                            it("highlights the other edges sharing the vertex", function() {
+                                expect(designer.highlightEdges[0]).toBe(designer.network[0]);
+                            });
+
+                            describe("when the mouse moves away from the existing vertex", function() {
+
+                                beforeEach(function() {
+                                    mouseEvent(canvas, 'mousemove', 100, 300);
+                                });
+
+                                it("removes the highlights", function() {
+                                    expect(designer.highlightEdges.length).toBe(0);
                                 });
                             });
                         });
@@ -252,7 +270,7 @@ describe("a Network Designer", function() {
             });
 
             it("highlights the edge", function() {
-                expect(designer.highlightTarget.edge).toEqual(designer.network[3]);
+                expect(designer.highlightEdges[0]).toEqual(designer.network[3]);
             });
 
             describe("then the mouse moves away from the edge", function() {
@@ -262,7 +280,7 @@ describe("a Network Designer", function() {
                 });
 
                 it("removes the highlight", function() {
-                    expect(designer.highlightTarget).toBe(null);
+                    expect(designer.highlightEdges.length).toBe(0);
                 });
             });
 
@@ -272,12 +290,12 @@ describe("a Network Designer", function() {
                     mouseEvent(canvas, 'mousedown', 12, 5);
                 });
 
-                it("activates the edge", function() {
+                it("selects the edge", function() {
                     expect(designer.selectedEdge).toEqual(designer.network[3]);
                 });
 
                 it("keeps the edge highlighted", function() {
-                    expect(designer.highlightTarget.edge).toEqual(designer.network[3]);
+                    expect(designer.highlightEdges[0]).toEqual(designer.network[3]);
                 })
 
                 describe("when the mouse is released and moved a little", function() {
@@ -288,7 +306,7 @@ describe("a Network Designer", function() {
                     });
 
                     it("keeps the edge highlighted", function() {
-                        expect(designer.highlightTarget.edge).toBe(designer.network[3]);
+                        expect(designer.highlightEdges[0]).toBe(designer.network[3]);
                     });
                 });
 
@@ -300,36 +318,36 @@ describe("a Network Designer", function() {
                     });
 
                     it("highlights the vertex", function() {
-                        expect(designer.highlightTarget.vertex).toBe(designer.network[3].vb);
+                        expect(designer.highlightVertex).toBe(designer.network[3].vb);
                     });
                 });
 
                 describe("when delete is pressed", function() {
 
-                    var activeEdge;
+                    var selectedEdge;
 
                     beforeEach(function() {
-                        activeEdge = designer.selectedEdge;
+                        selectedEdge = designer.selectedEdge;
                         keyEvent(46); // delete
                     });
 
                     it("deletes the edge", function() {
-                        expect(designer.network.indexOf(activeEdge)).toBe(-1);
+                        expect(designer.network.indexOf(selectedEdge)).toBe(-1);
                         expect(designer.selectedEdge).toBe(null);
                     });
                 });
 
                 describe("when backspace is pressed", function() {
 
-                    var activeEdge;
+                    var selectedEdge;
 
                     beforeEach(function() {
-                        activeEdge = designer.selectedEdge;
+                        selectedEdge = designer.selectedEdge;
                         keyEvent(8); // backspace
                     });
 
                     it("deletes the edge", function() {
-                        expect(designer.network.indexOf(activeEdge)).toBe(-1);
+                        expect(designer.network.indexOf(selectedEdge)).toBe(-1);
                         expect(designer.selectedEdge).toBe(null);
                     });
                 });
@@ -341,7 +359,7 @@ describe("a Network Designer", function() {
                         mouseEvent(canvas, 'mousedown', 50, 50);
                     });
 
-                    it("deactivates the edge", function() {
+                    it("deselects the edge", function() {
                         expect(designer.selectedEdge).toBe(null);
                     });
                 });
@@ -355,8 +373,8 @@ describe("a Network Designer", function() {
             });
 
             it("highlights the vertex and nearest edge", function() {
-                expect(designer.highlightTarget.vertex).toEqual(designer.network[3].va);
-                expect(designer.highlightTarget.edge).toEqual(designer.network[3]);
+                expect(designer.highlightVertex).toEqual(designer.network[3].va);
+                expect(designer.highlightEdges[0]).toEqual(designer.network[3]);
             });
 
             describe("then the mouse moves away from the vertex", function() {
@@ -366,7 +384,8 @@ describe("a Network Designer", function() {
                 });
 
                 it("removes the highlight", function() {
-                    expect(designer.highlightTarget).toBe(null);
+                    expect(designer.highlightEdges.length).toBe(0);
+                    expect(designer.highlightVertex).toBe(null);
                 });
             });
 
@@ -376,9 +395,15 @@ describe("a Network Designer", function() {
                     mouseEvent(canvas, 'mousedown', 12, 5);
                 });
 
-                it("makes the vertex movable", function() {
-                   expect(designer.moveTarget.vertex).toEqual(designer.network[3].va);
+                it("makes the edge's vertex movable", function() {
+                    expect(designer.moveTarget.edge).toEqual(designer.network[3]);
+                    expect(designer.moveTarget.vertex).toEqual(designer.network[3].va);
                 });
+
+                it("removes the highlight", function() {
+                   expect(designer.highlightEdges.length).toBe(0);
+                   expect(designer.highlightVertex).toBe(null);
+                })
             });
         });
 
@@ -398,10 +423,8 @@ describe("a Network Designer", function() {
             describe("and an edge and vertex are highlighted", function() {
 
                 beforeEach(function() {
-                    designer.highlightTarget = {
-                        edge: designer.network[1],
-                        vertex: designer.network[1].vb
-                    };
+                    designer.highlightEdges = [designer.network[1]];
+                    designer.highlightVertex = designer.network[1].vb;
                 });
 
                 it("draws the highlighted edge in the highlight colour", function() {
@@ -424,18 +447,47 @@ describe("a Network Designer", function() {
                 });
             });
 
-            describe("and an edge is active", function() {
+            describe("and an edge's vertex is being moved", function() {
+
+                beforeEach(function() {
+                    designer.moveTarget = {
+                        edge: designer.network[1],
+                        vertex: designer.network[1].vb
+                    };
+                });
+
+                it("draws the edge in the move colour", function() {
+                    designer.drawNetwork();
+                    expect(mockDisplay.drawLine).toHaveBeenCalledWith(
+                        {x: designer.network[1].va.x, y: designer.network[1].va.y},
+                        {x: designer.network[1].vb.x, y: designer.network[1].vb.y},
+                        VoronoiDrip.NetworkDesigner.MOVE_COLOUR
+                    );
+                });
+
+                it("draws the vertex in the move colour", function() {
+                    designer.drawNetwork();
+                    expect(mockDisplay.drawPoint).toHaveBeenCalledWith(
+                        designer.network[1].vb.x,
+                        designer.network[1].vb.y,
+                        VoronoiDrip.NetworkDesigner.VERTEX_SIZE,
+                        VoronoiDrip.NetworkDesigner.MOVE_COLOUR
+                    );
+                });
+            });
+
+            describe("and an edge is selected", function() {
 
                 beforeEach(function() {
                     designer.selectedEdge = designer.network[1];
                 });
 
-                it("draws the highlighted edge in the highlight colour", function() {
+                it("draws the selected edge in the selected colour", function() {
                     designer.drawNetwork();
                     expect(mockDisplay.drawLine).toHaveBeenCalledWith(
                         {x: designer.network[1].va.x, y: designer.network[1].va.y},
                         {x: designer.network[1].vb.x, y: designer.network[1].vb.y},
-                        VoronoiDrip.NetworkDesigner.EDGE_ACTIVE_COLOUR
+                        VoronoiDrip.NetworkDesigner.SELECTED_COLOUR
                     );
                 });
             });
