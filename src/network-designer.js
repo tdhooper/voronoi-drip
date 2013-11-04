@@ -102,6 +102,63 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
         });
     };
 
+    var connectTargetToOthers = function(target) {
+        var vertex = target.vertex,
+            edge = target.edge,
+            connections = edge.va.x == vertex.x && edge.va.y == vertex.y ? edge.ca : edge.cb,
+            targetIndex = that.network.indexOf(edge);
+
+        that.network.forEach(function(edge, index) {
+            if (edge == target.edge) {
+                return;
+            }
+            if (edge.ca.indexOf(targetIndex) !== -1) {
+                return;
+            }
+            if (edge.cb.indexOf(targetIndex) !== -1) {
+                return;
+            }
+            if (edge.va.x == vertex.x && edge.va.y == vertex.y) {
+                edge.ca.push(targetIndex);
+                connections.push(index);
+            }
+            if (edge.vb.x == vertex.x && edge.vb.y == vertex.y) {
+                edge.cb.push(targetIndex);
+                connections.push(index);
+            }
+        });
+    };
+
+    var disconnectTargetFromOthers = function(target) {
+        var vertex = target.vertex,
+            edge = target.edge,
+            connections = edge.va.x == vertex.x && edge.va.y == vertex.y ? edge.ca : edge.cb,
+            connectionsCount = connections.length,
+            targetIndex = that.network.indexOf(edge);
+
+        // Count backwards so we can remove items as we go
+        while (connectionsCount--) {
+            var index = connections[connectionsCount],
+                edge = that.network[index];
+
+            var connectedIndexA = edge.ca.indexOf(targetIndex);
+            if (connectedIndexA !== -1) {
+                if (edge.va.x !== vertex.x || edge.va.y !== vertex.y) {
+                    edge.ca.splice(connectedIndexA, 1);
+                    connections.splice(connectionsCount, 1);
+                }
+            }
+
+            var connectedIndexB = edge.ca.indexOf(targetIndex);
+            if (connectedIndexB !== -1) {
+                if (edge.vb.x !== vertex.x || edge.vb.y !== vertex.y) {
+                    edge.cb.splice(connectedIndexB, 1);
+                    connections.splice(connectionsCount, 1);
+                }
+            }
+        };
+    };
+
     var mouseDownListener = function(evt) {
         that.selectedEdge = null;
         if (that.highlightEdges.length > 0) {
@@ -123,7 +180,9 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
         if (startVertex) {
             var edge = {
                 va: startVertex,
-                vb: {x: evt.offsetX, y: evt.offsetY}
+                vb: {x: evt.offsetX, y: evt.offsetY},
+                ca: [],
+                cb: []
             };
             that.network.push(edge);
             that.selectedEdge = edge;
@@ -146,10 +205,12 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
                 highlightEdgesWithVertex(closeVertex);
                 that.moveTarget.vertex.x = closeVertex.x;
                 that.moveTarget.vertex.y = closeVertex.y;
+                connectTargetToOthers(that.moveTarget);
             } else {
                 that.highlightEdges = [];
                 that.moveTarget.vertex.x = evt.offsetX;
                 that.moveTarget.vertex.y = evt.offsetY;
+                disconnectTargetFromOthers(that.moveTarget);
             }
             return;
         };

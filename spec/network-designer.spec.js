@@ -111,7 +111,9 @@ describe("a Network Designer", function() {
             it("creates a new edge between the pressed and moved to points", function() {
                 expect(designer.network[0]).toEqual({
                     va: {x: 10, y: 20},
-                    vb: {x: 18, y: 160}
+                    vb: {x: 18, y: 160},
+                    ca: [],
+                    cb: []
                 });
             });
 
@@ -135,10 +137,7 @@ describe("a Network Designer", function() {
                 });
 
                 it("moves the other vertex", function() {
-                    expect(designer.network[0]).toEqual({
-                        va: {x: 10, y: 20},
-                        vb: {x: 3, y: 5}
-                    });
+                    expect(designer.network[0].vb).toEqual({x: 3, y: 5});
                 });
             });
 
@@ -172,7 +171,9 @@ describe("a Network Designer", function() {
                         it("creates a new edge between the pressed and moved to points", function() {
                             expect(designer.network[1]).toEqual({
                                 va: {x: 80, y: 92},
-                                vb: {x: 133, y: 189}
+                                vb: {x: 133, y: 189},
+                                ca: [],
+                                cb: []
                             });
                         });
 
@@ -199,15 +200,29 @@ describe("a Network Designer", function() {
                             });
 
                             it("snaps to it", function() {
-                                expect(designer.network[1]).toEqual({
-                                    va: {x: 80, y: 92},
-                                    vb: {x: 10, y: 20}
-                                });
+                                expect(designer.network[1].va).toEqual({x: 80, y: 92});
                             });
 
                             it("highlights the other edges sharing the vertex", function() {
                                 expect(designer.highlightEdges[0]).toBe(designer.network[0]);
                             });
+
+                            it("connects the edges", function() {
+                                expect(designer.network[0].ca).toEqual([1]);
+                                expect(designer.network[1].cb).toEqual([0]);
+                            });
+
+                            describe("when the mouse moves again", function() {
+
+                                beforeEach(function() {
+                                    mouseEvent(canvas, 'mousemove', 11, 21);
+                                });
+
+                                it("doesn't add more connections", function() {
+                                    expect(designer.network[0].ca).toEqual([1]);
+                                    expect(designer.network[1].cb).toEqual([0]);
+                                });
+                            })
 
                             describe("when the mouse moves away from the existing vertex", function() {
 
@@ -218,6 +233,12 @@ describe("a Network Designer", function() {
                                 it("removes the highlights", function() {
                                     expect(designer.highlightEdges.length).toBe(0);
                                 });
+
+                                it("disconnects the edges", function() {
+                                    expect(designer.network[0].ca).toEqual([]);
+                                    expect(designer.network[1].cb).toEqual([]);
+                                });
+
                             });
                         });
 
@@ -228,10 +249,7 @@ describe("a Network Designer", function() {
                             });
 
                             it("does not snap to it", function() {
-                                expect(designer.network[1]).toEqual({
-                                    va: {x: 80, y: 92},
-                                    vb: {x: 135, y: 190}
-                                });
+                                expect(designer.network[1].vb).toEqual({x: 135, y: 190});
                             });
                         });
                     });
