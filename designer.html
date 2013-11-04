@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge; chrome=1" />
+        <title>Network Designer</title>
+    </head>
+    <body>
+        <script src="lib/toxiclibs.js"></script>
+        <script src="src/update-loop.js"></script>
+        <script src="src/display.js"></script>
+        <script src="src/network-designer.js"></script>
+        <script>
+            var networkDesigner = VoronoiDrip.NetworkDesigner.create({
+                width: 500,
+                height: 500,
+                timeout: 10
+            });
+
+            networkDesigner.start();
+        </script>
+    </body>
+</html>

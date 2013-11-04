@@ -5,21 +5,19 @@ VoronoiDrip.Display.create = function(spec) {
     var that = {};
 
     that.start = function() {
-        that.canvas = that.createCanvas(spec.width, spec.height);
+        that.canvas = that.createCanvas(spec.width, spec.height, spec.container);
         that.ctx = that.canvas.getContext('2d');
     };
 
-    that.createCanvas = function(width, height) {
+    that.createCanvas = function(width, height, container) {
+        if ( ! container) {
+            container = document.body;
+        }
         var canvas = document.createElement('canvas');
-        document.body.appendChild(canvas);
+        container.appendChild(canvas);
         canvas.width = width;
         canvas.height = height;
         return canvas;
-    };
-
-    that.destroyCanvas = function(canvas) {
-        document.body.removeChild(canvas);
-        delete(canvas);
     };
 
     that.drawLine = function(pointA, pointB, colour) {
@@ -29,6 +27,12 @@ VoronoiDrip.Display.create = function(spec) {
         that.ctx.moveTo(pointA.x, pointA.y);
         that.ctx.lineTo(pointB.x, pointB.y);
         that.ctx.stroke();
+    };
+
+    that.drawPoint = function(x, y, size, colour) {
+        var offset = size / 2;
+        that.ctx.fillStyle = colour;
+        that.ctx.fillRect(x - offset, y - offset, size, size);
     };
 
     that.clear = function() {
