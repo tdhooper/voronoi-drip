@@ -432,7 +432,7 @@ describe("a Network Designer", function() {
                     expect(mockDisplay.drawLine).toHaveBeenCalledWith(
                         {x: designer.network[1].va.x, y: designer.network[1].va.y},
                         {x: designer.network[1].vb.x, y: designer.network[1].vb.y},
-                        VoronoiDrip.NetworkDesigner.EDGE_HIGHLIGHT_COLOUR
+                        VoronoiDrip.NetworkDesigner.HIGHLIGHT_COLOUR
                     );
                 });
 
@@ -442,7 +442,7 @@ describe("a Network Designer", function() {
                         designer.network[1].vb.x,
                         designer.network[1].vb.y,
                         VoronoiDrip.NetworkDesigner.VERTEX_SIZE,
-                        VoronoiDrip.NetworkDesigner.VERTEX_HIGHLIGHT_COLOUR
+                        VoronoiDrip.NetworkDesigner.HIGHLIGHT_COLOUR
                     );
                 });
             });

@@ -2,9 +2,9 @@ var VoronoiDrip = VoronoiDrip || {};
 VoronoiDrip.NetworkDesigner = VoronoiDrip.NetworkDesigner || {};
 
 VoronoiDrip.NetworkDesigner.EDGE_COLOUR = '#000',
-VoronoiDrip.NetworkDesigner.EDGE_HIGHLIGHT_COLOUR = '#5df';
+VoronoiDrip.NetworkDesigner.HIGHLIGHT_COLOUR = '#5df';
 VoronoiDrip.NetworkDesigner.SELECTED_COLOUR = '#09f';
-VoronoiDrip.NetworkDesigner.VERTEX_HIGHLIGHT_COLOUR = VoronoiDrip.NetworkDesigner.MOVE_COLOUR = VoronoiDrip.NetworkDesigner.EDGE_HIGHLIGHT_COLOUR;
+VoronoiDrip.NetworkDesigner.MOVE_COLOUR = VoronoiDrip.NetworkDesigner.HIGHLIGHT_COLOUR;
 VoronoiDrip.NetworkDesigner.VERTEX_SIZE = 10;
 VoronoiDrip.NetworkDesigner.HIGHLIGHT_DISTANCE = 10;
 
@@ -28,7 +28,7 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
                 colour = VoronoiDrip.NetworkDesigner.EDGE_COLOUR;
 
             if (isHighlighted) {
-                colour = VoronoiDrip.NetworkDesigner.EDGE_HIGHLIGHT_COLOUR;
+                colour = VoronoiDrip.NetworkDesigner.HIGHLIGHT_COLOUR;
             } else if (isActive) {
                 colour = VoronoiDrip.NetworkDesigner.SELECTED_COLOUR;
             }
@@ -46,7 +46,7 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
                 drawVertex.x,
                 drawVertex.y,
                 VoronoiDrip.NetworkDesigner.VERTEX_SIZE,
-                VoronoiDrip.NetworkDesigner.VERTEX_HIGHLIGHT_COLOUR
+                VoronoiDrip.NetworkDesigner.HIGHLIGHT_COLOUR
             );
         }
     };
