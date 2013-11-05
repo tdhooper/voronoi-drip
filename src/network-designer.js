@@ -149,7 +149,7 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
                 }
             }
 
-            var connectedIndexB = edge.ca.indexOf(targetIndex);
+            var connectedIndexB = edge.cb.indexOf(targetIndex);
             if (connectedIndexB !== -1) {
                 if (edge.vb.x !== vertex.x || edge.vb.y !== vertex.y) {
                     edge.cb.splice(connectedIndexB, 1);
@@ -158,6 +158,28 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
             }
         };
     };
+
+    var deleteEdge = function(edge) {
+        var deleteIndex = that.network.indexOf(edge);
+
+        var removeDeleted = function(connectedIndex) {
+            return connectedIndex !== deleteIndex;
+        }
+
+        var updateIndex = function(connectedIndex) {
+            if (connectedIndex > deleteIndex) {
+                return connectedIndex - 1;
+            }
+            return connectedIndex;
+        }
+
+        that.network.forEach(function(edge, index) {
+            edge.ca = edge.ca.filter(removeDeleted).map(updateIndex);
+            edge.cb = edge.cb.filter(removeDeleted).map(updateIndex);
+        });
+
+        that.network.splice(deleteIndex, 1);
+    }
 
     var mouseDownListener = function(evt) {
         that.selectedEdge = null;
@@ -232,8 +254,7 @@ VoronoiDrip.NetworkDesigner.create = function(spec) {
     var keydownListener = function(evt) {
         if (evt.which == 46 || evt.which == 8) {
             if (that.selectedEdge) {
-                var index = that.network.indexOf(that.selectedEdge);
-                that.network.splice(index, 1);
+                deleteEdge(that.selectedEdge);
                 that.selectedEdge = null;
                 evt.preventDefault();
             }

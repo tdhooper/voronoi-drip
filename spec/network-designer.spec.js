@@ -263,20 +263,35 @@ describe("a Network Designer", function() {
         beforeEach(function() {
             designer.network = [
                 {
+                    // 0
                     va: {x: 0, y: 0},
-                    vb: {x: 0, y: 10}
+                    vb: {x: 0, y: 10},
+                    ca: [],
+                    cb: [1, 2],
                 },{
+                    // 1
                     va: {x: 10, y: 20},
-                    vb: {x: 0, y: 10}
+                    vb: {x: 0, y: 10},
+                    ca: [3, 4],
+                    cb: [0, 2],
                 },{
+                    // 2
                     va: {x: 0, y: 10},
-                    vb: {x: -20, y: 10}
+                    vb: {x: -20, y: 10},
+                    ca: [0, 1],
+                    cb: [],
                 },{
+                    // 3
                     va: {x: 10, y: 20},
-                    vb: {x: 10, y: -10}
+                    vb: {x: 10, y: -10},
+                    ca: [1, 4],
+                    cb: [],
                 },{
+                    // 4
                     va: {x: 10, y: 20},
-                    vb: {x: 0, y: 30}
+                    vb: {x: 0, y: 30},
+                    ca: [1, 3],
+                    cb: [],
                 }
             ];
         });
@@ -353,6 +368,20 @@ describe("a Network Designer", function() {
                         expect(designer.network.indexOf(selectedEdge)).toBe(-1);
                         expect(designer.selectedEdge).toBe(null);
                     });
+
+                    it("updates the connection indices", function() {
+                        expect(designer.network[0].ca).toEqual([]);
+                        expect(designer.network[0].cb).toEqual([1, 2]);
+
+                        expect(designer.network[1].ca).toEqual([3]);
+                        expect(designer.network[1].cb).toEqual([0, 2]);
+
+                        expect(designer.network[2].ca).toEqual([0, 1]);
+                        expect(designer.network[2].cb).toEqual([]);
+
+                        expect(designer.network[3].ca).toEqual([1]);
+                        expect(designer.network[3].cb).toEqual([]);
+                    });
                 });
 
                 describe("when backspace is pressed", function() {
@@ -384,7 +413,7 @@ describe("a Network Designer", function() {
             });
         });
 
-        describe("and the mouse moves near a vertex", function() {
+        describe("and the mouse moves near an A vertex", function() {
 
             beforeEach(function() {
                 mouseEvent(canvas, 'mousemove', 12, 18);
@@ -421,7 +450,82 @@ describe("a Network Designer", function() {
                 it("removes the highlight", function() {
                    expect(designer.highlightEdges.length).toBe(0);
                    expect(designer.highlightVertex).toBe(null);
-                })
+                });
+
+                describe("and the mouse is moved", function() {
+
+                    beforeEach(function() {
+                        mouseEvent(canvas, 'mousemove', 305, 50);
+                    });
+
+                    it("moves the vertex", function() {
+                        expect(designer.network[3].va).toEqual({x: 305, y: 50});
+                    });
+
+                    it("disconnects the vertices", function() {
+                        expect(designer.network[3].ca).toEqual([]);
+                        expect(designer.network[1].ca).toEqual([4]);
+                        expect(designer.network[4].ca).toEqual([1]);
+                    });
+                });
+            });
+        });
+
+        describe("and the mouse moves near a B vertex", function() {
+
+            beforeEach(function() {
+                mouseEvent(canvas, 'mousemove', 1, 11);
+            });
+
+            it("highlights the vertex and nearest edge", function() {
+                expect(designer.highlightVertex).toEqual(designer.network[1].vb);
+                expect(designer.highlightEdges[0]).toEqual(designer.network[1]);
+            });
+
+            describe("then the mouse moves away from the vertex", function() {
+
+                beforeEach(function() {
+                    mouseEvent(canvas, 'mousemove', 50, 50);
+                });
+
+                it("removes the highlight", function() {
+                    expect(designer.highlightEdges.length).toBe(0);
+                    expect(designer.highlightVertex).toBe(null);
+                });
+            });
+
+            describe("and the mouse is pressed", function() {
+
+                beforeEach(function() {
+                    mouseEvent(canvas, 'mousedown', 1, 11);
+                });
+
+                it("makes the edge's vertex movable", function() {
+                    expect(designer.moveTarget.edge).toEqual(designer.network[1]);
+                    expect(designer.moveTarget.vertex).toEqual(designer.network[1].vb);
+                });
+
+                it("removes the highlight", function() {
+                   expect(designer.highlightEdges.length).toBe(0);
+                   expect(designer.highlightVertex).toBe(null);
+                });
+
+                describe("and the mouse is moved", function() {
+
+                    beforeEach(function() {
+                        mouseEvent(canvas, 'mousemove', 305, 50);
+                    });
+
+                    it("moves the vertex", function() {
+                        expect(designer.network[1].vb).toEqual({x: 305, y: 50});
+                    });
+
+                    it("disconnects the vertices", function() {
+                        expect(designer.network[1].cb).toEqual([]);
+                        expect(designer.network[0].cb).toEqual([2]);
+                        expect(designer.network[2].ca).toEqual([0]);
+                    });
+                });
             });
         });
 
