@@ -43,7 +43,7 @@ var VoronoiDrip = VoronoiDrip || {};
 
 VoronoiDrip.PIPE_COLOUR = '#eee';
 VoronoiDrip.FLUID_COLOUR = '#000';
-VoronoiDrip.TIMEOUT = 100;
+VoronoiDrip.TIMEOUT = 10;
 
 VoronoiDrip.create = function(spec) {
     var that = {},

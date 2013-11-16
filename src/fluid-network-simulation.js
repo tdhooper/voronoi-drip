@@ -27,12 +27,13 @@ var VoronoiDrip = VoronoiDrip || {};
 VoronoiDrip.FluidNetworkSimulation = VoronoiDrip.FluidNetworkSimulation || {};
 
 VoronoiDrip.FluidNetworkSimulation.MINIMUM_FLUID_VOLUME = 0.00001;
+VoronoiDrip.FluidNetworkSimulation.GRAVITY = 5;
 
 VoronoiDrip.FluidNetworkSimulation.create = function(spec) {
     var that = {};
 
     that.pipes = spec.pipes;
-    that.gravity = spec.hasOwnProperty('gravity') ? spec.gravity : 0.1;
+    that.gravity = spec.hasOwnProperty('gravity') && spec.gravity ? spec.gravity : VoronoiDrip.FluidNetworkSimulation.GRAVITY;
 
     that.addFluid = function(pipe, point, volume) {
         that.fluidAdder.add(pipe, point, volume);
