@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge; chrome=1" />
+        <title>Sandbox</title>
+        <style>
+
+            .sandbox-start-all {
+                display: block;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .sandbox-voronoi-drip {
+                float: left;
+                border: 2px dotted #1DC9FF;
+                margin: 10px;
+                padding: 10px;
+            }
+
+            .sandbox-voronoi-drip canvas {
+                margin: 10px;
+            }
+
+            .sandbox-start {
+                display: block;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <script src="src/display.js"></script>
+        <script src="src/fluid-adder.js"></script>
+        <script src="src/fluid-mover.js"></script>
+        <script src="src/metrics.js"></script>
+        <script src="src/pressure-solver.js"></script>
+        <script src="src/overlap-solver.js"></script>
+        <script src="src/fluid-network-simulation.js"></script>
+        <script src="src/voronoi-drip.js"></script>
+        <script src="src/sandbox.js"></script>
+
+        <script>
+            var sandbox = VoronoiDrip.Sandbox.create({
+                container: document.body
+            });
+            sandbox.start();
+
+            sandbox.add({
+                startVolume: 200,
+                width: 300,
+                height: 300,
+                gravity: 10,
+                timeout: 100,
+                network: [
+                    {
+                        va: {x: 200, y: 0},
+                        vb: {x: 200, y: 100},
+                        ca: null,
+                        cb: [1, 2],
+                    },{
+                        va: {x: 300, y: 200},
+                        vb: {x: 200, y: 100},
+                        ca: [3, 4],
+                        cb: [0, 2],
+                    },{
+                        va: {x: 200, y: 100},
+                        vb: {x: 0, y: 100},
+                        ca: [0, 1],
+                        cb: null,
+                    },{
+                        va: {x: 300, y: 200},
+                        vb: {x: 300, y: -100},
+                        ca: [1, 4],
+                        cb: null,
+                    },{
+                        va: {x: 300, y: 200},
+                        vb: {x: 200, y: 300},
+                        ca: [1, 3],
+                        cb: null,
+                    }
+                ]
+            });
+
+            sandbox.add({
+                startVolume: 100,
+                width: 300,
+                height: 300,
+                gravity: 20,
+                timeout: 500,
+                network: [
+                    {
+                        va: {x: 150, y: 200},
+                        vb: {x: 250, y: 250},
+                        ca: null,
+                        cb: [1],
+                    },{
+                        va: {x: 250, y: 250},
+                        vb: {x: 250, y: 300},
+                        ca: [0],
+                        cb: null,
+                    }
+                ]
+            });
+        </script>
+    </body>
+</html>
