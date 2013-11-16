@@ -1,10 +1,12 @@
 describe("a Voronoi Drip simulation", function() {
     var spec,
+        edges,
+        container,
         voronoiDrip;
 
     beforeEach(function() {
 
-        var edges = [
+        edges = [
             {
                 va: {x: 0, y: 0},
                 vb: {x: 0, y: 10},
@@ -33,18 +35,25 @@ describe("a Voronoi Drip simulation", function() {
             }
         ];
 
+        container = document.createElement('div');
+        document.body.appendChild(container);
+
         spec = {
             width: 300,
             height: 300,
             fluidColour: "#ff0",
             pipeColour: '#000',
-            startVolume: 50,
             gravity: 3,
             timeout: 60,
+            container: container,
             network: edges
         };
 
         voronoiDrip = VoronoiDrip.create(spec);
+    });
+
+    afterEach(function() {
+        document.body.removeChild(container);
     });
 
     describe("when drawNetwork is called", function() {
@@ -57,7 +66,7 @@ describe("a Voronoi Drip simulation", function() {
             expect(voronoiDrip.network.length).toBeGreaterThan(0);
         });
 
-        it("draws the network in the pipeColour", function() {
+        it("draws the network in the provided pipeColour", function() {
             var edgeCount = voronoiDrip.network.length,
                 edge;
 
@@ -69,6 +78,20 @@ describe("a Voronoi Drip simulation", function() {
                     "#000"
                 );
             }
+        });
+
+        it("defaults to the PIPE_COLOUR", function() {
+            var spec = {
+                width: 300,
+                height: 300,
+                timeout: 60,
+                container: container,
+                network: edges
+            };
+            var voronoiDrip = VoronoiDrip.create(spec);
+            voronoiDrip.display = mockDisplay;
+            voronoiDrip.drawNetwork();
+            expect(mockDisplay.drawLine.mostRecentCall.args[2]).toBe(VoronoiDrip.PIPE_COLOUR);
         });
     });
 
@@ -117,10 +140,11 @@ describe("a Voronoi Drip simulation", function() {
             expect(mockSimulation.start).toHaveBeenCalled();
         });
 
-        it("creates a new display at the specified width and height, and attaches it to the voronoiDrip", function() {
+        it("creates a new display in the container at the specified width and height, and attaches it to the voronoiDrip", function() {
             var expectedSpec = {
                 width: 300,
-                height: 300
+                height: 300,
+                container: container
             }
             expect(VoronoiDrip.Display.create).toHaveBeenCalledWith(expectedSpec);
             expect(voronoiDrip.display).toBe(mockDisplay);
@@ -266,6 +290,21 @@ describe("a Voronoi Drip simulation", function() {
                 {x: 27, y: 10},
                 "#ff0"
             );
+        });
+
+        it("defaults to the FLUID_COLOUR", function() {
+            var spec = {
+                width: 300,
+                height: 300,
+                timeout: 60,
+                container: container,
+                network: edges
+            };
+            var voronoiDrip = VoronoiDrip.create(spec);
+            voronoiDrip.fluidNetworkSimulation = mockSimulation;
+            voronoiDrip.display = mockDisplay;
+            voronoiDrip.drawFluids();
+            expect(mockDisplay.drawLine.mostRecentCall.args[2]).toBe(VoronoiDrip.FLUID_COLOUR);
         });
     });
 

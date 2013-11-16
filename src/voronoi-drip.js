@@ -41,11 +41,16 @@
 
 var VoronoiDrip = VoronoiDrip || {};
 
+VoronoiDrip.PIPE_COLOUR = '#eee';
+VoronoiDrip.FLUID_COLOUR = '#000';
+
 VoronoiDrip.create = function(spec) {
     var that = {},
         tickerTimeout;
 
     that.network = spec.network;
+    that.pipeColour = spec.hasOwnProperty('pipeColour') ? spec.pipeColour : VoronoiDrip.PIPE_COLOUR;
+    that.fluidColour = spec.hasOwnProperty('fluidColour') ? spec.fluidColour : VoronoiDrip.FLUID_COLOUR;
 
     that.getHighestEdgeAndVertex = function() {
         var edgeCount = that.network.length,
@@ -81,7 +86,7 @@ VoronoiDrip.create = function(spec) {
             that.display.drawLine(
                 {x: edge.va.x, y: edge.va.y},
                 {x: edge.vb.x, y: edge.vb.y},
-                spec.pipeColour
+                that.pipeColour
             )
         }
     };
@@ -116,7 +121,7 @@ VoronoiDrip.create = function(spec) {
                         x: pipe.va.x + (xDiff * end),
                         y: pipe.va.y + (yDiff * end),
                     },
-                    spec.fluidColour
+                    that.fluidColour
                 );
             }
         }
@@ -136,7 +141,8 @@ VoronoiDrip.create = function(spec) {
 
         that.display = VoronoiDrip.Display.create({
             width: spec.width,
-            height: spec.height
+            height: spec.height,
+            container: spec.container
         });
         that.display.start();
 
