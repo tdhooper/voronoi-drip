@@ -43,10 +43,12 @@ var VoronoiDrip = VoronoiDrip || {};
 
 VoronoiDrip.PIPE_COLOUR = '#eee';
 VoronoiDrip.FLUID_COLOUR = '#000';
+VoronoiDrip.TIMEOUT = 100;
 
 VoronoiDrip.create = function(spec) {
     var that = {},
-        tickerTimeout;
+        updateLoop,
+        timeout = spec.hasOwnProperty('timeout') ? spec.timeout : VoronoiDrip.TIMEOUT;
 
     that.network = spec.network;
     that.pipeColour = spec.hasOwnProperty('pipeColour') ? spec.pipeColour : VoronoiDrip.PIPE_COLOUR;
@@ -127,11 +129,6 @@ VoronoiDrip.create = function(spec) {
         }
     };
 
-    that.tick = function() {
-        that.update();
-        tickerTimeout = setTimeout(that.tick, spec.timeout);
-    };
-
     that.start = function() {
         that.fluidNetworkSimulation = VoronoiDrip.FluidNetworkSimulation.create({
             pipes: that.network,
@@ -147,7 +144,12 @@ VoronoiDrip.create = function(spec) {
         that.display.start();
 
         that.drawNetwork();
-        that.tick();
+
+        updateLoop = VoronoiDrip.UpdateLoop.create({
+            timeout: timeout,
+            update: that.update
+        });
+        updateLoop.start();
     };
 
     that.addFluid = function(volume, edge, vertex) {
@@ -160,7 +162,7 @@ VoronoiDrip.create = function(spec) {
     };
 
     that.stop = function() {
-        clearTimeout(tickerTimeout);
+        updateLoop.stop();
     };
 
     that.update = function() {

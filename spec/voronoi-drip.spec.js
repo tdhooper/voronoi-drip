@@ -2,7 +2,8 @@ describe("a Voronoi Drip simulation", function() {
     var spec,
         edges,
         container,
-        voronoiDrip;
+        voronoiDrip,
+        mockUpdateLoop = jasmine.createSpyObj('updateLoop', ['start', 'stop']);
 
     beforeEach(function() {
 
@@ -48,6 +49,8 @@ describe("a Voronoi Drip simulation", function() {
             container: container,
             network: edges
         };
+
+        spyOn(VoronoiDrip.UpdateLoop, 'create').andReturn(mockUpdateLoop);
 
         voronoiDrip = VoronoiDrip.create(spec);
     });
@@ -123,7 +126,6 @@ describe("a Voronoi Drip simulation", function() {
             spyOn(VoronoiDrip.FluidNetworkSimulation, 'create').andReturn(mockSimulation);
             spyOn(VoronoiDrip.Display, 'create').andReturn(mockDisplay);
             spyOn(voronoiDrip, 'drawNetwork');
-            spyOn(voronoiDrip, 'tick');
             voronoiDrip.start();
         });
 
@@ -158,8 +160,38 @@ describe("a Voronoi Drip simulation", function() {
             expect(voronoiDrip.drawNetwork).toHaveBeenCalled();
         });
 
-        it("starts the tick loop", function() {
-            expect(voronoiDrip.tick).toHaveBeenCalled();
+        it("creates a new update loop with the specified timeout and update function", function() {
+            var expectedSpec = {
+                update: voronoiDrip.update,
+                timeout: 60
+            }
+            expect(VoronoiDrip.UpdateLoop.create).toHaveBeenCalledWith(expectedSpec);
+        });
+
+        it("uses the default TIMEOUT if none is provided", function() {
+            var spec = {
+                width: 300,
+                height: 300,
+                container: container,
+                network: edges
+            };
+            var voronoiDrip = VoronoiDrip.create(spec);
+            spyOn(voronoiDrip, 'drawNetwork');
+            voronoiDrip.start();
+            var expectedSpec = {
+                update: voronoiDrip.update,
+                timeout: VoronoiDrip.TIMEOUT
+            }
+            expect(VoronoiDrip.UpdateLoop.create).toHaveBeenCalledWith(expectedSpec);
+        });
+
+        it("starts the update loop", function() {
+            expect(mockUpdateLoop.start).toHaveBeenCalled();
+        });
+
+        it("should stop the update loop when stop is called", function() {
+            voronoiDrip.stop();
+            expect(mockUpdateLoop.stop).toHaveBeenCalled();
         });
     });
 
@@ -207,36 +239,6 @@ describe("a Voronoi Drip simulation", function() {
                 );
             });
         });
-    });
-
-    describe("when tick is called", function() {
-
-        beforeEach(function() {
-            spyOn(voronoiDrip, 'update');
-            spyOn(voronoiDrip, 'tick').andCallThrough();
-            jasmine.Clock.useMock();
-            voronoiDrip.tick();
-        });
-
-        it("should update the simulation", function() {
-            expect(voronoiDrip.update).toHaveBeenCalled();
-        });
-
-        it("should call itself again in the allotted time", function() {
-            expect(voronoiDrip.tick.callCount).toBe(1);
-            jasmine.Clock.tick(60 + 1);
-            expect(voronoiDrip.tick.callCount).toBe(2);
-        });
-    });
-
-    it("should stop the tick loop when stop is called", function() {
-        spyOn(voronoiDrip, 'update');
-        spyOn(voronoiDrip, 'tick').andCallThrough();
-        jasmine.Clock.useMock();
-        voronoiDrip.tick();
-        voronoiDrip.stop();
-        jasmine.Clock.tick(11);
-        expect(voronoiDrip.tick.callCount).toBe(1);
     });
 
     describe("when drawFluids is called", function() {

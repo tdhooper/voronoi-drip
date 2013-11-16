@@ -15,6 +15,7 @@
         <script src="src/pressure-solver.js"></script>
         <script src="src/overlap-solver.js"></script>
         <script src="src/fluid-network-simulation.js"></script>
+        <script src="src/update-loop.js"></script>
         <script src="src/voronoi-drip.js"></script>
         <script>
             var voronoi = new Voronoi();
@@ -34,11 +35,18 @@
             });
 
             voronoiDrip.start();
-            setInterval(function() {
+
+            var autoAdd = setInterval(function() {
                 var pipe = Math.floor(Math.random() * voronoiDrip.network.length);
                 // voronoiDrip.fpn.addFluid(voronoiDrip.fpn.pipes[pipe], voronoiDrip.fpn.pipes[pipe].va, 30);
                 voronoiDrip.addFluid(50);
-            }, 500)
+            }, 500);
+
+            var stop = function() {
+                clearInterval(autoAdd);
+                voronoiDrip.stop();
+            };
+
         </script>
     </body>
 </html>
