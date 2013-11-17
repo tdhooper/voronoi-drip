@@ -12,7 +12,8 @@ VoronoiDrip.Sandbox.create = function(spec) {
         startAllLink.setAttribute('class', 'sandbox-start-all');
         startAllLink.setAttribute('href', '#');
         startAllLink.innerHTML = 'Start all';
-        startAllLink.onclick = function() {
+        startAllLink.onclick = function(e) {
+            e.preventDefault();
             that.tests.forEach(function(test) {
                 test.voronoiDrip.addFluid(
                     test.spec.addFluid.volume,
@@ -48,7 +49,8 @@ VoronoiDrip.Sandbox.create = function(spec) {
         var voronoiDrip = VoronoiDrip.create(testSpec.voronoiDrip);
         voronoiDrip.start();
 
-        startLink.onclick = function() {
+        startLink.onclick = function(e) {
+            e.preventDefault();
             voronoiDrip.addFluid(
                 testSpec.addFluid.volume,
                 testSpec.addFluid.pipe,
