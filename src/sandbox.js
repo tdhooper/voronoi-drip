@@ -5,7 +5,7 @@ VoronoiDrip.Sandbox.create = function(spec) {
     var that = {};
 
     that.container = spec.container;
-    that.drips = [];
+    that.tests = [];
 
     that.start = function() {
         var startAllLink = document.createElement('a');
@@ -13,8 +13,12 @@ VoronoiDrip.Sandbox.create = function(spec) {
         startAllLink.setAttribute('href', '#');
         startAllLink.innerHTML = 'Start all';
         startAllLink.onclick = function() {
-            that.drips.forEach(function(drip) {
-                drip.voronoiDrip.addFluid(drip.spec.startVolume);
+            that.tests.forEach(function(test) {
+                test.voronoiDrip.addFluid(
+                    test.spec.addFluid.volume,
+                    test.spec.addFluid.pipe,
+                    test.spec.addFluid.vertex
+                );
             });
         };
         that.container.appendChild(startAllLink);
@@ -34,23 +38,27 @@ VoronoiDrip.Sandbox.create = function(spec) {
         return dripContainer;
     };
 
-    that.add = function(dripSpec) {
+    that.add = function(testSpec) {
         var dripContainer = that.createContainer(),
             startLink = that.createStartLink();
         dripContainer.appendChild(startLink);
         that.container.appendChild(dripContainer);
 
-        dripSpec.container = dripContainer;
-        var voronoiDrip = VoronoiDrip.create(dripSpec);
+        testSpec.voronoiDrip.container = dripContainer;
+        var voronoiDrip = VoronoiDrip.create(testSpec.voronoiDrip);
         voronoiDrip.start();
 
         startLink.onclick = function() {
-            voronoiDrip.addFluid(dripSpec.startVolume);
+            voronoiDrip.addFluid(
+                testSpec.addFluid.volume,
+                testSpec.addFluid.pipe,
+                testSpec.addFluid.vertex
+            );
         };
 
-        that.drips.push({
+        that.tests.push({
             voronoiDrip: voronoiDrip,
-            spec: dripSpec
+            spec: testSpec
         })
     };
 
