@@ -20,6 +20,7 @@ VoronoiDrip.Sandbox.create = function(spec) {
                     test.spec.addFluid.pipe,
                     test.spec.addFluid.vertex
                 );
+                test.voronoiDrip.resume();
             });
         };
         that.container.appendChild(startAllLink);
@@ -48,6 +49,7 @@ VoronoiDrip.Sandbox.create = function(spec) {
         testSpec.voronoiDrip.container = dripContainer;
         var voronoiDrip = VoronoiDrip.create(testSpec.voronoiDrip);
         voronoiDrip.start();
+        voronoiDrip.pause();
 
         startLink.onclick = function(e) {
             e.preventDefault();
@@ -56,6 +58,7 @@ VoronoiDrip.Sandbox.create = function(spec) {
                 testSpec.addFluid.pipe,
                 testSpec.addFluid.vertex
             );
+            voronoiDrip.resume();
         };
 
         that.tests.push({

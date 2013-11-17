@@ -152,6 +152,18 @@ VoronoiDrip.create = function(spec) {
         updateLoop.start();
     };
 
+    that.stop = function() {
+        updateLoop.stop();
+    };
+
+    that.pause = function() {
+        updateLoop.stop();
+    };
+
+    that.resume = function() {
+        updateLoop.start();
+    };
+
     that.addFluid = function(volume, edge, vertex) {
         if ( ! vertex || ! edge) {
             highestEdgeAndVertex = that.getHighestEdgeAndVertex();
@@ -159,10 +171,6 @@ VoronoiDrip.create = function(spec) {
             vertex = highestEdgeAndVertex.vertex;
         }
         that.fluidNetworkSimulation.addFluid(edge, vertex, volume);
-    };
-
-    that.stop = function() {
-        updateLoop.stop();
     };
 
     that.update = function() {

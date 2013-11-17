@@ -193,6 +193,16 @@ describe("a Voronoi Drip simulation", function() {
             voronoiDrip.stop();
             expect(mockUpdateLoop.stop).toHaveBeenCalled();
         });
+
+        it("should stop the update loop when pause is called", function() {
+            voronoiDrip.pause();
+            expect(mockUpdateLoop.stop).toHaveBeenCalled();
+        });
+
+        it("should start the update loop when resume is called", function() {
+            voronoiDrip.resume();
+            expect(mockUpdateLoop.start).toHaveBeenCalled();
+        });
     });
 
     describe("when addFluid is called", function() {
