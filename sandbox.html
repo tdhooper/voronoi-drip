@@ -1489,6 +1489,36 @@
                     vertex: network[0].va
                 }
             });
+
+            var network = [
+                {
+                    "index": 0, "label": "top-right",
+                    "va":{"x":138,"y":340},"vb":{"x":188,"y":374},"ca":[2,3],"cb":[1]
+                },{
+                    "index": 1, "label": "botto-right",
+                    "va":{"x":193,"y":413},"vb":{"x":188,"y":374},"ca":[4],"cb":[0]
+                },{
+                    "index": 2, "label": "top-left",
+                    "va":{"x":125,"y":401},"vb":{"x":138,"y":340},"ca":[4],"cb":[3,0]
+                },{
+                    "index": 3, "label": "top",
+                    "va":{"x":135,"y":199},"vb":{"x":138,"y":340},"ca":[],"cb":[2,0]
+                },{
+                    "index": 4, "label": "bottom-left",
+                    "va":{"x":193,"y":413},"vb":{"x":125,"y":401},"ca":[1],"cb":[2]
+                }
+            ];
+            sandbox.add({
+                voronoiDrip: {
+                    width: 400,
+                    height: 450,
+                    network: network
+                },
+                addFluid: {
+                    volume: 180
+                }
+            });
+
         </script>
     </body>
 </html>

@@ -42,12 +42,15 @@ VoronoiDrip.FluidNetworkSimulation.OverlapSolver.create = function(spec) {
                 }
                 overlap = that.getOverlap(fluidA, fluidB);
                 if (overlap > 0) {
+                    movement = 0;
                     fluidA.movedBy = fluidA.movedBy || 0;
                     fluidB.movedBy = fluidA.movedBy || 0;
-                    movementTotal = Math.abs(fluidA.movedBy) + Math.abs(fluidB.movedBy);
-                    movementA = fluidA.movedBy / movementTotal;
-                    movementB = fluidB.movedBy / movementTotal;
-                    movement = overlap * (movementA + movementB);
+                    if (fluidA.movedBy && fluidB.movedBy) {
+                        movementTotal = Math.abs(fluidA.movedBy) + Math.abs(fluidB.movedBy);
+                        movementA = fluidA.movedBy / movementTotal;
+                        movementB = fluidB.movedBy / movementTotal;
+                        movement = overlap * (movementA + movementB);
+                    }
                     minPosition = Math.min(fluidA.position, fluidB.position);
                     pipe.fluids[fluidCountA] = {
                         volume: fluidA.volume + fluidB.volume,

@@ -111,4 +111,32 @@ describe("a Overlap Solver", function() {
         ).toBe(3);
     });
 
+    describe("when solve is called", function() {
+
+        describe("and fluids overlap", function() {
+
+            beforeEach(function() {
+                pipes[0].fluids = [{
+                    volume: 5,
+                    position: 0
+                },{
+                    volume: 5,
+                    position: 4
+                }];
+                overlapSolver.solve(pipes[0]);
+            });
+
+            it("combines the fluids into one", function() {
+                expect(pipes[0].fluids.length).toEqual(1);
+            });
+
+            it("combines the volumes", function() {
+                expect(pipes[0].fluids[0].volume).toEqual(10);
+            });
+
+            it("uses the lowest position", function() {
+                expect(pipes[0].fluids[0].position).toEqual(0);
+            });
+        });
+    });
 });

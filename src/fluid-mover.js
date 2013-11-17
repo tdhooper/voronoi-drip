@@ -28,7 +28,6 @@ VoronoiDrip.FluidNetworkSimulation.FluidMover.create = function(spec) {
             while (fluidCount--) {
                 fluid = pipe.fluids[fluidCount];
                 fluid.position += velocity;
-                fluid.movedBy = 0;
             }
 
             if (velocity < 0) {
