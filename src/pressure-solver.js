@@ -9,119 +9,78 @@ VoronoiDrip.FluidNetworkSimulation.PressureSolver.create = function(spec) {
     that.metrics = spec.metrics;
     that.fluidAdder = spec.fluidAdder;
 
-    that.connectedPipesChecked = [];
+    that.getTargetHash = function(pipeIndex, vertex) {
+        return pipeIndex + ':' + vertex.x + ':' + vertex.y;
+    }
 
-    that.getAvaliableConnectedPipesWithLowestFluidLevel = function(pipeIndex, vertex) {
-        var targetHash = pipeIndex + ':' + vertex.x + ':' + vertex.y;
+    that.getAvailableTargetsForPipe = function(pipeIndex, vertex, isRecursive) {
+        if ( ! isRecursive) {
+            that.highestVertex = vertex;
+            that.connectedPipesChecked = [];
+        }
+        var targetHash = that.getTargetHash(pipeIndex, vertex);
         if (that.connectedPipesChecked.indexOf(targetHash) !== -1) {
             return false;
         }
         that.connectedPipesChecked.push(targetHash);
 
         var pipe = that.pipes[pipeIndex],
+            hasCapacity = that.metrics.hasCapacity(pipe),
             otherVertex = that.metrics.pointsMatch(pipe.va, vertex) ? pipe.vb : pipe.va,
-            fluid = that.metrics.getFluidAtVertex(pipe, otherVertex),
             connectedIndexes = that.metrics.getConnectedPipeIndexes(pipeIndex, otherVertex),
             connectedCount = connectedIndexes.length;
 
-        if ( ! connectedCount && fluid && fluid.volume >= pipe.capacity) {
-            return false;
-        }
-
-        if ( ! fluid || ! connectedCount) {
+        if (hasCapacity) {
             return [{
                 pipe: pipe,
-                vertex: vertex
+                vertex: vertex,
+                highestVertex: that.highestVertex
             }];
         }
 
+        if (otherVertex.y < that.highestVertex.y) {
+            that.highestVertex = otherVertex;
+        }
+
+        if ( ! connectedCount) {
+            return false;
+        }
+
         var connectedIndex,
-            connectedPipe,
-            results,
-            lowestFluidResults = [];
+            connectedTargets,
+            targets = [];
         while (connectedCount--) {
             connectedIndex = connectedIndexes[connectedCount];
-            results = that.getAvaliableConnectedPipesWithLowestFluidLevel(connectedIndex, otherVertex);
-            if (results) {
-                lowestFluidResults = lowestFluidResults.concat(results);
+            connectedTargets = that.getAvailableTargetsForPipe(connectedIndex, otherVertex, true);
+            if (connectedTargets) {
+                targets = targets.concat(connectedTargets);
             }
         }
 
-        var lowestResultCount = lowestFluidResults.length,
-            result,
-            resistance,
-            lowestResistance = null,
-            lowestResistanceResult,
-            lastResult;
-        while (lowestResultCount--) {
-            result = lowestFluidResults[lowestResultCount];
-            fluid = that.metrics.getFluidAtVertex(result.pipe, result.vertex);
-            if (
-                lastResult
-                && ! fluid
-                && that.metrics.pointsMatch(result.vertex, lastResult.vertex)
-            ) {
-                resistance = that.metrics.getResistance(result.pipe, result.vertex);
-                if (lowestResistance == null) {
-                    lastResistance = that.metrics.getResistance(lastResult.pipe, lastResult.vertex);
-                    if (resistance < lastResistance) {
-                        lowestResistanceResult = result;
-                    } else {
-                        lowestResistanceResult = lastResult;
-                    }
-                } else if (resistance < lowestResistance) {
-                    lowestResistanceResult = result;
-                }
-            }
-            lastResult = result;
-        }
-
-        if (lowestResistanceResult) {
-            return [lowestResistanceResult];
-        }
-
-        return lowestFluidResults;
-    };
-
-    that.getPipesToDistributePressureInto = function(pipes, vertex) {
-        var results = pipes.map(function(pipe) {
-            return {
-                pipe: pipe,
-                vertex: vertex
-            };
+        targets = targets.map(function(target) {
+            target.highestVertex = that.highestVertex;
+            return target;
         });
 
-        var excludePipesWithFluidAtVertex = function(result) {
-            var fluid = that.metrics.getFluidAtVertex(result.pipe, result.vertex);
-            return ! fluid;
-        };
+        return targets;
+    };
 
-        var resistanceLowToHigh = function(resultA, resultB) {
-            var resistanceA = that.metrics.getResistance(resultA.pipe, resultA.vertex),
-                resistanceB = that.metrics.getResistance(resultB.pipe, resultB.vertex);
-            return resistanceA - resistanceB;
-        };
+    that.getAvailableTargetsForVertex = function(pipe, vertex) {
+        var pipes = that.metrics.getVertexPipes(pipe, vertex);
 
-        resultsWithoutFluid = results.filter(excludePipesWithFluidAtVertex);
-
-        if (resultsWithoutFluid.length) {
-            resultsWithoutFluid = resultsWithoutFluid.sort(resistanceLowToHigh);
-            return [resultsWithoutFluid[0]];
-        } else {
-            var pipeCount = pipes.length,
-                results = [];
-            that.pipeCount = pipeCount;
-            while(pipeCount--) {
-                that.connectedPipesChecked = [];
-                var pipeIndex = that.pipes.indexOf(pipes[pipeCount]);
-                var availablePipes = that.getAvaliableConnectedPipesWithLowestFluidLevel(pipeIndex, vertex);
-                if (availablePipes) {
-                    results = results.concat(availablePipes);
-                }
+        var pipeCount = pipes.length,
+            pipeIndex,
+            pipeTargets,
+            targets = [];
+        while(pipeCount--) {
+            pipeIndex = that.pipes.indexOf(pipes[pipeCount]);
+            pipeTargets = that.getAvailableTargetsForPipe(pipeIndex, vertex);
+            if (pipeTargets) {
+                targets = targets.concat(pipeTargets);
             }
         }
 
-        return results;
+        return targets;
     };
 
     that.getVolumeNeededToReachLevel = function(pipe, vertex, level) {
@@ -136,21 +95,80 @@ VoronoiDrip.FluidNetworkSimulation.PressureSolver.create = function(spec) {
         return (level - targetLevel) * heightToCapicity;
     };
 
-    that.redistributePressure = function(pipes, vertex, pressure) {
-        var targets = that.getPipesToDistributePressureInto(pipes, vertex),
+    that.distributePressureBetweenTargets = function(targets, pressure, nextHighestLevel) {
+        var targetCount = targets.length,
+            totalVolume = 0,
+            minCapacityScale = null;
+            otherVertex = that.metrics.pointsMatch(targets[0].vertex, targets[0].pipe.va) ? targets[0].pipe.vb : targets[0].pipe.va,
+            direction = (otherVertex.y - targets[0].vertex.y) > 0 ? 1 : -1,
+            highestPossibleLevel = targets[0].level + (pressure * direction);
+            highestPossibleLevel = nextHighestLevel !== null ? nextHighestLevel : highestPossibleLevel;
+
+        while (targetCount--) {
+            var target = targets[targetCount],
+                volumeNeededToReachLevel = that.getVolumeNeededToReachLevel(target.pipe, target.vertex, highestPossibleLevel);
+            target.volumeToAdd = volumeNeededToReachLevel !== false && volumeNeededToReachLevel > 0 ? volumeNeededToReachLevel : target.pipe.capacity;
+            totalVolume += target.volumeToAdd;
+
+            var availableCapacity = that.metrics.getAvailableCapacity(target.pipe);
+            if (availableCapacity < target.volumeToAdd) {
+                var capacityScale = availableCapacity / target.volumeToAdd;
+                if (minCapacityScale == null) {
+                    minCapacityScale = capacityScale;
+                } else {
+                    minCapacityScale = Math.min(minCapacityScale, capacityScale);
+                }
+            }
+        }
+
+        var volumeToAdd = Math.min(totalVolume, pressure),
+            pressureScale = volumeToAdd / totalVolume,
+            scale = minCapacityScale !== null ? Math.min(minCapacityScale, pressureScale) : pressureScale,
+            targetCount = targets.length;
+
+        while (targetCount--) {
+            var target = targets[targetCount];
+            target.volumeToAdd *= scale;
+
+            if (target.volumeToAdd > VoronoiDrip.FluidNetworkSimulation.MINIMUM_FLUID_VOLUME) {
+                that.fluidAdder.add(target.pipe, target.vertex, target.volumeToAdd);
+                pressure -= target.volumeToAdd;
+            }
+        }
+
+        return pressure;
+    };
+
+    that.addFluidLevel = function(target) {
+        var level = that.metrics.getFluidLevel(target.pipe, target.vertex);
+        target.level = Math.min(level, target.highestVertex.y);
+        return target;
+    };
+
+    that.fluidLevelLowToHigh = function(targetA, targetB) {
+        return targetB.level - targetA.level;
+    };
+
+    that.downwardPointing = function(target) {
+        var otherVertex = that.metrics.pointsMatch(target.pipe.va, target.vertex) ? target.pipe.vb : target.pipe.va;
+        if (otherVertex.y < target.vertex.y) {
+            return false;
+        }
+        return true;
+    };
+
+    that.resistanceLowToHigh = function(targetA, targetB) {
+        var resistanceA = that.metrics.getResistance(targetA.pipe, targetA.vertex),
+            resistanceB = that.metrics.getResistance(targetB.pipe, targetB.vertex);
+        return resistanceA > resistanceB;
+    };
+
+    that.redistributePressure = function(pipe, vertex, pressure) {
+        var targets = that.getAvailableTargetsForVertex(pipe, vertex),
             availablePressure = pressure;
 
-        var addFluidLevels = function(target) {
-            target.level = that.metrics.getFluidLevel(target.pipe, target.vertex);
-            return target;
-        };
-
-        var fluidLevelLowToHigh = function(targetA, targetB) {
-            return targetB.level - targetA.level;
-        };
-
-        var targets = targets.map(addFluidLevels);
-            targets = targets.sort(fluidLevelLowToHigh);
+        var targets = targets.map(that.addFluidLevel);
+            targets = targets.sort(that.fluidLevelLowToHigh);
             sameLevelTargets = [],
             nextHighestLevel = null,
             targetCount = 0;
@@ -173,48 +191,18 @@ VoronoiDrip.FluidNetworkSimulation.PressureSolver.create = function(spec) {
             targetCount += 1;
         }
 
-        var targetCount = sameLevelTargets.length,
-            totalVolume = 0,
-            minCapacityScale = null;
-            otherVertex = that.metrics.pointsMatch(sameLevelTargets[0].vertex, sameLevelTargets[0].pipe.va) ? sameLevelTargets[0].pipe.vb : sameLevelTargets[0].pipe.va,
-            direction = (otherVertex.y - sameLevelTargets[0].vertex.y) > 0 ? 1 : -1,
-            highestPossibleLevel = sameLevelTargets[0].level + (pressure * direction);
-            highestPossibleLevel = nextHighestLevel !== null ? nextHighestLevel : highestPossibleLevel;
-
-        while (targetCount--) {
-            var target = sameLevelTargets[targetCount],
-                volumeNeededToReachLevel = that.getVolumeNeededToReachLevel(target.pipe, target.vertex, highestPossibleLevel);
-            target.volumeToAdd = volumeNeededToReachLevel !== false && volumeNeededToReachLevel > 0 ? volumeNeededToReachLevel : target.pipe.capacity;
-            totalVolume += target.volumeToAdd;
-
-            var availableCapacity = that.metrics.getAvailableCapacity(target.pipe);
-            if (availableCapacity < target.volumeToAdd) {
-                var capacityScale = availableCapacity / target.volumeToAdd;
-                if (minCapacityScale == null) {
-                    minCapacityScale = capacityScale;
-                } else {
-                    minCapacityScale = Math.min(minCapacityScale, capacityScale);
-                }
-            }
+        var downwardPointingTargets = sameLevelTargets.filter(that.downwardPointing);
+        if (downwardPointingTargets.length) {
+            downwardPointingTargets.sort(that.resistanceLowToHigh);
+            sameLevelTargets = [downwardPointingTargets[0]];
         }
 
-        var volumeToAdd = Math.min(totalVolume, pressure),
-            pressureScale = volumeToAdd / totalVolume,
-            scale = minCapacityScale !== null ? Math.min(minCapacityScale, pressureScale) : pressureScale,
-            targetCount = sameLevelTargets.length;
-
-        while (targetCount--) {
-            var target = sameLevelTargets[targetCount];
-            target.volumeToAdd *= scale;
-
-            if (target.volumeToAdd > VoronoiDrip.FluidNetworkSimulation.MINIMUM_FLUID_VOLUME) {
-                that.fluidAdder.add(target.pipe, target.vertex, target.volumeToAdd);
-                pressure -= target.volumeToAdd;
-            }
-        }
-
-        if (pressure > VoronoiDrip.FluidNetworkSimulation.MINIMUM_FLUID_VOLUME && pressure !== availablePressure) {
-            that.redistributePressure(pipes, vertex, pressure);
+        var remainingPressure = that.distributePressureBetweenTargets(sameLevelTargets, pressure, nextHighestLevel);
+        if (
+            remainingPressure > VoronoiDrip.FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+            && remainingPressure !== availablePressure
+        ) {
+            that.redistributePressure(pipe, vertex, remainingPressure);
         }
     };
 
@@ -270,11 +258,9 @@ VoronoiDrip.FluidNetworkSimulation.PressureSolver.create = function(spec) {
     };
 
     that.solve = function(pipe, vertex) {
-        var pipes = that.metrics.getConnectedPipes(pipe, vertex);
-        pipes.push(pipe);
         var pressure = that.removePressureInPipeAtVertex(pipe, vertex);
         if (pressure) {
-            that.redistributePressure(pipes, vertex, pressure);
+            that.redistributePressure(pipe, vertex, pressure);
         }
     };
 
