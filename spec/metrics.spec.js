@@ -266,16 +266,45 @@ describe("a Metrics", function() {
                 volume: metrics.getLength(metrics.pipes[0]),
                 position: 0
             }];
+            metrics.pipes[1].fluids = [{
+                volume: 6,
+                position: 0
+            }];
+            metrics.pipes[2].fluids = [{
+                volume: 6,
+                position: metrics.getLength(metrics.pipes[2]) - 6
+            }];
         });
 
-        it("returns the fluid touching vertex A", function() {
-            expect(metrics.getFluidAtVertex(metrics.pipes[0], metrics.pipes[0].va)).toBe(metrics.pipes[0].fluids[0]);
+        describe("for vertex A", function() {
+
+            it("returns the fluid when the pipe is full", function() {
+                expect(metrics.getFluidAtVertex(metrics.pipes[0], metrics.pipes[0].va)).toBe(metrics.pipes[0].fluids[0]);
+            });
+
+            it("returns the fluid touching vertex A", function() {
+                expect(metrics.getFluidAtVertex(metrics.pipes[1], metrics.pipes[1].va)).toBe(metrics.pipes[1].fluids[0]);
+            });
+
+            it("doesn't return the fluid touching vertex B", function() {
+                expect(metrics.getFluidAtVertex(metrics.pipes[2], metrics.pipes[2].va)).toBe(undefined);
+            });
         });
 
-        it("returns the fluid touching vertex B", function() {
-            expect(metrics.getFluidAtVertex(metrics.pipes[0], metrics.pipes[0].vb)).toBe(metrics.pipes[0].fluids[0]);
-        });
+        describe("for vertex B", function() {
 
+            it("returns the fluid when the pipe is full", function() {
+                expect(metrics.getFluidAtVertex(metrics.pipes[0], metrics.pipes[0].vb)).toBe(metrics.pipes[0].fluids[0]);
+            });
+
+            it("returns the fluid touching vertex B", function() {
+                expect(metrics.getFluidAtVertex(metrics.pipes[2], metrics.pipes[2].vb)).toBe(metrics.pipes[2].fluids[0]);
+            });
+
+            it("doesn't return the fluid touching vertex A", function() {
+                expect(metrics.getFluidAtVertex(metrics.pipes[1], metrics.pipes[1].vb)).toBe(undefined);
+            });
+        });
     });
 
 
@@ -393,6 +422,30 @@ describe("a Metrics", function() {
                 expect(metrics.getAvailableCapacity(metrics.pipes[0])).toBe(0);
             });
         });
+    });
+
+    describe("when hasCapacity is called", function() {
+
+        var availableSpy;
+
+        beforeEach(function() {
+            availableSpy = spyOn(metrics, 'getAvailableCapacity');
+        });
+
+        it("gets the pipe's available capacity", function() {
+            metrics.hasCapacity(pipes[3]);
+            expect(availableSpy).toHaveBeenCalledWith(pipes[3]);
+        });
+
+        it("returns true when the pipe has the minumum available", function() {
+            availableSpy.andReturn(VoronoiDrip.FluidNetworkSimulation.MINIMUM_FLUID_VOLUME);
+            expect(metrics.hasCapacity(pipes[3])).toBe(true);
+        });
+
+        it("returns false when the pipe has less available than the minumum", function() {
+            availableSpy.andReturn(VoronoiDrip.FluidNetworkSimulation.MINIMUM_FLUID_VOLUME * 0.9);
+            expect(metrics.hasCapacity(pipes[3])).toBe(false);
+        });
 
     });
 
@@ -445,5 +498,30 @@ describe("a Metrics", function() {
                 expect(level).toBe(20);
             });
         });
+    });
+
+    describe("when getVertexPipes is called", function() {
+
+        it("gets the connected pipes", function() {
+            spyOn(metrics, 'getConnectedPipes').andCallThrough();
+            metrics.getVertexPipes(pipes[0], pipes[0].vb);
+            expect(metrics.getConnectedPipes).toHaveBeenCalledWith(pipes[0], pipes[0].vb);
+        });
+
+        it("returns the connected pipes and the seed pipe", function() {
+            spyOn(metrics, 'getConnectedPipes').andReturn([
+                pipes[1],
+                pipes[2],
+                pipes[4],
+            ]);
+            var vertexPipes = metrics.getVertexPipes(pipes[0], pipes[0].vb);
+            expect(vertexPipes.length).toBe(4);
+            expect(vertexPipes).toContain(pipes[0]);
+            expect(vertexPipes).toContain(pipes[1]);
+            expect(vertexPipes).toContain(pipes[2]);
+            expect(vertexPipes).toContain(pipes[4]);
+
+        });
+
     });
 });

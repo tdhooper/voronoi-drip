@@ -89,6 +89,11 @@ VoronoiDrip.FluidNetworkSimulation.Metrics.create = function(spec) {
         return pipes;
     };
 
+    that.getVertexPipes = function(pipe, vertex) {
+        var pipes = that.getConnectedPipes(pipe, vertex);
+        pipes.push(pipe);
+        return pipes;
+    };
 
     that.getAvailableCapacity = function(pipe) {
         if ( ! pipe.fluids || pipe.fluids.length == 0) {
@@ -119,6 +124,10 @@ VoronoiDrip.FluidNetworkSimulation.Metrics.create = function(spec) {
         }
 
         return pipe.capacity - totalVolume;
+    };
+
+    that.hasCapacity = function(pipe) {
+        return that.getAvailableCapacity(pipe) >= VoronoiDrip.FluidNetworkSimulation.MINIMUM_FLUID_VOLUME;
     };
 
     that.getFluidLevel = function(pipe, vertex) {
