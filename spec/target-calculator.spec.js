@@ -170,9 +170,9 @@ describe("a Target Calculator", function() {
         describe("with a pipe that has available capacity", function() {
 
             it("returns the original pipe", function() {
-                var results = targetCalculator.getGroupForPipe(0, pipes[0].va);
-                expect(results.length).toBe(1);
-                expect(results).toContain({
+                var group = targetCalculator.getGroupForPipe(0, pipes[0].va);
+                expect(group.targets.length).toBe(1);
+                expect(group.targets).toContain({
                     pipe: pipes[0],
                     vertex: pipes[0].va,
                     highestVertex: pipes[0].va
@@ -187,14 +187,14 @@ describe("a Target Calculator", function() {
             });
 
             it("returns both pipes and their starting vertices", function() {
-                var results = targetCalculator.getGroupForPipe(0, pipes[0].va);
-                expect(results.length).toBe(2);
-                expect(results).toContain({
+                var group = targetCalculator.getGroupForPipe(0, pipes[0].va);
+                expect(group.targets.length).toBe(2);
+                expect(group.targets).toContain({
                     pipe: pipes[1],
                     vertex: pipes[0].vb,
                     highestVertex: pipes[0].va
                 });
-                expect(results).toContain({
+                expect(group.targets).toContain({
                     pipe: pipes[2],
                     vertex: pipes[0].vb,
                     highestVertex: pipes[0].va
@@ -209,19 +209,19 @@ describe("a Target Calculator", function() {
             });
 
             it("returns the connected pipes of the full pipes", function() {
-                var results = targetCalculator.getGroupForPipe(0, pipes[0].va);
-                expect(results.length).toBe(3);
-                expect(results).toContain({
+                var group = targetCalculator.getGroupForPipe(0, pipes[0].va);
+                expect(group.targets.length).toBe(3);
+                expect(group.targets).toContain({
                     pipe: pipes[2],
                     vertex: pipes[2].va,
                     highestVertex: pipes[0].va
                 });
-                expect(results).toContain({
+                expect(group.targets).toContain({
                     pipe: pipes[4],
                     vertex: pipes[4].va,
                     highestVertex: pipes[0].va
                 });
-                expect(results).toContain({
+                expect(group.targets).toContain({
                     pipe: pipes[3],
                     vertex: pipes[3].va,
                     highestVertex: pipes[0].va
@@ -236,14 +236,14 @@ describe("a Target Calculator", function() {
             });
 
             it("returns the connected pipes of the full pipes", function() {
-                var results = targetCalculator.getGroupForPipe(4, pipes[4].vb);
-                expect(results.length).toBe(2);
-                expect(results).toContain({
+                var group = targetCalculator.getGroupForPipe(4, pipes[4].vb);
+                expect(group.targets.length).toBe(2);
+                expect(group.targets).toContain({
                     pipe: pipes[0],
                     vertex: pipes[0].vb,
                     highestVertex: pipes[1].vb
                 });
-                expect(results).toContain({
+                expect(group.targets).toContain({
                     pipe: pipes[3],
                     vertex: pipes[3].va,
                     highestVertex: pipes[1].vb
@@ -258,14 +258,14 @@ describe("a Target Calculator", function() {
             });
 
             it("sets the highest vertex correctly", function() {
-                var results = targetCalculator.getGroupForPipe(0, pipes[0].va);
-                expect(results.length).toBe(2);
-                expect(results).toContain({
+                var group = targetCalculator.getGroupForPipe(0, pipes[0].va);
+                expect(group.targets.length).toBe(2);
+                expect(group.targets).toContain({
                     pipe: pipes[2],
                     vertex: pipes[2].va,
                     highestVertex: pipes[3].vb
                 });
-                expect(results).toContain({
+                expect(group.targets).toContain({
                     pipe: pipes[4],
                     vertex: pipes[4].va,
                     highestVertex: pipes[3].vb
@@ -322,7 +322,7 @@ describe("a Target Calculator", function() {
 
     describe("when getForVertex is called", function() {
 
-        var targetsSpy;
+        var groupSpy;
 
         beforeEach(function() {
             metrics.start();
@@ -331,7 +331,7 @@ describe("a Target Calculator", function() {
                 pipes[2],
                 pipes[1]
             ]);
-            targetsSpy = spyOn(targetCalculator, 'getGroupForPipe');
+            groupSpy = spyOn(targetCalculator, 'getGroupForPipe');
         });
 
         it("gets the vertex pipes", function() {
@@ -341,21 +341,21 @@ describe("a Target Calculator", function() {
 
         it("calls getGroupForPipe for each pipe", function() {
             var targets = targetCalculator.getForVertex(pipes[0], pipes[0].vb);
-            expect(targetsSpy.callCount).toBe(3);
-            expect(targetsSpy).toHaveBeenCalledWith(0, pipes[0].vb);
-            expect(targetsSpy).toHaveBeenCalledWith(1, pipes[0].vb);
-            expect(targetsSpy).toHaveBeenCalledWith(2, pipes[0].vb);
+            expect(groupSpy.callCount).toBe(3);
+            expect(groupSpy).toHaveBeenCalledWith(0, pipes[0].vb);
+            expect(groupSpy).toHaveBeenCalledWith(1, pipes[0].vb);
+            expect(groupSpy).toHaveBeenCalledWith(2, pipes[0].vb);
         });
 
         it("concatenates the results from getGroupForPipe", function() {
-            targetsSpy.andCallFake(function(pipeIndex) {
+            groupSpy.andCallFake(function(pipeIndex) {
                 switch (pipeIndex) {
                     case 0:
-                        return ['A', 'B']
+                        return {targets: ['A', 'B']}
                     case 1:
-                        return ['A']
+                        return {targets: ['A']}
                     case 2:
-                        return ['C', 'D', 'E']
+                        return {targets: ['C', 'D', 'E']}
                 }
             });
             var targets = targetCalculator.getForVertex(pipes[0], pipes[0].vb);

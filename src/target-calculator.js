@@ -30,11 +30,13 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
             connectedCount = connectedIndexes.length;
 
         if (hasCapacity) {
-            return [{
-                pipe: pipe,
-                vertex: vertex,
-                highestVertex: that.highestVertex
-            }];
+            return {
+                targets: [{
+                    pipe: pipe,
+                    vertex: vertex,
+                    highestVertex: that.highestVertex
+                }]
+            };
         }
 
         if (otherVertex.y < that.highestVertex.y) {
@@ -46,22 +48,24 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
         }
 
         var connectedIndex,
-            connectedTargets,
-            targets = [];
+            connectedGroup,
+            group = {
+                targets: []
+            };
         while (connectedCount--) {
             connectedIndex = connectedIndexes[connectedCount];
-            connectedTargets = that.getGroupForPipe(connectedIndex, otherVertex, true);
-            if (connectedTargets) {
-                targets = targets.concat(connectedTargets);
+            connectedGroup = that.getGroupForPipe(connectedIndex, otherVertex, true);
+            if (connectedGroup) {
+                group.targets = group.targets.concat(connectedGroup.targets);
             }
         }
 
-        targets = targets.map(function(target) {
+        group.targets = group.targets.map(function(target) {
             target.highestVertex = that.highestVertex;
             return target;
         });
 
-        return targets;
+        return group;
     };
 
     that.getForVertex = function(pipe, vertex) {
@@ -69,13 +73,13 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
 
         var pipeCount = pipes.length,
             pipeIndex,
-            pipeTargets,
+            group,
             targets = [];
         while(pipeCount--) {
             pipeIndex = that.pipes.indexOf(pipes[pipeCount]);
-            pipeTargets = that.getGroupForPipe(pipeIndex, vertex);
-            if (pipeTargets) {
-                targets = targets.concat(pipeTargets);
+            group = that.getGroupForPipe(pipeIndex, vertex);
+            if (group && group.targets) {
+                targets = targets.concat(group.targets);
             }
         }
 
