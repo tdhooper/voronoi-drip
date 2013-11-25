@@ -44,19 +44,25 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
         }
 
         if ( ! connectedCount) {
-            return false;
+            return {
+                fullPipes: [pipe]
+            };
         }
 
         var connectedIndex,
             connectedGroup,
             group = {
-                targets: []
+                targets: [],
+                fullPipes: [pipe]
             };
         while (connectedCount--) {
             connectedIndex = connectedIndexes[connectedCount];
             connectedGroup = that.getGroupForPipe(connectedIndex, otherVertex, true);
-            if (connectedGroup) {
+            if (connectedGroup.targets) {
                 group.targets = group.targets.concat(connectedGroup.targets);
+            }
+            if (connectedGroup.fullPipes) {
+                group.fullPipes = group.fullPipes.concat(connectedGroup.fullPipes);
             }
         }
 

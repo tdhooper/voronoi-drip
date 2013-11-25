@@ -153,7 +153,8 @@ describe("a Target Calculator", function() {
 
     describe("when getGroupForPipe is called", function() {
 
-        var fullPipes = [];
+        var fullPipes = [],
+            group;
 
         beforeEach(function() {
             metrics.start();
@@ -206,10 +207,10 @@ describe("a Target Calculator", function() {
 
             beforeEach(function() {
                 fullPipes = [pipes[0], pipes[1]];
+                group = targetCalculator.getGroupForPipe(0, pipes[0].va);
             });
 
-            it("returns the connected pipes of the full pipes", function() {
-                var group = targetCalculator.getGroupForPipe(0, pipes[0].va);
+            it("adds the connected pipes to the targets list", function() {
                 expect(group.targets.length).toBe(3);
                 expect(group.targets).toContain({
                     pipe: pipes[2],
@@ -227,16 +228,22 @@ describe("a Target Calculator", function() {
                     highestVertex: pipes[0].va
                 });
             });
+
+            it("adds the full pipes to the full pipes list", function() {
+                expect(group.fullPipes.length).toBe(2);
+                expect(group.fullPipes).toContain(pipes[0]);
+                expect(group.fullPipes).toContain(pipes[1]);
+            });
         });
 
         describe("with two full connected pipes", function() {
 
             beforeEach(function() {
                 fullPipes = [pipes[4], pipes[1], pipes[2]];
+                group = targetCalculator.getGroupForPipe(4, pipes[4].vb);
             });
 
-            it("returns the connected pipes of the full pipes", function() {
-                var group = targetCalculator.getGroupForPipe(4, pipes[4].vb);
+            it("adds the connected pipes of the full pipes to the targets list", function() {
                 expect(group.targets.length).toBe(2);
                 expect(group.targets).toContain({
                     pipe: pipes[0],
@@ -248,6 +255,13 @@ describe("a Target Calculator", function() {
                     vertex: pipes[3].va,
                     highestVertex: pipes[1].vb
                 });
+            });
+
+            it("adds the full pipes to the full pipes list", function() {
+                expect(group.fullPipes.length).toBe(3);
+                expect(group.fullPipes).toContain(pipes[4]);
+                expect(group.fullPipes).toContain(pipes[1]);
+                expect(group.fullPipes).toContain(pipes[2]);
             });
         });
 
