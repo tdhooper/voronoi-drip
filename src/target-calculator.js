@@ -122,5 +122,27 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
         return group.targets;
     };
 
+    that.getCachedGroupsContainingTargetPipe = function(pipe) {
+        var cacheCount = that.cache.length,
+            targetCount,
+            group,
+            groups = [];
+        while (cacheCount--) {
+            group = that.cache[cacheCount];
+            targetCount = group.targets.length;
+            while (targetCount--) {
+                target = group.targets[targetCount];
+                if (target.pipe == pipe) {
+                    groups.push(group);
+                    continue;
+                }
+            }
+        }
+
+        if (groups.length) {
+            return groups;
+        }
+    };
+
     return that;
 };

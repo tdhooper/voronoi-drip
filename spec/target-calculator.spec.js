@@ -503,4 +503,85 @@ describe("a Target Calculator", function() {
             });
         });
     });
+
+    describe("when getCachedGroupsContainingTargetPipe is called", function() {
+
+        var groupA,
+            groupB;
+
+        describe("and there is a matching group", function() {
+
+            beforeEach(function() {
+                groupA = {
+                    targets: [{
+                        pipe: pipes[0]
+                    }]
+                };
+                groupB = {
+                    targets: [{
+                        pipe: pipes[1]
+                    },{
+                        pipe: pipes[2]
+                    }]
+                };
+                targetCalculator.cache = [groupA, groupB]
+            });
+
+            it("returns the group that contains the pipe in it's targets list", function() {
+                var cachedGroups = targetCalculator.getCachedGroupsContainingTargetPipe(pipes[0]);
+                expect(cachedGroups.length).toBe(1);
+                expect(cachedGroups).toContain(groupA);
+            });
+        });
+
+
+        describe("and there are two matching groups", function() {
+
+            beforeEach(function() {
+                groupA = {
+                    targets: [{
+                        pipe: pipes[0]
+                    }]
+                };
+                groupB = {
+                    targets: [{
+                        pipe: pipes[0]
+                    },{
+                        pipe: pipes[2]
+                    }]
+                };
+                targetCalculator.cache = [groupA, groupB]
+            });
+
+            it("returns the group that contains the pipe in it's targets list", function() {
+                var cachedGroups = targetCalculator.getCachedGroupsContainingTargetPipe(pipes[0]);
+                expect(cachedGroups.length).toBe(2);
+                expect(cachedGroups).toContain(groupA);
+                expect(cachedGroups).toContain(groupB);
+            });
+        });
+
+        describe("and there is no matching group", function() {
+
+            beforeEach(function() {
+                groupA = {
+                    targets: [
+                        pipes[3]
+                    ]
+                };
+                groupB = {
+                    targets: [
+                        pipes[1],
+                        pipes[2]
+                    ]
+                };
+                targetCalculator.cache = [groupA, groupB]
+            });
+
+            it("returns nothing", function() {
+                var cachedGroups = targetCalculator.getCachedGroupsContainingTargetPipe(pipes[0]);
+                expect(cachedGroups).toBeUndefined();
+            });
+        });
+    });
 });
