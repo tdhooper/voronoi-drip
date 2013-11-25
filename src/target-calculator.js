@@ -7,10 +7,11 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
 
     that.pipes = spec.pipes;
     that.metrics = spec.metrics;
+    that.cache = [];
 
     that.getTargetHash = function(pipeIndex, vertex) {
         return pipeIndex + ':' + vertex.x + ':' + vertex.y;
-    }
+    };
 
     that.getGroupForPipe = function(pipeIndex, vertex, isRecursive) {
         if ( ! isRecursive) {
@@ -74,22 +75,51 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
         return group;
     };
 
+    that.cacheGroup = function(group) {
+        that.cache.push(group);
+    };
+
+    that.getCachedGroupContainingFullPipe = function(pipe) {
+        var cacheCount = that.cache.length,
+            group;
+        while (cacheCount--) {
+            group = that.cache[cacheCount];
+            if (group.fullPipes.indexOf(pipe) !== -1) {
+                return group;
+            }
+        }
+    };
+
     that.getForVertex = function(pipe, vertex) {
+        var cachedGroup = that.getCachedGroupContainingFullPipe(pipe);
+        if (cachedGroup) {
+            return cachedGroup.targets;
+        }
+
         var pipes = that.metrics.getVertexPipes(pipe, vertex);
 
         var pipeCount = pipes.length,
             pipeIndex,
-            group,
+            group = {
+                targets: [],
+                fullPipes: []
+            },
+            pipeGroup,
             targets = [];
         while(pipeCount--) {
             pipeIndex = that.pipes.indexOf(pipes[pipeCount]);
-            group = that.getGroupForPipe(pipeIndex, vertex);
-            if (group && group.targets) {
-                targets = targets.concat(group.targets);
+            pipeGroup = that.getGroupForPipe(pipeIndex, vertex);
+            if (pipeGroup.targets) {
+                group.targets = group.targets.concat(pipeGroup.targets);
+            }
+            if (pipeGroup.fullPipes) {
+                group.fullPipes = group.fullPipes.concat(pipeGroup.fullPipes);
             }
         }
 
-        return targets;
+        that.cacheGroup(group);
+
+        return group.targets;
     };
 
     return that;

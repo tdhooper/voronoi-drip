@@ -118,6 +118,8 @@ describe("a Target Calculator", function() {
 
         targetCalculator.cacheGroup(group)
 
+        targetCalculator.uncacheGroup(group)
+
         targetCalculator.getCachedGroupsForTargetPipe(pipe)
 
         targetCalculator.getCachedGroupForFullPipeVertex(vertex)
@@ -334,6 +336,72 @@ describe("a Target Calculator", function() {
 
     });
 
+    describe("when cacheGroup is called", function() {
+
+        var someGroup = {};
+
+        beforeEach(function() {
+            targetCalculator.cacheGroup(someGroup)
+        });
+
+        it("adds the group to the cache", function() {
+            expect(targetCalculator.cache).toContain(someGroup);
+        });
+    });
+
+    describe("when getCachedGroupContainingFullPipe is called", function() {
+
+        var groupA,
+            groupB;
+
+        describe("and there is a matching group", function() {
+
+            beforeEach(function() {
+                groupA = {
+                    fullPipes: [
+                        pipes[0]
+                    ]
+                };
+                groupB = {
+                    fullPipes: [
+                        pipes[1],
+                        pipes[2]
+                    ]
+                };
+                targetCalculator.cache = [groupA, groupB]
+            });
+
+            it("returns the group that contains the pipe in it's full pipes list", function() {
+                var cachedGroup = targetCalculator.getCachedGroupContainingFullPipe(pipes[0]);
+                expect(cachedGroup).toBe(groupA);
+            });
+        });
+
+        describe("and there is no matching group", function() {
+
+            beforeEach(function() {
+                groupA = {
+                    fullPipes: [
+                        pipes[3]
+                    ]
+                };
+                groupB = {
+                    fullPipes: [
+                        pipes[1],
+                        pipes[2]
+                    ]
+                };
+                targetCalculator.cache = [groupA, groupB]
+                targetCalculator.getCachedGroupContainingFullPipe(pipes[0]);
+            });
+
+            it("returns nothing", function() {
+                var cachedGroup = targetCalculator.getCachedGroupContainingFullPipe(pipes[0]);
+                expect(cachedGroup).toBeUndefined();
+            });
+        });
+    });
+
     describe("when getForVertex is called", function() {
 
         var groupSpy;
@@ -348,37 +416,91 @@ describe("a Target Calculator", function() {
             groupSpy = spyOn(targetCalculator, 'getGroupForPipe');
         });
 
-        it("gets the vertex pipes", function() {
-            targetCalculator.getForVertex(pipes[0], pipes[0].vb);
-            expect(metrics.getVertexPipes).toHaveBeenCalledWith(pipes[0], pipes[0].vb);
-        });
+        describe("and there is no matching group in the cache", function() {
 
-        it("calls getGroupForPipe for each pipe", function() {
-            var targets = targetCalculator.getForVertex(pipes[0], pipes[0].vb);
-            expect(groupSpy.callCount).toBe(3);
-            expect(groupSpy).toHaveBeenCalledWith(0, pipes[0].vb);
-            expect(groupSpy).toHaveBeenCalledWith(1, pipes[0].vb);
-            expect(groupSpy).toHaveBeenCalledWith(2, pipes[0].vb);
-        });
+            var targets;
 
-        it("concatenates the results from getGroupForPipe", function() {
-            groupSpy.andCallFake(function(pipeIndex) {
-                switch (pipeIndex) {
-                    case 0:
-                        return {targets: ['A', 'B']}
-                    case 1:
-                        return {targets: ['A']}
-                    case 2:
-                        return {targets: ['C', 'D', 'E']}
-                }
+            beforeEach(function() {
+                groupSpy.andCallFake(function(pipeIndex) {
+                    switch (pipeIndex) {
+                        case 0:
+                            return {
+                                targets: ['A', 'B'],
+                                fullPipes: [1, 2]
+                            }
+                        case 1:
+                            return {
+                                targets: ['A'],
+                                fullPipes: [1]
+                            }
+                        case 2:
+                            return {
+                                targets: ['C', 'D', 'E'],
+                                fullPipes: [3, 4, 5]
+                            }
+                    }
+                });
+                spyOn(targetCalculator, 'cacheGroup');
+                targets = targetCalculator.getForVertex(pipes[0], pipes[0].vb);
             });
-            var targets = targetCalculator.getForVertex(pipes[0], pipes[0].vb);
-            expect(targets.length).toBe(6);
-            expect(targets).toContain('A');
-            expect(targets).toContain('B');
-            expect(targets).toContain('C');
-            expect(targets).toContain('D');
-            expect(targets).toContain('E');
+
+            it("gets the vertex pipes", function() {
+                expect(metrics.getVertexPipes).toHaveBeenCalledWith(pipes[0], pipes[0].vb);
+            });
+
+            it("calls getGroupForPipe for each pipe", function() {
+                expect(groupSpy.callCount).toBe(3);
+                expect(groupSpy).toHaveBeenCalledWith(0, pipes[0].vb);
+                expect(groupSpy).toHaveBeenCalledWith(1, pipes[0].vb);
+                expect(groupSpy).toHaveBeenCalledWith(2, pipes[0].vb);
+            });
+
+            it("concatenates the groups from getGroupForPipe and caches them", function() {
+                expect(targetCalculator.cacheGroup).toHaveBeenCalled();
+                var cachedGroup = targetCalculator.cacheGroup.mostRecentCall.args[0];
+
+                expect(cachedGroup.targets.length).toBe(6);
+                expect(cachedGroup.targets).toContain('A');
+                expect(cachedGroup.targets).toContain('B');
+                expect(cachedGroup.targets).toContain('C');
+                expect(cachedGroup.targets).toContain('D');
+                expect(cachedGroup.targets).toContain('E');
+
+                expect(cachedGroup.fullPipes.length).toBe(6);
+                expect(cachedGroup.fullPipes).toContain(1);
+                expect(cachedGroup.fullPipes).toContain(2);
+                expect(cachedGroup.fullPipes).toContain(3);
+                expect(cachedGroup.fullPipes).toContain(4);
+                expect(cachedGroup.fullPipes).toContain(5);
+            });
+
+            it("returns the concatenated group's targets", function() {
+                expect(targets.length).toBe(6);
+                expect(targets).toContain('A');
+                expect(targets).toContain('B');
+                expect(targets).toContain('C');
+                expect(targets).toContain('D');
+                expect(targets).toContain('E');
+            });
+        });
+
+
+        describe("and there is a matching group in the cache", function() {
+
+            var cachedGroup;
+
+            beforeEach(function() {
+                cachedGroup = {
+                    targets: ['C', 'D', 'E'],
+                    fullPipes: [3, 4, 5]
+                };
+                spyOn(targetCalculator, 'getCachedGroupContainingFullPipe').andReturn(cachedGroup);
+            });
+
+            it("returns the cached group's targets", function() {
+                var targets = targetCalculator.getForVertex(pipes[0], pipes[0].vb);
+                expect(targets).toBe(cachedGroup.targets);
+            });
         });
     });
 });
