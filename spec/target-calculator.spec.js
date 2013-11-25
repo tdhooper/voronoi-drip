@@ -77,28 +77,6 @@ describe("a Target Calculator", function() {
 
     /*
 
-        getAvailableTargetsForPipe should return a list of all the full pipes passed, as well as the targets
-        getAvailableTargetsForVertex should combine and return these results
-
-        redistributePressure should return the most recent getAvailableTargetsForVertex result
-
-        During redistributePressure, if any of the targets from the getAvailableTargetsForVertex call has fluid added, the cache is updated.
-        - getAvailableTargetsForPipe will be called with the target, and the results will be added to the cache.
-
-        OR
-
-        getAvailableTargetsForVertex is called in solve
-
-        THEN
-
-        solve returns the results
-
-        During movement the results cache is updated for each movement, if a pipe is in a full group, don't move it if all of the targets vertices are above.
-
-
-
-
-
         targetCalculator keeps a list of groups. A group is a list of full pipes and their end targets.
 
         Whenever getAvailableTargetsForVertex is called with a vertex that is in a group's full pipes, it returns the targets.
@@ -173,7 +151,7 @@ describe("a Target Calculator", function() {
 
     */
 
-    describe("when getAvailableTargetsForPipe is called", function() {
+    describe("when getGroupForPipe is called", function() {
 
         var fullPipes = [];
 
@@ -192,7 +170,7 @@ describe("a Target Calculator", function() {
         describe("with a pipe that has available capacity", function() {
 
             it("returns the original pipe", function() {
-                var results = targetCalculator.getAvailableTargetsForPipe(0, pipes[0].va);
+                var results = targetCalculator.getGroupForPipe(0, pipes[0].va);
                 expect(results.length).toBe(1);
                 expect(results).toContain({
                     pipe: pipes[0],
@@ -209,7 +187,7 @@ describe("a Target Calculator", function() {
             });
 
             it("returns both pipes and their starting vertices", function() {
-                var results = targetCalculator.getAvailableTargetsForPipe(0, pipes[0].va);
+                var results = targetCalculator.getGroupForPipe(0, pipes[0].va);
                 expect(results.length).toBe(2);
                 expect(results).toContain({
                     pipe: pipes[1],
@@ -231,7 +209,7 @@ describe("a Target Calculator", function() {
             });
 
             it("returns the connected pipes of the full pipes", function() {
-                var results = targetCalculator.getAvailableTargetsForPipe(0, pipes[0].va);
+                var results = targetCalculator.getGroupForPipe(0, pipes[0].va);
                 expect(results.length).toBe(3);
                 expect(results).toContain({
                     pipe: pipes[2],
@@ -258,7 +236,7 @@ describe("a Target Calculator", function() {
             });
 
             it("returns the connected pipes of the full pipes", function() {
-                var results = targetCalculator.getAvailableTargetsForPipe(4, pipes[4].vb);
+                var results = targetCalculator.getGroupForPipe(4, pipes[4].vb);
                 expect(results.length).toBe(2);
                 expect(results).toContain({
                     pipe: pipes[0],
@@ -280,7 +258,7 @@ describe("a Target Calculator", function() {
             });
 
             it("sets the highest vertex correctly", function() {
-                var results = targetCalculator.getAvailableTargetsForPipe(0, pipes[0].va);
+                var results = targetCalculator.getGroupForPipe(0, pipes[0].va);
                 expect(results.length).toBe(2);
                 expect(results).toContain({
                     pipe: pipes[2],
@@ -324,12 +302,12 @@ describe("a Target Calculator", function() {
                 targetCalculator.pipes = pipes;
                 metrics.pipes = pipes;
                 fullPipes = [pipes[0], pipes[1], pipes[2]];
-                spyOn(targetCalculator, 'getAvailableTargetsForPipe').andCallThrough();
+                spyOn(targetCalculator, 'getGroupForPipe').andCallThrough();
                 connectedSpy = spyOn(metrics, 'getConnectedPipeIndexes').andCallThrough();
             });
 
             it("does not re-check already checked pipe and vertex combinations", function() {
-                targetCalculator.getAvailableTargetsForPipe(0, pipes[0].va);
+                targetCalculator.getGroupForPipe(0, pipes[0].va);
                 expect(connectedSpy.callCount).toBe(3);
                 expect(connectedSpy).toHaveBeenCalledWith(0, pipes[0].vb);
                 expect(connectedSpy).toHaveBeenCalledWith(2, pipes[2].vb);
@@ -353,7 +331,7 @@ describe("a Target Calculator", function() {
                 pipes[2],
                 pipes[1]
             ]);
-            targetsSpy = spyOn(targetCalculator, 'getAvailableTargetsForPipe');
+            targetsSpy = spyOn(targetCalculator, 'getGroupForPipe');
         });
 
         it("gets the vertex pipes", function() {
@@ -361,7 +339,7 @@ describe("a Target Calculator", function() {
             expect(metrics.getVertexPipes).toHaveBeenCalledWith(pipes[0], pipes[0].vb);
         });
 
-        it("calls getAvailableTargetsForPipe for each pipe", function() {
+        it("calls getGroupForPipe for each pipe", function() {
             var targets = targetCalculator.getForVertex(pipes[0], pipes[0].vb);
             expect(targetsSpy.callCount).toBe(3);
             expect(targetsSpy).toHaveBeenCalledWith(0, pipes[0].vb);
@@ -369,7 +347,7 @@ describe("a Target Calculator", function() {
             expect(targetsSpy).toHaveBeenCalledWith(2, pipes[0].vb);
         });
 
-        it("concatenates the results from getAvailableTargetsForPipe", function() {
+        it("concatenates the results from getGroupForPipe", function() {
             targetsSpy.andCallFake(function(pipeIndex) {
                 switch (pipeIndex) {
                     case 0:

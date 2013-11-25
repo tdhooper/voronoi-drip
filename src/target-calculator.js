@@ -12,7 +12,7 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
         return pipeIndex + ':' + vertex.x + ':' + vertex.y;
     }
 
-    that.getAvailableTargetsForPipe = function(pipeIndex, vertex, isRecursive) {
+    that.getGroupForPipe = function(pipeIndex, vertex, isRecursive) {
         if ( ! isRecursive) {
             that.highestVertex = vertex;
             that.connectedPipesChecked = [];
@@ -50,7 +50,7 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
             targets = [];
         while (connectedCount--) {
             connectedIndex = connectedIndexes[connectedCount];
-            connectedTargets = that.getAvailableTargetsForPipe(connectedIndex, otherVertex, true);
+            connectedTargets = that.getGroupForPipe(connectedIndex, otherVertex, true);
             if (connectedTargets) {
                 targets = targets.concat(connectedTargets);
             }
@@ -73,7 +73,7 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
             targets = [];
         while(pipeCount--) {
             pipeIndex = that.pipes.indexOf(pipes[pipeCount]);
-            pipeTargets = that.getAvailableTargetsForPipe(pipeIndex, vertex);
+            pipeTargets = that.getGroupForPipe(pipeIndex, vertex);
             if (pipeTargets) {
                 targets = targets.concat(pipeTargets);
             }
