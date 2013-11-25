@@ -54,10 +54,15 @@ VoronoiDrip.FluidNetworkSimulation.create = function(spec) {
             metrics: that.metrics,
             overlapSolver: that.overlapSolver
         });
+        that.targetCalculator = fns.TargetCalculator.create({
+            pipes: that.pipes,
+            metrics: that.metrics
+        });
         that.pressureSolver = fns.PressureSolver.create({
             pipes: that.pipes,
             metrics: that.metrics,
-            fluidAdder: that.fluidAdder
+            fluidAdder: that.fluidAdder,
+            targetCalculator: that.targetCalculator
         });
         that.fluidMover = fns.FluidMover.create({
             pipes: that.pipes,

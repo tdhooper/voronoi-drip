@@ -77,10 +77,15 @@ describe("a Pressure Solver", function() {
             metrics: metrics,
             overlapSolver: overlapSolver
         });
+        targetCalculator = fns.TargetCalculator.create({
+            pipes: pipes,
+            metrics: metrics
+        });
         pressureSolver = fns.PressureSolver.create({
             pipes: pipes,
             metrics: metrics,
-            fluidAdder: fluidAdder
+            fluidAdder: fluidAdder,
+            targetCalculator: targetCalculator
         });
     });
 
@@ -191,223 +196,6 @@ describe("a Pressure Solver", function() {
             expect(pipes[0].fluids[0].volume).toBe(2);
             expect(pipes[0].fluids[0].position).toBe(8);
             expect(volumeRemoved).toBe(8);
-        });
-    });
-
-    describe("when getAvailableTargetsForPipe is called", function() {
-
-        var fullPipes = [];
-
-        beforeEach(function() {
-            metrics.start();
-
-            var hasCapacity = metrics.hasCapacity;
-            spyOn(metrics, 'hasCapacity').andCallFake(function(pipe) {
-                if (fullPipes.indexOf(pipe) !== -1) {
-                    return false;
-                }
-                return true;
-            });
-        });
-
-        describe("with a pipe that has available capacity", function() {
-
-            it("returns the original pipe", function() {
-                var results = pressureSolver.getAvailableTargetsForPipe(0, pipes[0].va);
-                expect(results.length).toBe(1);
-                expect(results).toContain({
-                    pipe: pipes[0],
-                    vertex: pipes[0].va,
-                    highestVertex: pipes[0].va
-                });
-            });
-        });
-
-        describe("with two connected pipes with available capacity", function() {
-
-            beforeEach(function() {
-                fullPipes = [pipes[0]];
-            });
-
-            it("returns both pipes and their starting vertices", function() {
-                var results = pressureSolver.getAvailableTargetsForPipe(0, pipes[0].va);
-                expect(results.length).toBe(2);
-                expect(results).toContain({
-                    pipe: pipes[1],
-                    vertex: pipes[0].vb,
-                    highestVertex: pipes[0].va
-                });
-                expect(results).toContain({
-                    pipe: pipes[2],
-                    vertex: pipes[0].vb,
-                    highestVertex: pipes[0].va
-                });
-            });
-        });
-
-        describe("with one full connected pipe", function() {
-
-            beforeEach(function() {
-                fullPipes = [pipes[0], pipes[1]];
-            });
-
-            it("returns the connected pipes of the full pipes", function() {
-                var results = pressureSolver.getAvailableTargetsForPipe(0, pipes[0].va);
-                expect(results.length).toBe(3);
-                expect(results).toContain({
-                    pipe: pipes[2],
-                    vertex: pipes[2].va,
-                    highestVertex: pipes[0].va
-                });
-                expect(results).toContain({
-                    pipe: pipes[4],
-                    vertex: pipes[4].va,
-                    highestVertex: pipes[0].va
-                });
-                expect(results).toContain({
-                    pipe: pipes[3],
-                    vertex: pipes[3].va,
-                    highestVertex: pipes[0].va
-                });
-            });
-        });
-
-        describe("with two full connected pipes", function() {
-
-            beforeEach(function() {
-                fullPipes = [pipes[4], pipes[1], pipes[2]];
-            });
-
-            it("returns the connected pipes of the full pipes", function() {
-                var results = pressureSolver.getAvailableTargetsForPipe(4, pipes[4].vb);
-                expect(results.length).toBe(2);
-                expect(results).toContain({
-                    pipe: pipes[0],
-                    vertex: pipes[0].vb,
-                    highestVertex: pipes[1].vb
-                });
-                expect(results).toContain({
-                    pipe: pipes[3],
-                    vertex: pipes[3].va,
-                    highestVertex: pipes[1].vb
-                });
-            });
-        });
-
-        describe("when the highest point is higher than the starting point", function() {
-
-            beforeEach(function() {
-                fullPipes = [pipes[0], pipes[1], pipes[3]];
-            });
-
-            it("sets the highest vertex correctly", function() {
-                var results = pressureSolver.getAvailableTargetsForPipe(0, pipes[0].va);
-                expect(results.length).toBe(2);
-                expect(results).toContain({
-                    pipe: pipes[2],
-                    vertex: pipes[2].va,
-                    highestVertex: pipes[3].vb
-                });
-                expect(results).toContain({
-                    pipe: pipes[4],
-                    vertex: pipes[4].va,
-                    highestVertex: pipes[3].vb
-                });
-            });
-        });
-
-        describe("and there is a loop of full pipes", function() {
-
-            var connectedSpy;
-
-            beforeEach(function() {
-                pipes = [
-                    {
-                        // 0
-                        va: {x: 10, y: 10},
-                        vb: {x: 0, y: 20},
-                        ca: [1],
-                        cb: [2],
-                    },{
-                        // 1
-                        va: {x: 10, y: 10},
-                        vb: {x: 20, y: 20},
-                        ca: [0],
-                        cb: [2],
-                    },{
-                        // 2
-                        va: {x: 0, y: 20},
-                        vb: {x: 20, y: 20},
-                        ca: [0],
-                        cb: [1],
-                    }
-                ];
-                pressureSolver.pipes = pipes;
-                metrics.pipes = pipes;
-                fullPipes = [pipes[0], pipes[1], pipes[2]];
-                spyOn(pressureSolver, 'getAvailableTargetsForPipe').andCallThrough();
-                connectedSpy = spyOn(metrics, 'getConnectedPipeIndexes').andCallThrough();
-            });
-
-            it("does not re-check already checked pipe and vertex combinations", function() {
-                pressureSolver.getAvailableTargetsForPipe(0, pipes[0].va);
-                expect(connectedSpy.callCount).toBe(3);
-                expect(connectedSpy).toHaveBeenCalledWith(0, pipes[0].vb);
-                expect(connectedSpy).toHaveBeenCalledWith(2, pipes[2].vb);
-                expect(connectedSpy).toHaveBeenCalledWith(1, pipes[1].va);
-            });
-
-        });
-
-        // May need to cache the results, rather than returning false
-
-    });
-
-    describe("when getAvailableTargetsForVertex is called", function() {
-
-        var targetsSpy;
-
-        beforeEach(function() {
-            metrics.start();
-            spyOn(metrics, 'getVertexPipes').andReturn([
-                pipes[0],
-                pipes[2],
-                pipes[1]
-            ]);
-            targetsSpy = spyOn(pressureSolver, 'getAvailableTargetsForPipe');
-        });
-
-        it("gets the vertex pipes", function() {
-            pressureSolver.getAvailableTargetsForVertex(pipes[0], pipes[0].vb);
-            expect(metrics.getVertexPipes).toHaveBeenCalledWith(pipes[0], pipes[0].vb);
-        });
-
-        it("calls getAvailableTargetsForPipe for each pipe", function() {
-            var targets = pressureSolver.getAvailableTargetsForVertex(pipes[0], pipes[0].vb);
-            expect(targetsSpy.callCount).toBe(3);
-            expect(targetsSpy).toHaveBeenCalledWith(0, pipes[0].vb);
-            expect(targetsSpy).toHaveBeenCalledWith(1, pipes[0].vb);
-            expect(targetsSpy).toHaveBeenCalledWith(2, pipes[0].vb);
-        });
-
-        it("concatenates the results from getAvailableTargetsForPipe", function() {
-            targetsSpy.andCallFake(function(pipeIndex) {
-                switch (pipeIndex) {
-                    case 0:
-                        return ['A', 'B']
-                    case 1:
-                        return ['A']
-                    case 2:
-                        return ['C', 'D', 'E']
-                }
-            });
-            var targets = pressureSolver.getAvailableTargetsForVertex(pipes[0], pipes[0].vb);
-            expect(targets.length).toBe(6);
-            expect(targets).toContain('A');
-            expect(targets).toContain('B');
-            expect(targets).toContain('C');
-            expect(targets).toContain('D');
-            expect(targets).toContain('E');
         });
     });
 
@@ -543,7 +331,7 @@ describe("a Pressure Solver", function() {
         beforeEach(function() {
             metrics.start();
             vertex = pipes[1].va;
-            targetsSpy = spyOn(pressureSolver, 'getAvailableTargetsForVertex').andReturn([{
+            targetsSpy = spyOn(targetCalculator, 'getForVertex').andReturn([{
                 pipe: pipes[3],
                 vertex: pipes[3].va,
                 highestVertex: pipes[3].va
@@ -555,7 +343,7 @@ describe("a Pressure Solver", function() {
             spyOn(fluidAdder, 'add');
         });
 
-        it("calls getAvailableTargetsForVertex", function() {
+        it("gets targets from the target calculator", function() {
             pressureSolver.redistributePressure(pipes[1], pipes[1].va, 5);
             expect(targetsSpy).toHaveBeenCalledWith(pipes[1], pipes[1].va);
         });
