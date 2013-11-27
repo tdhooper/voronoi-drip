@@ -402,6 +402,75 @@ describe("a Target Calculator", function() {
         });
     });
 
+    describe("when megeGroups is called", function() {
+
+        var newGroup;
+
+        beforeEach(function() {
+            groupA = {
+                targets: [
+                    {
+                        pipe: pipes[0],
+                        vertex: pipes[0].va
+                    },{
+                        pipe: pipes[1],
+                        vertex: pipes[1].va
+                    }
+                ],
+                fullPipes: [
+                    pipes[2],
+                    pipes[3]
+                ]
+            };
+            groupB = {
+                targets: [
+                    {
+                        pipe: pipes[0],
+                        vertex: pipes[0].va
+                    },{
+                        pipe: pipes[1],
+                        vertex: pipes[1].vb
+                    },{
+                        pipe: pipes[3],
+                        vertex: pipes[3].va
+                    }
+                ],
+                fullPipes: [
+                    pipes[2],
+                    pipes[4],
+                    pipes[5]
+                ]
+            };
+            newGroup = targetCalculator.mergeGroups(groupA, groupB);
+        });
+
+        it("returns a merged group without any duplicates", function() {
+            expect(newGroup.targets.length).toBe(4);
+            expect(newGroup.targets).toContain({
+                pipe: pipes[0],
+                vertex: pipes[0].va
+            });
+            expect(newGroup.targets).toContain({
+                pipe: pipes[1],
+                vertex: pipes[1].va
+            });
+            expect(newGroup.targets).toContain({
+                pipe: pipes[1],
+                vertex: pipes[1].vb
+            });
+            expect(newGroup.targets).toContain({
+                pipe: pipes[3],
+                vertex: pipes[3].va
+            });
+
+            expect(newGroup.fullPipes.length).toBe(4);
+            expect(newGroup.fullPipes).toContain(pipes[2]);
+            expect(newGroup.fullPipes).toContain(pipes[3]);
+            expect(newGroup.fullPipes).toContain(pipes[4]);
+            expect(newGroup.fullPipes).toContain(pipes[5]);
+        });
+    });
+
     describe("when getForVertex is called", function() {
 
         var groupSpy;
@@ -425,18 +494,55 @@ describe("a Target Calculator", function() {
                     switch (pipeIndex) {
                         case 0:
                             return {
-                                targets: ['A', 'B'],
-                                fullPipes: [1, 2]
+                                targets: [
+                                    {
+                                        pipe: pipes[0],
+                                        vertex: pipes[0].va
+                                    },{
+                                        pipe: pipes[1],
+                                        vertex: pipes[1].va
+                                    }
+                                ],
+                                fullPipes: [
+                                    pipes[2],
+                                    pipes[3]
+                                ]
                             }
                         case 1:
                             return {
-                                targets: ['A'],
-                                fullPipes: [1]
+                                targets: [
+                                    {
+                                        pipe: pipes[0],
+                                        vertex: pipes[0].va
+                                    },{
+                                        pipe: pipes[1],
+                                        vertex: pipes[1].vb
+                                    },{
+                                        pipe: pipes[3],
+                                        vertex: pipes[3].va
+                                    }
+                                ],
+                                fullPipes: [
+                                    pipes[2],
+                                    pipes[4],
+                                    pipes[5]
+                                ]
                             }
                         case 2:
                             return {
-                                targets: ['C', 'D', 'E'],
-                                fullPipes: [3, 4, 5]
+                                targets: [
+                                    {
+                                        pipe: pipes[4],
+                                        vertex: pipes[4].vb
+                                    },{
+                                        pipe: pipes[3],
+                                        vertex: pipes[3].va
+                                    }
+                                ],
+                                fullPipes: [
+                                    pipes[4],
+                                    pipes[6]
+                                ]
                             }
                     }
                 });
@@ -455,32 +561,62 @@ describe("a Target Calculator", function() {
                 expect(groupSpy).toHaveBeenCalledWith(2, pipes[0].vb);
             });
 
-            it("concatenates the groups from getGroupForPipe and caches them", function() {
+            it("concatenates and removes duplicates from the getGroupForPipe groups and caches them", function() {
                 expect(targetCalculator.cacheGroup).toHaveBeenCalled();
                 var cachedGroup = targetCalculator.cacheGroup.mostRecentCall.args[0];
 
-                expect(cachedGroup.targets.length).toBe(6);
-                expect(cachedGroup.targets).toContain('A');
-                expect(cachedGroup.targets).toContain('B');
-                expect(cachedGroup.targets).toContain('C');
-                expect(cachedGroup.targets).toContain('D');
-                expect(cachedGroup.targets).toContain('E');
+                expect(cachedGroup.targets.length).toBe(5);
+                expect(cachedGroup.targets).toContain({
+                    pipe: pipes[0],
+                    vertex: pipes[0].va
+                });
+                expect(cachedGroup.targets).toContain({
+                    pipe: pipes[1],
+                    vertex: pipes[1].va
+                });
+                expect(cachedGroup.targets).toContain({
+                    pipe: pipes[1],
+                    vertex: pipes[1].vb
+                });
+                expect(cachedGroup.targets).toContain({
+                    pipe: pipes[3],
+                    vertex: pipes[3].va
+                });
+                expect(cachedGroup.targets).toContain({
+                    pipe: pipes[4],
+                    vertex: pipes[4].vb
+                });
 
-                expect(cachedGroup.fullPipes.length).toBe(6);
-                expect(cachedGroup.fullPipes).toContain(1);
-                expect(cachedGroup.fullPipes).toContain(2);
-                expect(cachedGroup.fullPipes).toContain(3);
-                expect(cachedGroup.fullPipes).toContain(4);
-                expect(cachedGroup.fullPipes).toContain(5);
+                expect(cachedGroup.fullPipes.length).toBe(4);
+                expect(cachedGroup.fullPipes).toContain(pipes[2]);
+                expect(cachedGroup.fullPipes).toContain(pipes[3]);
+                expect(cachedGroup.fullPipes).toContain(pipes[4]);
+                expect(cachedGroup.fullPipes).toContain(pipes[5]);
+                expect(cachedGroup.fullPipes).toContain(pipes[6]);
             });
 
             it("returns the concatenated group's targets", function() {
-                expect(targets.length).toBe(6);
-                expect(targets).toContain('A');
-                expect(targets).toContain('B');
-                expect(targets).toContain('C');
-                expect(targets).toContain('D');
-                expect(targets).toContain('E');
+                expect(targets.length).toBe(5);
+                expect(targets).toContain({
+                    pipe: pipes[0],
+                    vertex: pipes[0].va
+                });
+                expect(targets).toContain({
+                    pipe: pipes[1],
+                    vertex: pipes[1].va
+                });
+                expect(targets).toContain({
+                    pipe: pipes[1],
+                    vertex: pipes[1].vb
+                });
+                expect(targets).toContain({
+                    pipe: pipes[3],
+                    vertex: pipes[3].va
+                });
+                expect(targets).toContain({
+                    pipe: pipes[4],
+                    vertex: pipes[4].vb
+                });
             });
         });
 

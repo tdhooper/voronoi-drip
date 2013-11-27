@@ -90,6 +90,41 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
         }
     };
 
+    that.mergeGroups = function(groupA, groupB) {
+        var targets = groupA.targets.concat(groupB.targets),
+            fullPipes = groupA.fullPipes.concat(groupB.fullPipes);
+
+        var uniqueTargets = [],
+            uniqueFullPipes = [];
+
+        var match;
+        targets.forEach(function(target) {
+            match = false;
+            uniqueTargets.forEach(function(uniqueTarget) {
+                if (
+                    target.pipe == uniqueTarget.pipe
+                    && target.vertex == uniqueTarget.vertex
+                ) {
+                    match = true;
+                }
+            });
+            if ( ! match) {
+                uniqueTargets.push(target);
+            }
+        });
+
+        fullPipes.forEach(function(pipe) {
+            if (uniqueFullPipes.indexOf(pipe) == -1) {
+                uniqueFullPipes.push(pipe);
+            }
+        });
+
+        return {
+            targets: uniqueTargets,
+            fullPipes: uniqueFullPipes
+        };
+    };
+
     that.getForVertex = function(pipe, vertex) {
         var cachedGroup = that.getCachedGroupContainingFullPipe(pipe);
         if (cachedGroup) {
@@ -109,12 +144,7 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
         while(pipeCount--) {
             pipeIndex = that.pipes.indexOf(pipes[pipeCount]);
             pipeGroup = that.getGroupForPipe(pipeIndex, vertex);
-            if (pipeGroup.targets) {
-                group.targets = group.targets.concat(pipeGroup.targets);
-            }
-            if (pipeGroup.fullPipes) {
-                group.fullPipes = group.fullPipes.concat(pipeGroup.fullPipes);
-            }
+            group = that.mergeGroups(group, pipeGroup);
         }
 
         that.cacheGroup(group);
