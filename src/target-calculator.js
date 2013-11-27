@@ -79,6 +79,10 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
         that.cache.push(group);
     };
 
+    that.uncacheGroup = function(group) {
+        that.cache.splice(that.cache.indexOf(group), 1);
+    };
+
     that.getCachedGroupContainingFullPipe = function(pipe) {
         var cacheCount = that.cache.length,
             group;

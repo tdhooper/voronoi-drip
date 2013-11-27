@@ -338,14 +338,29 @@ describe("a Target Calculator", function() {
 
     describe("when cacheGroup is called", function() {
 
-        var someGroup = {};
+        var someGroup = 'A';
 
         beforeEach(function() {
-            targetCalculator.cacheGroup(someGroup)
+            targetCalculator.cacheGroup(someGroup);
         });
 
         it("adds the group to the cache", function() {
             expect(targetCalculator.cache).toContain(someGroup);
+        });
+    });
+
+    describe("when uncacheGroup is called", function() {
+
+        var someGroup = 'A';
+
+        beforeEach(function() {
+            targetCalculator.cache = ['B', someGroup, 'C', 'D'];
+            targetCalculator.uncacheGroup(someGroup);
+        });
+
+        it("removes the group from the cache", function() {
+            expect(targetCalculator.cache.length).toBe(3);
+            expect(targetCalculator.cache).not.toContain(someGroup);
         });
     });
 
