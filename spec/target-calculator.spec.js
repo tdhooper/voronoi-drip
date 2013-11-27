@@ -890,4 +890,39 @@ describe("a Target Calculator", function() {
             });
         });
     });
+
+    describe("when pipeEmpty is called", function() {
+
+        var getCacheSpy;
+
+        beforeEach(function() {
+            getCacheSpy = spyOn(targetCalculator, 'getCachedGroupContainingFullPipe');
+            spyOn(targetCalculator, 'uncacheGroup');
+        });
+
+        it("gets the cached group containing the full pipe", function() {
+            targetCalculator.pipeEmpty(pipes[0]);
+            expect(getCacheSpy).toHaveBeenCalledWith(pipes[0]);
+        });
+
+        describe("and there is a cached group", function() {
+
+            beforeEach(function() {
+                getCacheSpy.andReturn('A');
+            });
+
+            it("uncaches the returned group", function() {
+                targetCalculator.pipeEmpty(pipes[0]);
+                expect(targetCalculator.uncacheGroup).toHaveBeenCalledWith('A');
+            });
+        });
+
+        describe("and there is no cached group", function() {
+
+            it("does not call uncacheGroup", function() {
+                targetCalculator.pipeEmpty(pipes[0]);
+                expect(targetCalculator.uncacheGroup).not.toHaveBeenCalled();
+            });
+        });
+    });
 });

@@ -219,5 +219,12 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
         }
     };
 
+    that.pipeEmpty = function(pipe) {
+        var group = that.getCachedGroupContainingFullPipe(pipe);
+        if (group) {
+            that.uncacheGroup(group);
+        }
+    };
+
     return that;
 };
