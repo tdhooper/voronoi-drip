@@ -178,5 +178,46 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
         }
     };
 
+    that.pipeFull = function(pipe) {
+        var groups = that.getCachedGroupsContainingTargetPipe(pipe);
+
+        if ( ! groups) {
+            return;
+        }
+
+        if (groups.length == 2) {
+            var mergedGroup = that.mergeGroups(groups[0], groups[1]),
+                targetCount = mergedGroup.targets.length,
+                target;
+            // Count backwards so we can remove items as we go
+            while (targetCount--) {
+                target = mergedGroup.targets[targetCount];
+                if (target.pipe == pipe) {
+                    mergedGroup.targets.splice(targetCount, 1);
+                }
+            }
+            mergedGroup.fullPipes.push(pipe);
+            that.cacheGroup(mergedGroup);
+            that.uncacheGroup(groups[0]);
+            that.uncacheGroup(groups[1]);
+        }
+
+        if (groups.length == 1) {
+            var targetCount = groups[0].targets.length,
+                target;
+            while (targetCount--) {
+                target = groups[0].targets[targetCount];
+                if (target.pipe == pipe) {
+                    groups[0].targets.splice(targetCount, 1);
+                    break;
+                }
+            }
+            var pipeGroup = that.getGroupForPipe(target.pipe, target.vertex),
+                mergedGroup = that.mergeGroups(groups[0], pipeGroup);
+            that.cacheGroup(mergedGroup);
+            that.uncacheGroup(groups[0]);
+        }
+    };
+
     return that;
 };

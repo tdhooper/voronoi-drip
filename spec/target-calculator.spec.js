@@ -735,4 +735,159 @@ describe("a Target Calculator", function() {
             });
         });
     });
+
+    describe("when pipeFull is called", function() {
+
+        var getCacheSpy,
+            groupA,
+            groupB,
+            mergeSpy,
+            mergedGroup;
+
+        beforeEach(function() {
+            groupA = {
+                targets: [{
+                    pipe: pipes[0],
+                    vertex: pipes[0].va
+                }],
+                fullPipes: [
+                    pipes[3],
+                    pipes[4]
+                ]
+            };
+            groupB = {
+                targets: [{
+                    pipe: pipes[0],
+                    vertex: pipes[0].vb
+                },{
+                    pipe: pipes[2],
+                    vertex: pipes[2].va
+                }],
+                fullPipes: [
+                    pipes[5]
+                ]
+            };
+            spyOn(targetCalculator, 'cacheGroup');
+            spyOn(targetCalculator, 'uncacheGroup');
+            getCacheSpy = spyOn(targetCalculator, 'getCachedGroupsContainingTargetPipe');
+        });
+
+        it("gets the cached groups containing the target pipe", function() {
+            targetCalculator.pipeFull(pipes[0]);
+            expect(getCacheSpy).toHaveBeenCalledWith(pipes[0]);
+        })
+
+        describe("and there are two groups containing the target pipe", function() {
+
+            beforeEach(function() {
+                getCacheSpy.andReturn([groupA, groupB]);
+                mergedGroup = {
+                    targets: [{
+                        pipe: pipes[0],
+                        vertex: pipes[0].va
+                    },{
+                        pipe: pipes[0],
+                        vertex: pipes[0].vb
+                    },{
+                        pipe: pipes[2],
+                        vertex: pipes[2].va
+                    }],
+                    fullPipes: [
+                        pipes[3],
+                        pipes[4],
+                        pipes[5]
+                    ]
+                }
+                mergeSpy = spyOn(targetCalculator, 'mergeGroups').andReturn(mergedGroup);
+                targetCalculator.pipeFull(pipes[0]);
+            });
+
+            it("merges them", function() {
+                expect(mergeSpy).toHaveBeenCalledWith(groupA, groupB);
+            });
+
+            it("removes the target pipe", function() {
+                expect(mergedGroup.targets.length).toBe(1);
+                expect(mergedGroup.targets).toContain({
+                    pipe: pipes[2],
+                    vertex: pipes[2].va
+                });
+            });
+
+            it("adds the target pipe as a full pipe", function() {
+                expect(mergedGroup.fullPipes).toContain(pipes[0]);
+            });
+
+            it("caches the merged group", function() {
+                expect(targetCalculator.cacheGroup).toHaveBeenCalledWith(mergedGroup);
+            });
+
+            it("uncaches the original groups", function() {
+                expect(targetCalculator.uncacheGroup).toHaveBeenCalledWith(groupA);
+                expect(targetCalculator.uncacheGroup).toHaveBeenCalledWith(groupB);
+            });
+        });
+
+        describe("and there is one group containing the target pipe", function() {
+
+            var getGroupSpy,
+                pipeGroup;
+
+            beforeEach(function() {
+                pipeGroup = {
+                    targets: [{
+                        pipe: pipes[1],
+                        vertex: pipes[1].va
+                    },{
+                        pipe: pipes[2],
+                        vertex: pipes[2].va
+                    }],
+                    fullPipes: [
+                        pipes[0]
+                    ]
+                };
+                getGroupSpy = spyOn(targetCalculator, 'getGroupForPipe').andReturn(pipeGroup);
+                mergedGroup = {
+                    targets: [{
+                        pipe: pipes[1],
+                        vertex: pipes[1].va
+                    },{
+                        pipe: pipes[2],
+                        vertex: pipes[2].va
+                    }],
+                    fullPipes: [
+                        pipes[3],
+                        pipes[4],
+                        pipes[0]
+                    ]
+                }
+                mergeSpy = spyOn(targetCalculator, 'mergeGroups').andReturn(mergedGroup);
+                getCacheSpy.andReturn([groupA]);
+                targetCalculator.pipeFull(pipes[0]);
+            });
+
+            it("gets the group for the target", function() {
+                expect(getGroupSpy).toHaveBeenCalledWith(pipes[0], pipes[0].va);
+            });
+
+            it("merges the group and pipe group", function() {
+                expect(mergeSpy).toHaveBeenCalledWith(groupA, pipeGroup);
+            });
+
+            it("removes the target pipe", function() {
+                expect(groupA.targets).not.toContain({
+                    pipe: pipes[0],
+                    vertex: pipes[0].va
+                });
+            });
+
+            it("caches the merged group", function() {
+                expect(targetCalculator.cacheGroup).toHaveBeenCalledWith(mergedGroup);
+            });
+
+            it("uncaches the original group", function() {
+                expect(targetCalculator.uncacheGroup).toHaveBeenCalledWith(groupA);
+            });
+        });
+    });
 });
