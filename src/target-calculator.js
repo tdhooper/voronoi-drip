@@ -36,7 +36,8 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
                     pipe: pipe,
                     vertex: vertex,
                     highestVertex: that.highestVertex
-                }]
+                }],
+                fullPipes: []
             };
         }
 
@@ -44,18 +45,17 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
             that.highestVertex = otherVertex;
         }
 
+        var group = {
+            targets: [],
+            fullPipes: [pipe]
+        };
+
         if ( ! connectedCount) {
-            return {
-                fullPipes: [pipe]
-            };
+            return group;
         }
 
         var connectedIndex,
-            connectedGroup,
-            group = {
-                targets: [],
-                fullPipes: [pipe]
-            };
+            connectedGroup;
         while (connectedCount--) {
             connectedIndex = connectedIndexes[connectedCount];
             connectedGroup = that.getGroupForPipe(connectedIndex, otherVertex, true);

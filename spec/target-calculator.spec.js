@@ -172,8 +172,13 @@ describe("a Target Calculator", function() {
 
         describe("with a pipe that has available capacity", function() {
 
-            it("returns the original pipe", function() {
-                var group = targetCalculator.getGroupForPipe(0, pipes[0].va);
+            var group;
+
+            beforeEach(function() {
+                group = targetCalculator.getGroupForPipe(0, pipes[0].va);
+            });
+
+            it("returns the original pipe as the target", function() {
                 expect(group.targets.length).toBe(1);
                 expect(group.targets).toContain({
                     pipe: pipes[0],
@@ -181,16 +186,22 @@ describe("a Target Calculator", function() {
                     highestVertex: pipes[0].va
                 });
             });
+
+            it("returns an empty array for the full pipes", function() {
+                expect(group.fullPipes).toEqual([]);
+            });
         });
 
         describe("with two connected pipes with available capacity", function() {
 
+            var group;
+
             beforeEach(function() {
                 fullPipes = [pipes[0]];
+                group = targetCalculator.getGroupForPipe(0, pipes[0].va);
             });
 
-            it("returns both pipes and their starting vertices", function() {
-                var group = targetCalculator.getGroupForPipe(0, pipes[0].va);
+            it("returns both pipes and their starting vertices as targets", function() {
                 expect(group.targets.length).toBe(2);
                 expect(group.targets).toContain({
                     pipe: pipes[1],
@@ -202,6 +213,11 @@ describe("a Target Calculator", function() {
                     vertex: pipes[0].vb,
                     highestVertex: pipes[0].va
                 });
+            });
+
+            it("adds the full pipe to the full pipes list", function() {
+                expect(group.fullPipes.length).toBe(1);
+                expect(group.fullPipes).toContain(pipes[0]);
             });
         });
 
@@ -264,6 +280,25 @@ describe("a Target Calculator", function() {
                 expect(group.fullPipes).toContain(pipes[4]);
                 expect(group.fullPipes).toContain(pipes[1]);
                 expect(group.fullPipes).toContain(pipes[2]);
+            });
+        });
+
+        describe("with a full dead end pipe", function() {
+
+            var group;
+
+            beforeEach(function() {
+                fullPipes = [pipes[4]];
+                group = targetCalculator.getGroupForPipe(4, pipes[4].va);
+            });
+
+            it("returns an empty array for the targets list", function() {
+                expect(group.targets).toEqual([]);
+            });
+
+            it("adds the full pipe to the full pipes list", function() {
+                expect(group.fullPipes.length).toBe(1);
+                expect(group.fullPipes).toContain(pipes[4]);
             });
         });
 
