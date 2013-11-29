@@ -7,6 +7,7 @@ VoronoiDrip.FluidNetworkSimulation.FluidAdder.create = function(spec) {
 
     that.metrics = spec.metrics;
     that.overlapSolver = spec.overlapSolver;
+    that.targetCalculator = spec.targetCalculator;
 
     that.add = function(pipe, point, volume) {
         if (volume < VoronoiDrip.FluidNetworkSimulation.MINIMUM_FLUID_VOLUME) {
@@ -22,6 +23,10 @@ VoronoiDrip.FluidNetworkSimulation.FluidAdder.create = function(spec) {
         });
 
         that.overlapSolver.solve(pipe);
+
+        if ( ! that.metrics.hasCapacity(pipe)) {
+            that.targetCalculator.pipeFull(pipe);
+        }
     };
 
     return that;

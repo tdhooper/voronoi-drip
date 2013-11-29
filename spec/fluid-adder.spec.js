@@ -84,10 +84,15 @@ describe("a Fluid Adder", function() {
         overlapSolver = fns.OverlapSolver.create({
             pipes: pipes
         });
+        targetCalculator = fns.TargetCalculator.create({
+            pipes: pipes,
+            metrics: metrics
+        });
         fluidAdder = fns.FluidAdder.create({
             pipes: pipes,
             metrics: metrics,
-            overlapSolver: overlapSolver
+            overlapSolver: overlapSolver,
+            targetCalculator: targetCalculator
         });
     });
 
@@ -96,6 +101,8 @@ describe("a Fluid Adder", function() {
         beforeEach(function() {
             metrics.start();
             spyOn(overlapSolver, 'solve');
+            spyOn(metrics, 'hasCapacity').andReturn(true);
+            spyOn(targetCalculator, 'pipeFull');
         });
 
         describe("with a volume less than the minimum", function() {
@@ -110,6 +117,10 @@ describe("a Fluid Adder", function() {
 
             it("doesn't solve overlaps", function() {
                 expect(overlapSolver.solve).not.toHaveBeenCalled();
+            });
+
+            it("doesn't check the pipe's capacity", function() {
+                expect(metrics.hasCapacity).not.toHaveBeenCalled();
             });
         });
 
@@ -141,6 +152,10 @@ describe("a Fluid Adder", function() {
                     expect(overlapSolver.solve).toHaveBeenCalledWith(pipes[0]);
                 });
 
+                it("checks the pipe's capacity", function() {
+                    expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[0]);
+                });
+
                 describe("and then at the B vertex", function() {
 
                     beforeEach(function() {
@@ -160,7 +175,13 @@ describe("a Fluid Adder", function() {
                     });
 
                     it("solves overlaps", function() {
-                        expect(overlapSolver.solve).toHaveBeenCalledWith(pipes[0]);
+                        expect(overlapSolver.solve.callCount).toBe(2);
+                        expect(overlapSolver.solve.mostRecentCall.args[0]).toBe(pipes[0]);
+                    });
+
+                    it("checks the pipe's capacity", function() {
+                        expect(metrics.hasCapacity.callCount).toBe(2);
+                        expect(metrics.hasCapacity.mostRecentCall.args[0]).toBe(pipes[0]);
                     });
                 });
 
@@ -177,7 +198,34 @@ describe("a Fluid Adder", function() {
                     it("doesn't solve overlaps", function() {
                         expect(overlapSolver.solve.callCount).toBe(1);
                     });
+
+                    it("doesn't check the pipe's capacity", function() {
+                        expect(metrics.hasCapacity.callCount).toBe(1);
+                    });
                 });
+            });
+        });
+
+        describe("and the pipe still has capacity", function() {
+
+            beforeEach(function() {
+                fluidAdder.add(pipes[0], pipes[0].va, 2);
+            });
+
+            it("does not tell the target calculator that the pipe is full", function() {
+                expect(targetCalculator.pipeFull).not.toHaveBeenCalled();
+            });
+        });
+
+        describe("and the pipe becomes full", function() {
+
+            beforeEach(function() {
+                metrics.hasCapacity.andReturn(false);
+                fluidAdder.add(pipes[0], pipes[0].va, 2);
+            });
+
+            it("tells the target calculator that the pipe is full", function() {
+                expect(targetCalculator.pipeFull).toHaveBeenCalledWith(pipes[0]);
             });
         });
     });
