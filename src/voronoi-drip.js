@@ -143,12 +143,13 @@ VoronoiDrip.create = function(spec) {
         });
         that.display.start();
 
-        that.drawNetwork();
-
         updateLoop = VoronoiDrip.UpdateLoop.create({
             timeout: timeout,
             update: that.update
         });
+    };
+
+    that.play = function() {
         updateLoop.start();
     };
 
@@ -160,10 +161,6 @@ VoronoiDrip.create = function(spec) {
         updateLoop.stop();
     };
 
-    that.resume = function() {
-        updateLoop.start();
-    };
-
     that.addFluid = function(volume, edge, vertex) {
         if ( ! vertex || ! edge) {
             highestEdgeAndVertex = that.getHighestEdgeAndVertex();
@@ -173,11 +170,15 @@ VoronoiDrip.create = function(spec) {
         that.fluidNetworkSimulation.addFluid(edge, vertex, volume);
     };
 
-    that.update = function() {
-        that.fluidNetworkSimulation.update();
+    that.draw = function() {
         that.display.clear();
         that.drawNetwork();
         that.drawFluids();
+    }
+
+    that.update = function() {
+        that.fluidNetworkSimulation.update();
+        that.draw();
     };
 
     return that;

@@ -156,10 +156,6 @@ describe("a Voronoi Drip simulation", function() {
             expect(mockDisplay.start).toHaveBeenCalled();
         });
 
-        it("draws the network", function() {
-            expect(voronoiDrip.drawNetwork).toHaveBeenCalled();
-        });
-
         it("creates a new update loop with the specified timeout and update function", function() {
             var expectedSpec = {
                 update: voronoiDrip.update,
@@ -185,7 +181,8 @@ describe("a Voronoi Drip simulation", function() {
             expect(VoronoiDrip.UpdateLoop.create).toHaveBeenCalledWith(expectedSpec);
         });
 
-        it("starts the update loop", function() {
+        it("should start the update loop when play is called", function() {
+            voronoiDrip.play();
             expect(mockUpdateLoop.start).toHaveBeenCalled();
         });
 
@@ -197,11 +194,6 @@ describe("a Voronoi Drip simulation", function() {
         it("should stop the update loop when pause is called", function() {
             voronoiDrip.pause();
             expect(mockUpdateLoop.stop).toHaveBeenCalled();
-        });
-
-        it("should start the update loop when resume is called", function() {
-            voronoiDrip.resume();
-            expect(mockUpdateLoop.start).toHaveBeenCalled();
         });
     });
 

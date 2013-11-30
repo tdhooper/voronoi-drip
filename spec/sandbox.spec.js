@@ -58,7 +58,7 @@ describe("a Sandbox", function() {
                         vertex: network[0].va
                     }
                 };
-                mockDrip = jasmine.createSpyObj('voronoiDrip', ['start', 'pause', 'resume', 'addFluid']);
+                mockDrip = jasmine.createSpyObj('voronoiDrip', ['start', 'draw', 'play', 'addFluid']);
                 spyOn(VoronoiDrip, 'create').andReturn(mockDrip);
                 sandbox.add(spec);
                 dripContainer = container.getElementsByClassName('sandbox-voronoi-drip')[0];
@@ -78,9 +78,8 @@ describe("a Sandbox", function() {
                 expect(spec.voronoiDrip.container).toBe(dripContainer);
             });
 
-            it("starts and pauses the new voronoi drip", function() {
-                expect(mockDrip.start).toHaveBeenCalled();
-                expect(mockDrip.pause).toHaveBeenCalled();
+            it("draws the new voronoi drip", function() {
+                expect(mockDrip.draw).toHaveBeenCalled();
             });
 
             it("creates a start link for the new voronoi drip", function() {
@@ -88,14 +87,14 @@ describe("a Sandbox", function() {
                 expect(startLink.getAttribute('href')).toBe('#');
             });
 
-            it("adds the specified fluid when the start link is clicked and resumes", function() {
+            it("adds the specified fluid when the start link is clicked and plays", function() {
                 startLink.click();
                 expect(mockDrip.addFluid).toHaveBeenCalledWith(
                     spec.addFluid.volume,
                     spec.addFluid.pipe,
                     spec.addFluid.vertex
                 );
-                expect(mockDrip.resume).toHaveBeenCalled();
+                expect(mockDrip.play).toHaveBeenCalled();
             });
 
             describe("when add is called again", function() {
@@ -110,7 +109,7 @@ describe("a Sandbox", function() {
                         voronoiDrip: {},
                         addFluid: {},
                     };
-                    anotherMockDrip = jasmine.createSpyObj('voronoiDrip', ['start', 'pause', 'resume', 'addFluid']);
+                    anotherMockDrip = jasmine.createSpyObj('voronoiDrip', ['start', 'draw', 'play', 'addFluid']);
                     VoronoiDrip.create.andReturn(anotherMockDrip);
                     sandbox.add(anotherSpec);
                     anotherDripContainer = container.getElementsByClassName('sandbox-voronoi-drip')[1];
@@ -130,9 +129,8 @@ describe("a Sandbox", function() {
                     expect(anotherSpec.voronoiDrip.container).toBe(anotherDripContainer);
                 });
 
-                it("starts and pauses the new voronoi drip", function() {
-                    expect(anotherMockDrip.start).toHaveBeenCalled();
-                    expect(anotherMockDrip.pause).toHaveBeenCalled();
+                it("draws the new voronoi drip", function() {
+                    expect(anotherMockDrip.draw).toHaveBeenCalled();
                 });
 
                 it("creates a start link for the new voronoi drip", function() {
@@ -140,14 +138,14 @@ describe("a Sandbox", function() {
                     expect(anotherStartLink.getAttribute('href')).toBe('#');
                 });
 
-                it("adds the specified fluid when the start link is clicked and resumes", function() {
+                it("adds the specified fluid when the start link is clicked and plays", function() {
                     anotherStartLink.click();
                     expect(anotherMockDrip.addFluid).toHaveBeenCalledWith(
                         anotherSpec.addFluid.volume,
                         anotherSpec.addFluid.pipe,
                         anotherSpec.addFluid.vertex
                     );
-                    expect(anotherMockDrip.resume).toHaveBeenCalled();
+                    expect(anotherMockDrip.play).toHaveBeenCalled();
                 });
 
                 describe("when the start all link is clicked", function() {
@@ -156,20 +154,20 @@ describe("a Sandbox", function() {
                         startAllLink.click();
                     });
 
-                    it("adds the specified fluid to all voronoi drips and resumes them", function() {
+                    it("adds the specified fluid to all voronoi drips and plays them", function() {
                         expect(mockDrip.addFluid).toHaveBeenCalledWith(
                             spec.addFluid.volume,
                             spec.addFluid.pipe,
                             spec.addFluid.vertex
                         );
-                        expect(mockDrip.resume).toHaveBeenCalled();
+                        expect(mockDrip.play).toHaveBeenCalled();
 
                         expect(anotherMockDrip.addFluid).toHaveBeenCalledWith(
                             anotherSpec.addFluid.volume,
                             anotherSpec.addFluid.pipe,
                             anotherSpec.addFluid.vertex
                         );
-                        expect(anotherMockDrip.resume).toHaveBeenCalled();
+                        expect(anotherMockDrip.play).toHaveBeenCalled();
                     });
 
                 });
