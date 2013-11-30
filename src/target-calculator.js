@@ -130,16 +130,20 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
     };
 
     that.getForVertex = function(pipe, vertex) {
-        var cachedGroup = that.getCachedGroupContainingFullPipe(pipe);
-        if (cachedGroup) {
-            return cachedGroup.targets;
+        var vertexPipes = that.metrics.getVertexPipes(pipe, vertex),
+            pipeCount = vertexPipes.length,
+            pipe,
+            cachedGroup;
+        while(pipeCount--) {
+            pipe = vertexPipes[pipeCount];
+            cachedGroup = that.getCachedGroupContainingFullPipe(pipe);
+            if (cachedGroup) {
+                return cachedGroup.targets;
+            }
         }
 
-        var vertexPipes = that.metrics.getVertexPipes(pipe, vertex);
-
-        var pipeCount = vertexPipes.length,
-            pipe,
-            group = {
+        pipeCount = vertexPipes.length;
+        var group = {
                 targets: [],
                 fullPipes: []
             },
@@ -151,7 +155,9 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
             group = that.mergeGroups(group, pipeGroup);
         }
 
-        that.cacheGroup(group);
+        if (group.fullPipes.length) {
+            that.cacheGroup(group);
+        }
 
         return group.targets;
     };
