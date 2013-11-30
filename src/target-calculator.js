@@ -107,7 +107,7 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
             uniqueTargets.forEach(function(uniqueTarget) {
                 if (
                     target.pipe == uniqueTarget.pipe
-                    && target.vertex == uniqueTarget.vertex
+                    && that.metrics.pointsMatch(target.vertex, uniqueTarget.vertex)
                 ) {
                     match = true;
                 }

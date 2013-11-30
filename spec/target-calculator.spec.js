@@ -452,7 +452,7 @@ describe("a Target Calculator", function() {
         });
     });
 
-    describe("when megeGroups is called", function() {
+    describe("when mergeGroups is called", function() {
 
         var newGroup;
 
@@ -465,6 +465,9 @@ describe("a Target Calculator", function() {
                     },{
                         pipe: pipes[1],
                         vertex: pipes[1].va
+                    },{
+                        pipe: pipes[2],
+                        vertex: pipes[2].va
                     }
                 ],
                 fullPipes: [
@@ -481,6 +484,9 @@ describe("a Target Calculator", function() {
                         pipe: pipes[1],
                         vertex: pipes[1].vb
                     },{
+                        pipe: pipes[2],
+                        vertex: pipes[1].vb // same vertex as pipes[2].va
+                    },{
                         pipe: pipes[3],
                         vertex: pipes[3].va
                     }
@@ -495,7 +501,7 @@ describe("a Target Calculator", function() {
         });
 
         it("returns a merged group without any duplicates", function() {
-            expect(newGroup.targets.length).toBe(4);
+            expect(newGroup.targets.length).toBe(5);
             expect(newGroup.targets).toContain({
                 pipe: pipes[0],
                 vertex: pipes[0].va
@@ -507,6 +513,10 @@ describe("a Target Calculator", function() {
             expect(newGroup.targets).toContain({
                 pipe: pipes[1],
                 vertex: pipes[1].vb
+            });
+            expect(newGroup.targets).toContain({
+                pipe: pipes[2],
+                vertex: pipes[2].va
             });
             expect(newGroup.targets).toContain({
                 pipe: pipes[3],
