@@ -9,26 +9,26 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
     that.metrics = spec.metrics;
     that.cache = [];
 
-    that.getTargetHash = function(pipeIndex, vertex) {
+    that.getTargetHash = function(pipe, vertex) {
+        var pipeIndex = that.pipes.indexOf(pipe);
         return pipeIndex + ':' + vertex.x + ':' + vertex.y;
     };
 
-    that.getGroupForPipe = function(pipeIndex, vertex, isRecursive) {
+    that.getGroupForPipe = function(pipe, vertex, isRecursive) {
         if ( ! isRecursive) {
             that.highestVertex = vertex;
             that.connectedPipesChecked = [];
         }
-        var targetHash = that.getTargetHash(pipeIndex, vertex);
+        var targetHash = that.getTargetHash(pipe, vertex);
         if (that.connectedPipesChecked.indexOf(targetHash) !== -1) {
             return false;
         }
         that.connectedPipesChecked.push(targetHash);
 
-        var pipe = that.pipes[pipeIndex],
-            hasCapacity = that.metrics.hasCapacity(pipe),
+        var hasCapacity = that.metrics.hasCapacity(pipe),
             otherVertex = that.metrics.pointsMatch(pipe.va, vertex) ? pipe.vb : pipe.va,
-            connectedIndexes = that.metrics.getConnectedPipeIndexes(pipeIndex, otherVertex),
-            connectedCount = connectedIndexes.length;
+            connectedPipes = that.metrics.getConnectedPipes(pipe, otherVertex),
+            connectedCount = connectedPipes.length;
 
         if (hasCapacity) {
             return {
@@ -54,11 +54,11 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
             return group;
         }
 
-        var connectedIndex,
+        var connectedPipe,
             connectedGroup;
         while (connectedCount--) {
-            connectedIndex = connectedIndexes[connectedCount];
-            connectedGroup = that.getGroupForPipe(connectedIndex, otherVertex, true);
+            connectedPipe = connectedPipes[connectedCount];
+            connectedGroup = that.getGroupForPipe(connectedPipe, otherVertex, true);
             if (connectedGroup.targets) {
                 group.targets = group.targets.concat(connectedGroup.targets);
             }
@@ -135,10 +135,10 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
             return cachedGroup.targets;
         }
 
-        var pipes = that.metrics.getVertexPipes(pipe, vertex);
+        var vertexPipes = that.metrics.getVertexPipes(pipe, vertex);
 
-        var pipeCount = pipes.length,
-            pipeIndex,
+        var pipeCount = vertexPipes.length,
+            pipe,
             group = {
                 targets: [],
                 fullPipes: []
@@ -146,8 +146,8 @@ VoronoiDrip.FluidNetworkSimulation.TargetCalculator.create = function(spec) {
             pipeGroup,
             targets = [];
         while(pipeCount--) {
-            pipeIndex = that.pipes.indexOf(pipes[pipeCount]);
-            pipeGroup = that.getGroupForPipe(pipeIndex, vertex);
+            pipe = vertexPipes[pipeCount];
+            pipeGroup = that.getGroupForPipe(pipe, vertex);
             group = that.mergeGroups(group, pipeGroup);
         }
 

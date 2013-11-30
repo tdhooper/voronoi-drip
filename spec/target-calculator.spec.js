@@ -175,7 +175,7 @@ describe("a Target Calculator", function() {
             var group;
 
             beforeEach(function() {
-                group = targetCalculator.getGroupForPipe(0, pipes[0].va);
+                group = targetCalculator.getGroupForPipe(pipes[0], pipes[0].va);
             });
 
             it("returns the original pipe as the target", function() {
@@ -198,7 +198,7 @@ describe("a Target Calculator", function() {
 
             beforeEach(function() {
                 fullPipes = [pipes[0]];
-                group = targetCalculator.getGroupForPipe(0, pipes[0].va);
+                group = targetCalculator.getGroupForPipe(pipes[0], pipes[0].va);
             });
 
             it("returns both pipes and their starting vertices as targets", function() {
@@ -225,7 +225,7 @@ describe("a Target Calculator", function() {
 
             beforeEach(function() {
                 fullPipes = [pipes[0], pipes[1]];
-                group = targetCalculator.getGroupForPipe(0, pipes[0].va);
+                group = targetCalculator.getGroupForPipe(pipes[0], pipes[0].va);
             });
 
             it("adds the connected pipes to the targets list", function() {
@@ -258,7 +258,7 @@ describe("a Target Calculator", function() {
 
             beforeEach(function() {
                 fullPipes = [pipes[4], pipes[1], pipes[2]];
-                group = targetCalculator.getGroupForPipe(4, pipes[4].vb);
+                group = targetCalculator.getGroupForPipe(pipes[4], pipes[4].vb);
             });
 
             it("adds the connected pipes of the full pipes to the targets list", function() {
@@ -289,7 +289,7 @@ describe("a Target Calculator", function() {
 
             beforeEach(function() {
                 fullPipes = [pipes[4]];
-                group = targetCalculator.getGroupForPipe(4, pipes[4].va);
+                group = targetCalculator.getGroupForPipe(pipes[4], pipes[4].va);
             });
 
             it("returns an empty array for the targets list", function() {
@@ -309,7 +309,7 @@ describe("a Target Calculator", function() {
             });
 
             it("sets the highest vertex correctly", function() {
-                var group = targetCalculator.getGroupForPipe(0, pipes[0].va);
+                var group = targetCalculator.getGroupForPipe(pipes[0], pipes[0].va);
                 expect(group.targets.length).toBe(2);
                 expect(group.targets).toContain({
                     pipe: pipes[2],
@@ -354,15 +354,15 @@ describe("a Target Calculator", function() {
                 metrics.pipes = pipes;
                 fullPipes = [pipes[0], pipes[1], pipes[2]];
                 spyOn(targetCalculator, 'getGroupForPipe').andCallThrough();
-                connectedSpy = spyOn(metrics, 'getConnectedPipeIndexes').andCallThrough();
+                connectedSpy = spyOn(metrics, 'getConnectedPipes').andCallThrough();
             });
 
             it("does not re-check already checked pipe and vertex combinations", function() {
-                targetCalculator.getGroupForPipe(0, pipes[0].va);
+                targetCalculator.getGroupForPipe(pipes[0], pipes[0].va);
                 expect(connectedSpy.callCount).toBe(3);
-                expect(connectedSpy).toHaveBeenCalledWith(0, pipes[0].vb);
-                expect(connectedSpy).toHaveBeenCalledWith(2, pipes[2].vb);
-                expect(connectedSpy).toHaveBeenCalledWith(1, pipes[1].va);
+                expect(connectedSpy).toHaveBeenCalledWith(pipes[0], pipes[0].vb);
+                expect(connectedSpy).toHaveBeenCalledWith(pipes[2], pipes[2].vb);
+                expect(connectedSpy).toHaveBeenCalledWith(pipes[1], pipes[1].va);
             });
 
         });
@@ -542,7 +542,7 @@ describe("a Target Calculator", function() {
             beforeEach(function() {
                 groupSpy.andCallFake(function(pipeIndex) {
                     switch (pipeIndex) {
-                        case 0:
+                        case pipes[0]:
                             return {
                                 targets: [
                                     {
@@ -558,7 +558,7 @@ describe("a Target Calculator", function() {
                                     pipes[3]
                                 ]
                             }
-                        case 1:
+                        case pipes[1]:
                             return {
                                 targets: [
                                     {
@@ -578,7 +578,7 @@ describe("a Target Calculator", function() {
                                     pipes[5]
                                 ]
                             }
-                        case 2:
+                        case pipes[2]:
                             return {
                                 targets: [
                                     {
@@ -606,9 +606,9 @@ describe("a Target Calculator", function() {
 
             it("calls getGroupForPipe for each pipe", function() {
                 expect(groupSpy.callCount).toBe(3);
-                expect(groupSpy).toHaveBeenCalledWith(0, pipes[0].vb);
-                expect(groupSpy).toHaveBeenCalledWith(1, pipes[0].vb);
-                expect(groupSpy).toHaveBeenCalledWith(2, pipes[0].vb);
+                expect(groupSpy).toHaveBeenCalledWith(pipes[0], pipes[0].vb);
+                expect(groupSpy).toHaveBeenCalledWith(pipes[1], pipes[0].vb);
+                expect(groupSpy).toHaveBeenCalledWith(pipes[2], pipes[0].vb);
             });
 
             it("concatenates and removes duplicates from the getGroupForPipe groups and caches them", function() {
