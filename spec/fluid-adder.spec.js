@@ -3,6 +3,7 @@
 describe("a Fluid Adder", function() {
     var metrics,
         overlapSolver,
+        targetCalculator,
         fluidAdder,
         pipes;
 
