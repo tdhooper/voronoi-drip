@@ -68,7 +68,8 @@ VoronoiDrip.FluidNetworkSimulation.create = function(spec) {
         that.fluidMover = fns.FluidMover.create({
             pipes: that.pipes,
             metrics: that.metrics,
-            pressureSolver: that.pressureSolver
+            pressureSolver: that.pressureSolver,
+            targetCalculator: that.targetCalculator
         });
     };
 

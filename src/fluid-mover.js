@@ -8,6 +8,7 @@ VoronoiDrip.FluidNetworkSimulation.FluidMover.create = function(spec) {
     that.pipes = spec.pipes;
     that.metrics = spec.metrics;
     that.pressureSolver = spec.pressureSolver;
+    that.targetCalculator = spec.targetCalculator;
 
     that.update = function() {
         var pipeCount = that.pipes.length,
@@ -29,6 +30,8 @@ VoronoiDrip.FluidNetworkSimulation.FluidMover.create = function(spec) {
                 fluid = pipe.fluids[fluidCount];
                 fluid.position += velocity;
             }
+
+            that.targetCalculator.pipeEmpty(pipe);
 
             if (velocity < 0) {
                 // Fluid moved towards vertex A

@@ -3,6 +3,7 @@
 describe("a Fluid Mover", function() {
     var metrics,
         overlapSolver,
+        targetCalculator,
         fluidAdder,
         pressureSolver,
         fluidMover,
@@ -76,20 +77,27 @@ describe("a Fluid Mover", function() {
         overlapSolver = fns.OverlapSolver.create({
             pipes: pipes
         });
+        targetCalculator = fns.TargetCalculator.create({
+            pipes: pipes,
+            metrics: metrics
+        });
         fluidAdder = fns.FluidAdder.create({
             pipes: pipes,
             metrics: metrics,
-            overlapSolver: overlapSolver
+            overlapSolver: overlapSolver,
+            targetCalculator: targetCalculator
         });
         pressureSolver = fns.PressureSolver.create({
             pipes: pipes,
             metrics: metrics,
-            fluidAdder: fluidAdder
+            fluidAdder: fluidAdder,
+            targetCalculator: targetCalculator
         });
         fluidMover = fns.FluidMover.create({
             pipes: pipes,
             metrics: metrics,
-            pressureSolver: pressureSolver
+            pressureSolver: pressureSolver,
+            targetCalculator: targetCalculator
         });
     });
 
@@ -110,6 +118,7 @@ describe("a Fluid Mover", function() {
                 position: 0
             }];
             spyOn(pressureSolver, 'solve');
+            spyOn(targetCalculator, 'pipeEmpty');
             fluidMover.update();
         });
 
@@ -126,6 +135,12 @@ describe("a Fluid Mover", function() {
         it("passes the pipe and the vertex towards which the fluid is moving to pressureSolver.solve", function() {
             expect(pressureSolver.solve).toHaveBeenCalledWith(fluidMover.pipes[0], fluidMover.pipes[0].vb);
             expect(pressureSolver.solve).toHaveBeenCalledWith(fluidMover.pipes[1], fluidMover.pipes[1].va);
+        });
+
+        it("for each pipe where fluid has moved, tells the target calculator that it's empty", function() {
+            expect(targetCalculator.pipeEmpty.callCount).toBe(2);
+            expect(targetCalculator.pipeEmpty).toHaveBeenCalledWith(fluidMover.pipes[0]);
+            expect(targetCalculator.pipeEmpty).toHaveBeenCalledWith(fluidMover.pipes[1]);
         });
     });
 });
