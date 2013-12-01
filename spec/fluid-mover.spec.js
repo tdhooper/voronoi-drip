@@ -101,46 +101,184 @@ describe("a Fluid Mover", function() {
         });
     });
 
-    describe("when update is called", function() {
+    describe("when hasValidTarget is called", function() {
+
+        var getCachedSpy;
 
         beforeEach(function() {
-            metrics.start();
-            fluidMover.pipes[0].fluids = [{
+            getCachedSpy = spyOn(targetCalculator, 'getCachedGroupContainingFullPipe');
+        });
+
+        it("gets the cached group for the pipe", function() {
+            fluidMover.hasValidTarget(pipes[0], pipes[0].va);
+            expect(getCachedSpy).toHaveBeenCalledWith(pipes[0]);
+        });
+
+        describe("and there is no cached group", function() {
+
+            it("returns true", function() {
+                expect(fluidMover.hasValidTarget(pipes[0], pipes[0].va)).toBe(true);
+            });
+        });
+
+        describe("and there is a cached group", function() {
+
+            beforeEach(function() {
+                getCachedSpy.andReturn({
+                    targets: [{
+                        pipe: pipes[4],
+                        vertex: pipes[4].vb
+                    },{
+                        pipe: pipes[1],
+                        vertex: pipes[1].vb
+                    },{
+                        pipe: pipes[2],
+                        vertex: pipes[2].va
+                    }]
+                });
+                pipes[0].level = 100;
+                pipes[4].level = 50;
+                pipes[1].level = 50;
+                pipes[2].level = 50;
+                spyOn(metrics, 'getFluidLevel').andCallFake(function(pipe, vertex) {
+                    return pipe.level;
+                });
+            });
+
+            it("gets the pipe's fluid level", function() {
+                fluidMover.hasValidTarget(pipes[0], pipes[0].va);
+                expect(metrics.getFluidLevel).toHaveBeenCalledWith(pipes[0], pipes[0].va)
+            });
+
+            it("gets the fluid level of each target", function() {
+                fluidMover.hasValidTarget(pipes[0], pipes[0].va);
+                expect(metrics.getFluidLevel.callCount).toBe(4);
+                expect(metrics.getFluidLevel).toHaveBeenCalledWith(pipes[4], pipes[4].vb);
+                expect(metrics.getFluidLevel).toHaveBeenCalledWith(pipes[1], pipes[1].vb);
+                expect(metrics.getFluidLevel).toHaveBeenCalledWith(pipes[2], pipes[2].va);
+            });
+
+            it("returns true when it finds a target with a lower fluid level", function() {
+                pipes[1].level = 120;
+                expect(fluidMover.hasValidTarget(pipes[0], pipes[0].va)).toBe(true);
+                expect(metrics.getFluidLevel.callCount).toBe(3);
+            });
+
+            it("returns false if it doesn't find one", function() {
+                expect(fluidMover.hasValidTarget(pipes[0], pipes[0].va)).toBe(false);
+            });
+        });
+    });
+
+    describe("when moveFluidsInPipe is called", function() {
+
+        beforeEach(function() {
+            pipes[0].fluids = [{
                 volume: 1,
                 position: 0
-            }];
-            fluidMover.pipes[1].fluids = [{
+            },{
                 volume: 1,
-                position: 5
-            }];
-            fluidMover.pipes[2].fluids = [{
-                volume: 1,
-                position: 0
+                position: 2
             }];
             spyOn(pressureSolver, 'solve');
             spyOn(targetCalculator, 'pipeEmpty');
-            fluidMover.update();
+            fluidMover.moveFluidsInPipe(pipes[0], 0.1);
         });
 
         it("moves each fluid by it's velocity", function() {
             expect(fluidMover.pipes[0].fluids[0].position).toBe(0.1);
-            expect(fluidMover.pipes[1].fluids[0].position).toBe(5 - 0.05);
-            expect(fluidMover.pipes[2].fluids[0].position).toBe(0);
+            expect(fluidMover.pipes[0].fluids[1].position).toBe(2.1);
         });
 
-        it("calls pressureSolver.solve for each pipe where fluid has moved", function() {
-            expect(pressureSolver.solve.callCount).toBe(2);
-        });
-
-        it("passes the pipe and the vertex towards which the fluid is moving to pressureSolver.solve", function() {
+        it("calls pressureSolver.solve with the pipe and B vertex if the velocity is positive", function() {
+            expect(pressureSolver.solve.callCount).toBe(1);
             expect(pressureSolver.solve).toHaveBeenCalledWith(fluidMover.pipes[0], fluidMover.pipes[0].vb);
-            expect(pressureSolver.solve).toHaveBeenCalledWith(fluidMover.pipes[1], fluidMover.pipes[1].va);
         });
 
-        it("for each pipe where fluid has moved, tells the target calculator that it's empty", function() {
-            expect(targetCalculator.pipeEmpty.callCount).toBe(2);
+        it("calls pressureSolver.solve with the pipe and A vertex if the velocity is positive", function() {
+            fluidMover.moveFluidsInPipe(pipes[0], -5);
+            expect(pressureSolver.solve.callCount).toBe(2);
+            expect(pressureSolver.solve).toHaveBeenCalledWith(fluidMover.pipes[0], fluidMover.pipes[0].va);
+        });
+
+        it("tells the target calculator that it's empty", function() {
+            expect(targetCalculator.pipeEmpty.callCount).toBe(1);
             expect(targetCalculator.pipeEmpty).toHaveBeenCalledWith(fluidMover.pipes[0]);
-            expect(targetCalculator.pipeEmpty).toHaveBeenCalledWith(fluidMover.pipes[1]);
+        });
+    })
+
+    describe("when update is called", function() {
+
+        beforeEach(function() {
+            metrics.start();
+            pipes[0].fluids = [{
+                volume: 1000,
+                position: 0
+            }];
+            pipes[1].fluids = [{
+                volume: 1,
+                position: 5
+            }];
+            pipes[2].fluids = [{
+                volume: 1,
+                position: 0
+            }];
+            pipes[3].fluids = [{
+                volume: 5555,
+                position: 0
+            }];
+            spyOn(pressureSolver, 'solve');
+            spyOn(targetCalculator, 'pipeEmpty');
+            spyOn(metrics, 'getFluidVelocity').andCallThrough();
+            spyOn(metrics, 'hasCapacity').andCallThrough();
+            spyOn(fluidMover, 'moveFluidsInPipe');
+            spyOn(fluidMover, 'hasValidTarget').andCallFake(function(pipe, vertex) {
+                if (pipe == pipes[3]) {
+                    return true;
+                }
+                return false;
+            });
+            fluidMover.update();
+        });
+
+        it("checks the velocity for each pipe that has fluids", function() {
+            expect(metrics.getFluidVelocity.callCount).toBe(4);
+            expect(metrics.getFluidVelocity).toHaveBeenCalledWith(pipes[0]);
+            expect(metrics.getFluidVelocity).toHaveBeenCalledWith(pipes[1]);
+            expect(metrics.getFluidVelocity).toHaveBeenCalledWith(pipes[2]);
+            expect(metrics.getFluidVelocity).toHaveBeenCalledWith(pipes[3]);
+        });
+
+        it("for pipes that have velocity, it checks their capacity", function() {
+            expect(metrics.hasCapacity.callCount).toBe(3);
+            expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[0]);
+            expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[1]);
+            expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[3]);
+        });
+
+        it("for pipes that have capacity, it calls moveFluidsInPipe with the velocity", function() {
+            expect(fluidMover.moveFluidsInPipe.callCount).toBe(2);
+            expect(fluidMover.moveFluidsInPipe).toHaveBeenCalledWith(pipes[1], -0.05);
+        })
+
+        describe("for pipes without capacity", function() {
+
+            it("calls hasValidTarget", function() {
+                expect(fluidMover.hasValidTarget.callCount).toBe(2);
+            })
+
+            it("with vertex B when there is a positive velocity", function() {
+                expect(fluidMover.hasValidTarget).toHaveBeenCalledWith(pipes[0], pipes[0].vb);
+            });
+
+            it("with vertex A when there is a negative velocity", function() {
+                expect(fluidMover.hasValidTarget).toHaveBeenCalledWith(pipes[3], pipes[3].va);
+            });
+
+            it("for pipe with a valid target, it calls moveFluidsInPipe with the velocity", function() {
+                expect(fluidMover.moveFluidsInPipe.callCount).toBe(2);
+                expect(fluidMover.moveFluidsInPipe).toHaveBeenCalledWith(pipes[3], -0.1);
+            })
         });
     });
 });
