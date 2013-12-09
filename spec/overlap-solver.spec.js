@@ -144,6 +144,32 @@ describe("a Overlap Solver", function() {
             });
         });
 
+        describe("and are nearly overlapping", function() {
+
+            beforeEach(function() {
+                pipes[0].fluids = [{
+                    volume: 5,
+                    position: 0
+                },{
+                    volume: 5,
+                    position: 5 + VoronoiDrip.FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                }];
+                overlapSolver.solve(pipes[0]);
+            });
+
+            it("combines the fluids into one", function() {
+                expect(pipes[0].fluids.length).toEqual(1);
+            });
+
+            it("combines the volumes", function() {
+                expect(pipes[0].fluids[0].volume).toEqual(10);
+            });
+
+            it("uses the lowest position", function() {
+                expect(pipes[0].fluids[0].position).toEqual(0);
+            });
+        });
+
         describe("when fluids overlap from movement", function() {
 
             describe("and the most recent fluid is at the A vertex", function() {

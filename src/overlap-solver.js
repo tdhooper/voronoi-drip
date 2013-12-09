@@ -41,7 +41,7 @@ VoronoiDrip.FluidNetworkSimulation.OverlapSolver.create = function(spec) {
                     continue;
                 }
                 overlap = that.getOverlap(fluidA, fluidB);
-                if (overlap > 0) {
+                if (overlap > VoronoiDrip.FluidNetworkSimulation.MINIMUM_FLUID_VOLUME * -1) {
                     movement = 0;
                     fluidA.movedBy = fluidA.movedBy || 0;
                     fluidB.movedBy = fluidA.movedBy || 0;
