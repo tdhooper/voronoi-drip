@@ -323,9 +323,196 @@ describe("a Pressure Solver", function() {
 
     });
 
+    describe("when findDownwardPointingTarget is called", function() {
+
+        beforeEach(function() {
+            metrics.start();
+        });
+
+        it("returns the downward pointing target when there is one", function() {
+            var targets = [{
+                pipe: pipes[0],
+                vertex: pipes[0].vb
+            },{
+                pipe: pipes[1],
+                vertex: pipes[1].vb
+            }];
+            var target = pressureSolver.findDownwardPointingTarget(targets);
+            expect(target).toBe(targets[1]);
+        });
+
+        it("returns false when there is none", function() {
+            var targets = [{
+                pipe: pipes[0],
+                vertex: pipes[0].vb
+            },{
+                pipe: pipes[1],
+                vertex: pipes[1].va
+            }];
+            var target = pressureSolver.findDownwardPointingTarget(targets);
+            expect(target).toBe(false);
+        });
+
+        it("returns the most downward pointing when there are many", function() {
+            var targets = [{
+                pipe: pipes[0],
+                vertex: pipes[0].vb
+            },{
+                pipe: pipes[2],
+                vertex: pipes[2].va
+            },{
+                pipe: pipes[1],
+                vertex: pipes[1].vb
+            }];
+            var target = pressureSolver.findDownwardPointingTarget(targets);
+            expect(target).toBe(targets[2]);
+        })
+    });
+
+    describe("when findLowestLevelTargets is called", function() {
+
+        var addLevelSpy;
+
+        beforeEach(function() {
+            addLevelSpy = spyOn(pressureSolver, 'addFluidLevel').andCallFake(function(target) {
+                return target;
+            });
+        })
+
+        it("adds the fluid level for each target", function() {
+            var targets = ['A', 'B'];
+            pressureSolver.findLowestLevelTargets(targets);
+            expect(addLevelSpy.callCount).toBe(2);
+            expect(addLevelSpy.calls[0].args[0]).toBe('A');
+            expect(addLevelSpy.calls[1].args[0]).toBe('B');
+        });
+
+        it("returns the target with the lowest fluid level", function() {
+            var targets = [{
+                level: 2
+            },{
+                level: 10
+            },{
+                level: 5
+            }];
+            var sameLevelTargets = pressureSolver.findLowestLevelTargets(targets);
+            expect(sameLevelTargets.targets.length).toBe(1);
+            expect(sameLevelTargets.targets).toContain(targets[1]);
+        });
+
+        it("returns targets with the same level as the lowest", function() {
+            var targets = [{
+                level: 2
+            },{
+                level: 10
+            },{
+                level: 5
+            },{
+                level: 10
+            }];
+            var sameLevelTargets = pressureSolver.findLowestLevelTargets(targets);
+            expect(sameLevelTargets.targets.length).toBe(2);
+            expect(sameLevelTargets.targets).toContain(targets[1]);
+            expect(sameLevelTargets.targets).toContain(targets[3]);
+        });
+
+        it("returns the next highest level", function() {
+            var targets = [{
+                level: 2
+            },{
+                level: 10
+            },{
+                level: 5
+            }];
+            var sameLevelTargets = pressureSolver.findLowestLevelTargets(targets);
+            expect(sameLevelTargets.nextHighestLevel).toBe(5);
+        });
+    });
+
+    describe("when getDistributionTargets is called", function() {
+        var targets,
+            lowestLevelTargets,
+            targetsSpy,
+            lowestLevelSpy,
+            downwardPointingSpy;
+
+        beforeEach(function() {
+            targets = [{
+                pipe: pipes[3],
+                vertex: pipes[3].va
+            },{
+                pipe: pipes[1],
+                vertex: pipes[1].va
+            }];
+            lowestLevelTargets = {
+                targets: [{
+                    pipe: pipes[3],
+                    vertex: pipes[3].va,
+                }],
+                nextHighestLevel: 5
+            };
+            targetsSpy = spyOn(targetCalculator, 'getForVertex').andReturn(targets);
+            lowestLevelSpy = spyOn(pressureSolver, 'findLowestLevelTargets').andReturn(lowestLevelTargets);
+            downwardPointingSpy = spyOn(pressureSolver, 'findDownwardPointingTarget');
+        });
+
+        it("gets targets from the target calculator", function() {
+            pressureSolver.getDistributionTargets(pipes[1], pipes[1].va);
+            expect(targetsSpy).toHaveBeenCalledWith(pipes[1], pipes[1].va);
+        });
+
+        it("passes them to findLowestLevelTargets", function() {
+            pressureSolver.getDistributionTargets(pipes[1], pipes[1].va);
+            expect(lowestLevelSpy).toHaveBeenCalledWith(targets);
+        });
+
+        it("passes the lowest level targets to findDownwardPointingTarget", function() {
+            pressureSolver.getDistributionTargets(pipes[1], pipes[1].va);
+            expect(downwardPointingSpy).toHaveBeenCalledWith(lowestLevelTargets.targets);
+        });
+
+        describe("when there is a downward pointing target", function() {
+
+            beforeEach(function() {
+                downwardPointingSpy.andReturn(targets[0]);
+            });
+
+            it("returns it", function() {
+                var result = pressureSolver.getDistributionTargets(pipes[1], pipes[1].va);
+                expect(result.targets.length).toBe(1);
+                expect(result.targets).toContain(targets[0]);
+            });
+
+            it("returns the next highest level", function() {
+                var result = pressureSolver.getDistributionTargets(pipes[1], pipes[1].va);
+                expect(result.nextHighestLevel).toBe(5);
+            });
+        });
+
+        describe("when there isn't a downward pointing target", function() {
+
+            beforeEach(function() {
+                downwardPointingSpy.andReturn(false);
+            });
+
+            it("returns the lowest level targets", function() {
+                var result = pressureSolver.getDistributionTargets(pipes[1], pipes[1].va);
+                expect(result.targets).toBe(lowestLevelTargets.targets);
+            });
+
+            it("returns the next highest level", function() {
+                var result = pressureSolver.getDistributionTargets(pipes[1], pipes[1].va);
+                expect(result.nextHighestLevel).toBe(5);
+            });
+        });
+
+
+    });
+
     describe("when redistributePressure is called", function() {
 
         var targetsSpy,
+            distributionSpy,
             vertex;
 
         beforeEach(function() {
@@ -341,21 +528,12 @@ describe("a Pressure Solver", function() {
                 highestVertex: pipes[1].va
             }]);
             spyOn(fluidAdder, 'add');
+            distributionSpy = spyOn(pressureSolver, 'getDistributionTargets').andCallThrough();
         });
 
-        it("gets targets from the target calculator", function() {
+        it("gets targets from getDistributionTargets", function() {
             pressureSolver.redistributePressure(pipes[1], pipes[1].va, 5);
-            expect(targetsSpy).toHaveBeenCalledWith(pipes[1], pipes[1].va);
-        });
-
-        it("adds the fluid level for each target", function() {
-            var addLevelSpy = spyOn(pressureSolver, 'addFluidLevel').andCallThrough();
-            pressureSolver.redistributePressure(pipes[1], pipes[1].va, 5);
-            expect(addLevelSpy.callCount).toBe(2);
-            expect(addLevelSpy.calls[0].args[0].pipe).toBe(pipes[3]);
-            expect(addLevelSpy.calls[0].args[0].vertex).toBe(pipes[3].va);
-            expect(addLevelSpy.calls[1].args[0].pipe).toBe(pipes[1]);
-            expect(addLevelSpy.calls[1].args[0].vertex).toBe(pipes[1].va);
+            expect(distributionSpy).toHaveBeenCalledWith(pipes[1], pipes[1].va);
         });
 
         describe("and the returned targets are pointing down, with the same fluid level", function() {
@@ -459,7 +637,7 @@ describe("a Pressure Solver", function() {
                 });
             });
 
-            describe("when there are multiple pipes with the lowest fluid level", function() {
+            describe("when there are multiple pipes with the lowest fluid level, within the range of the minimum", function() {
 
                 var originalLevelA,
                     originalLevelB;
@@ -467,7 +645,7 @@ describe("a Pressure Solver", function() {
                 beforeEach(function() {
                     var nextLevel = metrics.getFluidLevel(pipes[3], pipes[3].va);
                     var volume = pressureSolver.getVolumeNeededToReachLevel(pipes[1], pipes[1].va, nextLevel);
-                    pipes[1].fluids[0].volume += volume;
+                    pipes[1].fluids[0].volume += volume + (VoronoiDrip.FluidNetworkSimulation.MINIMUM_FLUID_VOLUME / 2);
                     originalLevelA = metrics.getFluidLevel(pipes[1], pipes[1].va);
                     originalLevelB = metrics.getFluidLevel(pipes[3], pipes[3].va);
                     fluidAdder.add.andCallThrough();
