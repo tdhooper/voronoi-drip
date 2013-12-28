@@ -11,18 +11,6 @@
         </style>
     </head>
     <body>
-        <script src="js/lib/toxiclibs.js"></script>
-        <script src="js/app/update-loop.js"></script>
-        <script src="js/app/display.js"></script>
-        <script src="js/app/network-designer.js"></script>
-        <script>
-            var networkDesigner = VoronoiDrip.NetworkDesigner.create({
-                width: 500,
-                height: 500,
-                timeout: 10
-            });
-
-            networkDesigner.start();
-        </script>
+        <script data-main="js/designer" src="js/require.js"></script>
     </body>
 </html>

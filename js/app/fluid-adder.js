@@ -1,33 +1,36 @@
-var VoronoiDrip = VoronoiDrip || {};
-VoronoiDrip.FluidNetworkSimulation = VoronoiDrip.FluidNetworkSimulation || {};
-VoronoiDrip.FluidNetworkSimulation.FluidAdder = VoronoiDrip.FluidNetworkSimulation.FluidAdder || {};
+define(function() {
 
-VoronoiDrip.FluidNetworkSimulation.FluidAdder.create = function(spec) {
-    var that = {};
+    var FluidAdder = {};
 
-    that.metrics = spec.metrics;
-    that.overlapSolver = spec.overlapSolver;
-    that.targetCalculator = spec.targetCalculator;
+    FluidAdder.create = function(spec) {
+        var that = {};
 
-    that.add = function(pipe, point, volume) {
-        if (volume < VoronoiDrip.FluidNetworkSimulation.MINIMUM_FLUID_VOLUME) {
-            return;
-        }
+        that.metrics = spec.metrics;
+        that.overlapSolver = spec.overlapSolver;
+        that.targetCalculator = spec.targetCalculator;
 
-        var fluids = pipe.fluids = pipe.fluids || [];
+        that.add = function(pipe, point, volume) {
+            if (volume < spec.MINIMUM_FLUID_VOLUME) {
+                return;
+            }
 
-        fluids.push({
-            volume: volume,
-            position: that.metrics.pointsMatch(point, pipe.va) ? 0 : pipe.capacity - volume,
-            movedBy: that.metrics.pointsMatch(point, pipe.va) ? volume : volume * -1
-        });
+            var fluids = pipe.fluids = pipe.fluids || [];
 
-        that.overlapSolver.solve(pipe);
+            fluids.push({
+                volume: volume,
+                position: that.metrics.pointsMatch(point, pipe.va) ? 0 : pipe.capacity - volume,
+                movedBy: that.metrics.pointsMatch(point, pipe.va) ? volume : volume * -1
+            });
 
-        if ( ! that.metrics.hasCapacity(pipe)) {
-            that.targetCalculator.pipeFull(pipe);
-        }
+            that.overlapSolver.solve(pipe);
+
+            if ( ! that.metrics.hasCapacity(pipe)) {
+                that.targetCalculator.pipeFull(pipe);
+            }
+        };
+
+        return that;
     };
 
-    return that;
-};
+    return FluidAdder;
+});

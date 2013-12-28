@@ -1,21 +1,25 @@
-var VoronoiDrip = VoronoiDrip || {};
-VoronoiDrip.UpdateLoop = VoronoiDrip.UpdateLoop || {};
+define(function() {
 
-VoronoiDrip.UpdateLoop.create = function(spec) {
-    var that = {};
+    var UpdateLoop = {};
 
-    that.start = function() {
-        that.tick();
+    UpdateLoop.create = function(spec) {
+        var that = {};
+
+        that.start = function() {
+            that.tick();
+        };
+
+        that.tick = function() {
+            spec.update();
+            tickerTimeout = setTimeout(that.tick, spec.timeout);
+        };
+
+        that.stop = function() {
+            clearTimeout(tickerTimeout);
+        };
+
+        return that;
     };
 
-    that.tick = function() {
-        spec.update();
-        tickerTimeout = setTimeout(that.tick, spec.timeout);
-    };
-
-    that.stop = function() {
-        clearTimeout(tickerTimeout);
-    };
-
-    return that;
-};
+    return UpdateLoop;
+})

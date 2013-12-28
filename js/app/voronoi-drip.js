@@ -39,147 +39,152 @@
 
 */
 
-var VoronoiDrip = VoronoiDrip || {};
+define(['app/fluid-network-simulation', 'app/display', 'app/update-loop'], function(FluidNetworkSimulation, Display, UpdateLoop) {
 
-VoronoiDrip.PIPE_COLOUR = '#eee';
-VoronoiDrip.FLUID_COLOUR = '#000';
-VoronoiDrip.TIMEOUT = 10;
+    var VoronoiDrip = {};
 
-VoronoiDrip.create = function(spec) {
-    var that = {},
-        updateLoop,
-        timeout = spec.hasOwnProperty('timeout') ? spec.timeout : VoronoiDrip.TIMEOUT;
+    VoronoiDrip.PIPE_COLOUR = '#eee';
+    VoronoiDrip.FLUID_COLOUR = '#000';
+    VoronoiDrip.TIMEOUT = 10;
 
-    that.network = spec.network;
-    that.pipeColour = spec.hasOwnProperty('pipeColour') ? spec.pipeColour : VoronoiDrip.PIPE_COLOUR;
-    that.fluidColour = spec.hasOwnProperty('fluidColour') ? spec.fluidColour : VoronoiDrip.FLUID_COLOUR;
+    VoronoiDrip.create = function(spec) {
+        var that = {},
+            updateLoop,
+            timeout = spec.hasOwnProperty('timeout') ? spec.timeout : VoronoiDrip.TIMEOUT;
 
-    that.getHighestEdgeAndVertex = function() {
-        var edgeCount = that.network.length,
-            highestEdge,
-            highestVertex;
+        that.network = spec.network;
+        that.pipeColour = spec.hasOwnProperty('pipeColour') ? spec.pipeColour : VoronoiDrip.PIPE_COLOUR;
+        that.fluidColour = spec.hasOwnProperty('fluidColour') ? spec.fluidColour : VoronoiDrip.FLUID_COLOUR;
 
-        while (edgeCount--) {
-            var edge = that.network[edgeCount];
+        that.getHighestEdgeAndVertex = function() {
+            var edgeCount = that.network.length,
+                highestEdge,
+                highestVertex;
 
-            if ( ! highestVertex || edge.va.y < highestVertex.y) {
-                highestEdge = edge;
-                highestVertex = edge.va;
+            while (edgeCount--) {
+                var edge = that.network[edgeCount];
+
+                if ( ! highestVertex || edge.va.y < highestVertex.y) {
+                    highestEdge = edge;
+                    highestVertex = edge.va;
+                }
+
+                if (edge.vb.y < highestVertex.y) {
+                    highestEdge = edge;
+                    highestVertex = edge.vb;
+                }
             }
 
-            if (edge.vb.y < highestVertex.y) {
-                highestEdge = edge;
-                highestVertex = edge.vb;
-            }
+            return {
+                edge: highestEdge,
+                vertex: highestVertex
+            };
         }
 
-        return {
-            edge: highestEdge,
-            vertex: highestVertex
-        };
-    }
+        that.drawNetwork = function() {
+            var edgeCount = that.network.length,
+                edge;
 
-    that.drawNetwork = function() {
-        var edgeCount = that.network.length,
-            edge;
-
-        while (edgeCount--) {
-            edge = that.network[edgeCount];
-            that.display.drawLine(
-                {x: edge.va.x, y: edge.va.y},
-                {x: edge.vb.x, y: edge.vb.y},
-                that.pipeColour
-            )
-        }
-    };
-
-    that.drawFluids = function() {
-        var pipeCount = that.fluidNetworkSimulation.pipes.length,
-            pipe,
-            fluidCount,
-            fluids,
-            start,
-            end,
-            xDiff,
-            yDiff;
-
-        while (pipeCount--) {
-            pipe = that.fluidNetworkSimulation.pipes[pipeCount];
-            if ( ! pipe.hasOwnProperty('fluids')) {
-                continue;
-            }
-            fluidCount = pipe.fluids.length;
-            while (fluidCount--) {
-                fluid = pipe.fluids[fluidCount];
-                start = fluid.position / pipe.capacity;
-                end = (fluid.position + fluid.volume) / pipe.capacity;
-                xDiff = pipe.vb.x - pipe.va.x;
-                yDiff = pipe.vb.y - pipe.va.y;
+            while (edgeCount--) {
+                edge = that.network[edgeCount];
                 that.display.drawLine(
-                    {
-                        x: pipe.va.x + (xDiff * start),
-                        y: pipe.va.y + (yDiff * start),
-                    },{
-                        x: pipe.va.x + (xDiff * end),
-                        y: pipe.va.y + (yDiff * end),
-                    },
-                    that.fluidColour
-                );
+                    {x: edge.va.x, y: edge.va.y},
+                    {x: edge.vb.x, y: edge.vb.y},
+                    that.pipeColour
+                )
             }
+        };
+
+        that.drawFluids = function() {
+            var pipeCount = that.fluidNetworkSimulation.pipes.length,
+                pipe,
+                fluidCount,
+                fluids,
+                start,
+                end,
+                xDiff,
+                yDiff;
+
+            while (pipeCount--) {
+                pipe = that.fluidNetworkSimulation.pipes[pipeCount];
+                if ( ! pipe.hasOwnProperty('fluids')) {
+                    continue;
+                }
+                fluidCount = pipe.fluids.length;
+                while (fluidCount--) {
+                    fluid = pipe.fluids[fluidCount];
+                    start = fluid.position / pipe.capacity;
+                    end = (fluid.position + fluid.volume) / pipe.capacity;
+                    xDiff = pipe.vb.x - pipe.va.x;
+                    yDiff = pipe.vb.y - pipe.va.y;
+                    that.display.drawLine(
+                        {
+                            x: pipe.va.x + (xDiff * start),
+                            y: pipe.va.y + (yDiff * start),
+                        },{
+                            x: pipe.va.x + (xDiff * end),
+                            y: pipe.va.y + (yDiff * end),
+                        },
+                        that.fluidColour
+                    );
+                }
+            }
+        };
+
+        that.start = function() {
+            that.fluidNetworkSimulation = FluidNetworkSimulation.create({
+                pipes: that.network,
+                gravity: spec.gravity
+            });
+            that.fluidNetworkSimulation.start();
+
+            that.display = Display.create({
+                width: spec.width,
+                height: spec.height,
+                container: spec.container
+            });
+            that.display.start();
+
+            updateLoop = UpdateLoop.create({
+                timeout: timeout,
+                update: that.update
+            });
+        };
+
+        that.play = function() {
+            updateLoop.start();
+        };
+
+        that.stop = function() {
+            updateLoop.stop();
+        };
+
+        that.pause = function() {
+            updateLoop.stop();
+        };
+
+        that.addFluid = function(volume, edge, vertex) {
+            if ( ! vertex || ! edge) {
+                highestEdgeAndVertex = that.getHighestEdgeAndVertex();
+                edge = highestEdgeAndVertex.edge;
+                vertex = highestEdgeAndVertex.vertex;
+            }
+            that.fluidNetworkSimulation.addFluid(edge, vertex, volume);
+        };
+
+        that.draw = function() {
+            that.display.clear();
+            that.drawNetwork();
+            that.drawFluids();
         }
+
+        that.update = function() {
+            that.fluidNetworkSimulation.update();
+            that.draw();
+        };
+
+        return that;
     };
 
-    that.start = function() {
-        that.fluidNetworkSimulation = VoronoiDrip.FluidNetworkSimulation.create({
-            pipes: that.network,
-            gravity: spec.gravity
-        });
-        that.fluidNetworkSimulation.start();
-
-        that.display = VoronoiDrip.Display.create({
-            width: spec.width,
-            height: spec.height,
-            container: spec.container
-        });
-        that.display.start();
-
-        updateLoop = VoronoiDrip.UpdateLoop.create({
-            timeout: timeout,
-            update: that.update
-        });
-    };
-
-    that.play = function() {
-        updateLoop.start();
-    };
-
-    that.stop = function() {
-        updateLoop.stop();
-    };
-
-    that.pause = function() {
-        updateLoop.stop();
-    };
-
-    that.addFluid = function(volume, edge, vertex) {
-        if ( ! vertex || ! edge) {
-            highestEdgeAndVertex = that.getHighestEdgeAndVertex();
-            edge = highestEdgeAndVertex.edge;
-            vertex = highestEdgeAndVertex.vertex;
-        }
-        that.fluidNetworkSimulation.addFluid(edge, vertex, volume);
-    };
-
-    that.draw = function() {
-        that.display.clear();
-        that.drawNetwork();
-        that.drawFluids();
-    }
-
-    that.update = function() {
-        that.fluidNetworkSimulation.update();
-        that.draw();
-    };
-
-    return that;
-};
+    return VoronoiDrip;
+});

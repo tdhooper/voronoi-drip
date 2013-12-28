@@ -1,82 +1,85 @@
-var VoronoiDrip = VoronoiDrip || {};
-VoronoiDrip.FluidNetworkSimulation = VoronoiDrip.FluidNetworkSimulation || {};
-VoronoiDrip.FluidNetworkSimulation.OverlapSolver = VoronoiDrip.FluidNetworkSimulation.OverlapSolver || {};
+define(function() {
 
-VoronoiDrip.FluidNetworkSimulation.OverlapSolver.create = function(spec) {
-    var that = {};
+    var OverlapSolver = {};
 
-    that.pipes = spec.pipes;
+    OverlapSolver.create = function(spec) {
+        var that = {};
 
-    that.getOverlap = function(fluidA, fluidB) {
-        var startA = fluidA.position,
-            startB = fluidB.position,
-            endA = fluidA.volume + fluidA.position,
-            endB = fluidB.volume + fluidB.position,
-            latestStart = Math.max(startA, startB),
-            earliestEnd = Math.min(endA, endB);
-        return earliestEnd - latestStart;
-    };
+        that.pipes = spec.pipes;
 
-    that.solve = function(pipe) {
+        that.getOverlap = function(fluidA, fluidB) {
+            var startA = fluidA.position,
+                startB = fluidB.position,
+                endA = fluidA.volume + fluidA.position,
+                endB = fluidB.volume + fluidB.position,
+                latestStart = Math.max(startA, startB),
+                earliestEnd = Math.min(endA, endB);
+            return earliestEnd - latestStart;
+        };
 
-        var updated = false,
-            fluidCountA = pipe.fluids.length,
-            fluidCountB,
-            fluidA,
-            fluidB,
-            overlap,
-            movementTotal,
-            movementA,
-            movementB,
-            movement,
-            resistance,
-            minPosition;
+        that.solve = function(pipe) {
 
-        while (fluidCountA--) {
-            fluidA = pipe.fluids[fluidCountA];
-            fluidCountB = pipe.fluids.length;
-            while (fluidCountB--) {
-                fluidB = pipe.fluids[fluidCountB];
-                if (fluidB == fluidA) {
-                    continue;
+            var updated = false,
+                fluidCountA = pipe.fluids.length,
+                fluidCountB,
+                fluidA,
+                fluidB,
+                overlap,
+                movementTotal,
+                movementA,
+                movementB,
+                movement,
+                resistance,
+                minPosition;
+
+            while (fluidCountA--) {
+                fluidA = pipe.fluids[fluidCountA];
+                fluidCountB = pipe.fluids.length;
+                while (fluidCountB--) {
+                    fluidB = pipe.fluids[fluidCountB];
+                    if (fluidB == fluidA) {
+                        continue;
+                    }
+                    overlap = that.getOverlap(fluidA, fluidB);
+                    if (overlap > spec.MINIMUM_FLUID_VOLUME * -1) {
+                        movement = 0;
+                        fluidA.movedBy = fluidA.movedBy || 0;
+                        fluidB.movedBy = fluidA.movedBy || 0;
+                        if (fluidA.movedBy && fluidB.movedBy) {
+                            movementTotal = Math.abs(fluidA.movedBy) + Math.abs(fluidB.movedBy);
+                            movementA = fluidA.movedBy / movementTotal;
+                            movementB = fluidB.movedBy / movementTotal;
+                            movement = overlap * (movementA + movementB);
+                        }
+                        minPosition = Math.min(fluidA.position, fluidB.position);
+                        pipe.fluids[fluidCountA] = {
+                            volume: fluidA.volume + fluidB.volume,
+                            position: movement > 0 ? minPosition : minPosition + movement,
+                            movedBy: movement
+                        }
+                        pipe.fluids.splice(fluidCountB, 1);
+                        updated = true;
+                        break;
+                    }
                 }
-                overlap = that.getOverlap(fluidA, fluidB);
-                if (overlap > VoronoiDrip.FluidNetworkSimulation.MINIMUM_FLUID_VOLUME * -1) {
-                    movement = 0;
-                    fluidA.movedBy = fluidA.movedBy || 0;
-                    fluidB.movedBy = fluidA.movedBy || 0;
-                    if (fluidA.movedBy && fluidB.movedBy) {
-                        movementTotal = Math.abs(fluidA.movedBy) + Math.abs(fluidB.movedBy);
-                        movementA = fluidA.movedBy / movementTotal;
-                        movementB = fluidB.movedBy / movementTotal;
-                        movement = overlap * (movementA + movementB);
-                    }
-                    minPosition = Math.min(fluidA.position, fluidB.position);
-                    pipe.fluids[fluidCountA] = {
-                        volume: fluidA.volume + fluidB.volume,
-                        position: movement > 0 ? minPosition : minPosition + movement,
-                        movedBy: movement
-                    }
-                    pipe.fluids.splice(fluidCountB, 1);
-                    updated = true;
+                if (updated) {
                     break;
                 }
             }
-            if (updated) {
-                break;
-            }
-        }
 
-        if (updated == true) {
-            that.solve(pipe);
-        } else {
-            fluidCountA = pipe.fluids.length;
-            while (fluidCountA--) {
-                fluid = pipe.fluids[fluidCountA];
-                delete fluid.movedBy;
+            if (updated == true) {
+                that.solve(pipe);
+            } else {
+                fluidCountA = pipe.fluids.length;
+                while (fluidCountA--) {
+                    fluid = pipe.fluids[fluidCountA];
+                    delete fluid.movedBy;
+                }
             }
-        }
+        };
+
+        return that;
     };
 
-    return that;
-};
+    return OverlapSolver;
+});
