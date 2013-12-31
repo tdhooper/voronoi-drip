@@ -72,8 +72,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
 
             metrics = Metrics.create({
                 pipes: pipes,
-                gravity: 0.1,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                gravity: 0.1
             });
             targetCalculator = jasmine.createSpyObj('targetCalculator', ['getCachedGroupContainingFullPipe', 'pipeEmpty']);
             pressureSolver = jasmine.createSpyObj('pressureSolver', ['solve']);;
@@ -81,8 +80,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
                 pipes: pipes,
                 metrics: metrics,
                 pressureSolver: pressureSolver,
-                targetCalculator: targetCalculator,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                targetCalculator: targetCalculator
             });
         });
 

@@ -10,7 +10,7 @@ define(function() {
         that.targetCalculator = spec.targetCalculator;
 
         that.add = function(pipe, point, volume) {
-            if (volume < spec.MINIMUM_FLUID_VOLUME) {
+            if (volume < that.metrics.MINIMUM_FLUID_VOLUME) {
                 return;
             }
 

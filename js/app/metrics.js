@@ -7,6 +7,7 @@ define(function() {
 
         that.pipes = spec.pipes;
         that.gravity = spec.gravity;
+        that.MINIMUM_FLUID_VOLUME = 0.00001;
 
         that.pointsMatch = function(pointA, pointB) {
             return (pointA.x == pointB.x) && (pointA.y == pointB.y);
@@ -56,14 +57,14 @@ define(function() {
 
                 if (
                     that.pointsMatch(pipe.va, vertex)
-                    && fluid.position <= spec.MINIMUM_FLUID_VOLUME
+                    && fluid.position <= that.MINIMUM_FLUID_VOLUME
                 ) {
                     return fluid;
                 }
 
                 if (
                     that.pointsMatch(pipe.vb, vertex)
-                    && fluid.volume + fluid.position >= pipe.capacity - spec.MINIMUM_FLUID_VOLUME
+                    && fluid.volume + fluid.position >= pipe.capacity - that.MINIMUM_FLUID_VOLUME
                 ) {
                     return fluid;
                 }
@@ -127,7 +128,7 @@ define(function() {
         };
 
         that.hasCapacity = function(pipe) {
-            return that.getAvailableCapacity(pipe) >= spec.MINIMUM_FLUID_VOLUME;
+            return that.getAvailableCapacity(pipe) >= that.MINIMUM_FLUID_VOLUME;
         };
 
         that.getFluidLevel = function(pipe, vertex) {

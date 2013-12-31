@@ -77,8 +77,7 @@ define(['app/fluid-network-simulation', 'app/metrics'], function(FluidNetworkSim
 
             metrics = Metrics.create({
                 pipes: pipes,
-                gravity: 0.1,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                gravity: 0.1
             });
         });
 
@@ -440,12 +439,12 @@ define(['app/fluid-network-simulation', 'app/metrics'], function(FluidNetworkSim
             });
 
             it("returns true when the pipe has the minumum available", function() {
-                availableSpy.andReturn(FluidNetworkSimulation.MINIMUM_FLUID_VOLUME);
+                availableSpy.andReturn(metrics.MINIMUM_FLUID_VOLUME);
                 expect(metrics.hasCapacity(pipes[3])).toBe(true);
             });
 
             it("returns false when the pipe has less available than the minumum", function() {
-                availableSpy.andReturn(FluidNetworkSimulation.MINIMUM_FLUID_VOLUME * 0.9);
+                availableSpy.andReturn(metrics.MINIMUM_FLUID_VOLUME * 0.9);
                 expect(metrics.hasCapacity(pipes[3])).toBe(false);
             });
 

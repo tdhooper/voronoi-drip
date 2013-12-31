@@ -57,7 +57,7 @@ define(function() {
                 var target = targets[targetCount];
                 target.volumeToAdd *= scale;
 
-                if (target.volumeToAdd > spec.MINIMUM_FLUID_VOLUME) {
+                if (target.volumeToAdd > that.metrics.MINIMUM_FLUID_VOLUME) {
                     that.fluidAdder.add(target.pipe, target.vertex, target.volumeToAdd);
                     pressure -= target.volumeToAdd;
                 }
@@ -92,7 +92,7 @@ define(function() {
                     previousLevel = previousTarget.level;
                 }
 
-                if (previousLevel - target.level < spec.MINIMUM_FLUID_VOLUME) {
+                if (previousLevel - target.level < that.metrics.MINIMUM_FLUID_VOLUME) {
                     sameLevelTargets.push(target);
                 } else {
                     nextHighestLevel = target.level;
@@ -149,7 +149,7 @@ define(function() {
 
             var remainingPressure = that.distributePressureBetweenTargets(targets, pressure, nextHighestLevel);
             if (
-                remainingPressure > spec.MINIMUM_FLUID_VOLUME
+                remainingPressure > that.metrics.MINIMUM_FLUID_VOLUME
                 && remainingPressure !== availablePressure
             ) {
                 return that.redistributePressure(pipe, vertex, remainingPressure);
@@ -178,10 +178,10 @@ define(function() {
                     maxMask = Math.max(pipe.capacity, pipe.capacity - (fluid.volume + fluid.position));
                     overlap = totalWidthFromB - maxMask;
 
-                    if (overlap > spec.MINIMUM_FLUID_VOLUME) {
+                    if (overlap > that.metrics.MINIMUM_FLUID_VOLUME) {
                         fluid.position = 0;
                         fluid.volume -= overlap;
-                        if (fluid.volume <= spec.MINIMUM_FLUID_VOLUME) {
+                        if (fluid.volume <= that.metrics.MINIMUM_FLUID_VOLUME) {
                             pipe.fluids.splice(fluidCount, 1);
                         }
                         pressure += overlap;
@@ -196,9 +196,9 @@ define(function() {
                     maxMask = Math.max(pipe.capacity, fluid.position);
                     overlap = totalWidthFromA - maxMask;
 
-                    if (overlap > spec.MINIMUM_FLUID_VOLUME) {
+                    if (overlap > that.metrics.MINIMUM_FLUID_VOLUME) {
                         fluid.volume -= overlap;
-                        if (fluid.volume <= spec.MINIMUM_FLUID_VOLUME) {
+                        if (fluid.volume <= that.metrics.MINIMUM_FLUID_VOLUME) {
                             pipe.fluids.splice(fluidCount, 1);
                         }
                         pressure += overlap;

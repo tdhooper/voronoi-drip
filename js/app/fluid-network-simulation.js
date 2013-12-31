@@ -27,7 +27,6 @@ define(['app/metrics', 'app/overlap-solver', 'app/target-calculator', 'app/fluid
 
     var FluidNetworkSimulation = {};
 
-    FluidNetworkSimulation.MINIMUM_FLUID_VOLUME = 0.00001;
     FluidNetworkSimulation.GRAVITY = 5;
 
     FluidNetworkSimulation.create = function(spec) {
@@ -43,39 +42,34 @@ define(['app/metrics', 'app/overlap-solver', 'app/target-calculator', 'app/fluid
         that.start = function() {
             that.metrics = Metrics.create({
                 pipes: that.pipes,
-                gravity: that.gravity,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                gravity: that.gravity
             });
             that.metrics.start();
             that.overlapSolver = OverlapSolver.create({
                 pipes: that.pipes,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                metrics: that.metrics
             });
             that.targetCalculator = TargetCalculator.create({
                 pipes: that.pipes,
-                metrics: that.metrics,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                metrics: that.metrics
             });
             that.fluidAdder = FluidAdder.create({
                 pipes: that.pipes,
                 metrics: that.metrics,
                 overlapSolver: that.overlapSolver,
-                targetCalculator: that.targetCalculator,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                targetCalculator: that.targetCalculator
             });
             that.pressureSolver = PressureSolver.create({
                 pipes: that.pipes,
                 metrics: that.metrics,
                 fluidAdder: that.fluidAdder,
-                targetCalculator: that.targetCalculator,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                targetCalculator: that.targetCalculator
             });
             that.fluidMover = FluidMover.create({
                 pipes: that.pipes,
                 metrics: that.metrics,
                 pressureSolver: that.pressureSolver,
-                targetCalculator: that.targetCalculator,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                targetCalculator: that.targetCalculator
             });
         };
 

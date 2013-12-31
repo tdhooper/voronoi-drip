@@ -80,8 +80,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
 
             metrics = Metrics.create({
                 pipes: pipes,
-                gravity: 0.1,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                gravity: 0.1
             });
             overlapSolver = jasmine.createSpyObj('overlapSolver', ['solve']);
             targetCalculator = jasmine.createSpyObj('targetCalculator', ['pipeFull']);
@@ -89,8 +88,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
                 pipes: pipes,
                 metrics: metrics,
                 overlapSolver: overlapSolver,
-                targetCalculator: targetCalculator,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                targetCalculator: targetCalculator
             });
         });
 
@@ -104,7 +102,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
             describe("with a volume less than the minimum", function() {
 
                 beforeEach(function() {
-                    fluidAdder.add(pipes[0], pipes[0].va, FluidNetworkSimulation.MINIMUM_FLUID_VOLUME / 2);
+                    fluidAdder.add(pipes[0], pipes[0].va, metrics.MINIMUM_FLUID_VOLUME / 2);
                 });
 
                 it("doesn't create the pipe's fluids array", function() {
@@ -184,7 +182,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
                     describe("and then with a volume less than the minimum", function() {
 
                         beforeEach(function() {
-                            fluidAdder.add(pipes[0], pipes[0].va, FluidNetworkSimulation.MINIMUM_FLUID_VOLUME / 2);
+                            fluidAdder.add(pipes[0], pipes[0].va, metrics.MINIMUM_FLUID_VOLUME / 2);
                         });
 
                         it("doesn't add it to the pipe's fluids array", function() {

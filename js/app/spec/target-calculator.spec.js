@@ -66,13 +66,11 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
 
             metrics = Metrics.create({
                 pipes: pipes,
-                gravity: 0.1,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                gravity: 0.1
             });
             targetCalculator = TargetCalculator.create({
                 pipes: pipes,
-                metrics: metrics,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                metrics: metrics
             });
         });
 

@@ -65,12 +65,11 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver'], fu
 
             metrics = Metrics.create({
                 pipes: pipes,
-                gravity: 0.1,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                gravity: 0.1
             });
             overlapSolver = OverlapSolver.create({
                 pipes: pipes,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                metrics: metrics
             });
             metrics.start();
         });
@@ -153,7 +152,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver'], fu
                         position: 0
                     },{
                         volume: 5,
-                        position: 5 + FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                        position: 5 + metrics.MINIMUM_FLUID_VOLUME
                     }];
                     overlapSolver.solve(pipes[0]);
                 });

@@ -66,8 +66,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
 
             metrics = Metrics.create({
                 pipes: pipes,
-                gravity: 0.1,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                gravity: 0.1
             });
             overlapSolver = {
                 solve: function() {}
@@ -75,20 +74,17 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
             fluidAdder = FluidAdder.create({
                 pipes: pipes,
                 metrics: metrics,
-                overlapSolver: overlapSolver,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                overlapSolver: overlapSolver
             });
             targetCalculator = TargetCalculator.create({
                 pipes: pipes,
-                metrics: metrics,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                metrics: metrics
             });
             pressureSolver = PressureSolver.create({
                 pipes: pipes,
                 metrics: metrics,
                 fluidAdder: fluidAdder,
-                targetCalculator: targetCalculator,
-                MINIMUM_FLUID_VOLUME: FluidNetworkSimulation.MINIMUM_FLUID_VOLUME
+                targetCalculator: targetCalculator
             });
         });
 
@@ -648,7 +644,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
                     beforeEach(function() {
                         var nextLevel = metrics.getFluidLevel(pipes[3], pipes[3].va);
                         var volume = pressureSolver.getVolumeNeededToReachLevel(pipes[1], pipes[1].va, nextLevel);
-                        pipes[1].fluids[0].volume += volume + (FluidNetworkSimulation.MINIMUM_FLUID_VOLUME / 2);
+                        pipes[1].fluids[0].volume += volume + (metrics.MINIMUM_FLUID_VOLUME / 2);
                         originalLevelA = metrics.getFluidLevel(pipes[1], pipes[1].va);
                         originalLevelB = metrics.getFluidLevel(pipes[3], pipes[3].va);
                         fluidAdder.add.andCallThrough();

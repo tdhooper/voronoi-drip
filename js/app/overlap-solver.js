@@ -6,6 +6,7 @@ define(function() {
         var that = {};
 
         that.pipes = spec.pipes;
+        that.metrics = spec.metrics;
 
         that.getOverlap = function(fluidA, fluidB) {
             var startA = fluidA.position,
@@ -41,7 +42,7 @@ define(function() {
                         continue;
                     }
                     overlap = that.getOverlap(fluidA, fluidB);
-                    if (overlap > spec.MINIMUM_FLUID_VOLUME * -1) {
+                    if (overlap > that.metrics.MINIMUM_FLUID_VOLUME * -1) {
                         movement = 0;
                         fluidA.movedBy = fluidA.movedBy || 0;
                         fluidB.movedBy = fluidA.movedBy || 0;
