@@ -76,9 +76,7 @@ define(['lib/Squire', 'app/voronoi-network-generator'], function(Squire, Voronoi
             });
 
             it("creates lists of edges also connected to each vertex", function() {
-                var connectedEdgeCount,
-                    connectedEdge,
-                    hasConnections;
+                var hasConnections;
 
                 var verifyConnections = function(edges, vertex) {
                     var edgeCount = edges.length,
@@ -92,14 +90,14 @@ define(['lib/Squire', 'app/voronoi-network-generator'], function(Squire, Voronoi
 
                         matches = 0;
                         if (edge.va.x == vertex.x && edge.va.y == vertex.y) {
-                            matches++
+                            matches++;
                         }
                         if (edge.vb.x == vertex.x && edge.vb.y == vertex.y) {
-                            matches++
+                            matches++;
                         }
                         expect(matches).toBe(1);
                     }
-                }
+                };
 
                 while (edgeCount--) {
                     edge = vng.diagram.edges[edgeCount];

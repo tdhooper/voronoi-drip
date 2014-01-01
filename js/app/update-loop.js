@@ -3,7 +3,8 @@ define(function() {
     var UpdateLoop = {};
 
     UpdateLoop.create = function(spec) {
-        var that = {};
+        var that = {},
+            tickerTimeout;
 
         that.start = function() {
             that.tick();
@@ -22,4 +23,4 @@ define(function() {
     };
 
     return UpdateLoop;
-})
+});

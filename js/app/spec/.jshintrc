@@ -1,0 +1,14 @@
+{
+  "globals": {
+    "define": true,
+    "jasmine": true,
+    "beforeEach": true,
+    "afterEach": true,
+    "it": true,
+    "describe": true,
+    "expect": true,
+    "spyOn": true,
+    "waitsFor": true,
+    "runs": true
+  }
+}

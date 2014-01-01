@@ -56,7 +56,7 @@ define(function() {
                             volume: fluidA.volume + fluidB.volume,
                             position: movement > 0 ? minPosition : minPosition + movement,
                             movedBy: movement
-                        }
+                        };
                         pipe.fluids.splice(fluidCountB, 1);
                         updated = true;
                         break;
@@ -67,10 +67,11 @@ define(function() {
                 }
             }
 
-            if (updated == true) {
+            if (updated === true) {
                 that.solve(pipe);
             } else {
                 fluidCountA = pipe.fluids.length;
+                var fluid;
                 while (fluidCountA--) {
                     fluid = pipe.fluids[fluidCountA];
                     delete fluid.movedBy;

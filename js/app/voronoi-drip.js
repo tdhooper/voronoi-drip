@@ -79,7 +79,7 @@ define(['app/fluid-network-simulation', 'app/display', 'app/update-loop'], funct
                 edge: highestEdge,
                 vertex: highestVertex
             };
-        }
+        };
 
         that.drawNetwork = function() {
             var edgeCount = that.network.length,
@@ -91,7 +91,7 @@ define(['app/fluid-network-simulation', 'app/display', 'app/update-loop'], funct
                     {x: edge.va.x, y: edge.va.y},
                     {x: edge.vb.x, y: edge.vb.y},
                     that.pipeColour
-                )
+                );
             }
         };
 
@@ -99,7 +99,7 @@ define(['app/fluid-network-simulation', 'app/display', 'app/update-loop'], funct
             var pipeCount = that.fluidNetworkSimulation.pipes.length,
                 pipe,
                 fluidCount,
-                fluids,
+                fluid,
                 start,
                 end,
                 xDiff,
@@ -165,7 +165,7 @@ define(['app/fluid-network-simulation', 'app/display', 'app/update-loop'], funct
 
         that.addFluid = function(volume, edge, vertex) {
             if ( ! vertex || ! edge) {
-                highestEdgeAndVertex = that.getHighestEdgeAndVertex();
+                var highestEdgeAndVertex = that.getHighestEdgeAndVertex();
                 edge = highestEdgeAndVertex.edge;
                 vertex = highestEdgeAndVertex.vertex;
             }
@@ -176,7 +176,7 @@ define(['app/fluid-network-simulation', 'app/display', 'app/update-loop'], funct
             that.display.clear();
             that.drawNetwork();
             that.drawFluids();
-        }
+        };
 
         that.update = function() {
             that.fluidNetworkSimulation.update();

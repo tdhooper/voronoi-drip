@@ -2,10 +2,14 @@ define(['lib/Squire'], function(Squire) {
 
     describe("a Network Designer", function() {
 
-        var designer,
+        var NetworkDesigner,
+            designer,
+            UpdateLoop,
             mockUpdateLoop = jasmine.createSpyObj('updateLoop', ['start', 'stop']),
+            Display,
             mockDisplay,
-            canvas;
+            canvas,
+            injector;
 
         var mouseEvent = function(target, type, x, y) {
             var evt = document.createEvent('MouseEvents');
@@ -243,7 +247,7 @@ define(['lib/Squire'], function(Squire) {
                                         expect(designer.network[0].ca).toEqual([1]);
                                         expect(designer.network[1].cb).toEqual([0]);
                                     });
-                                })
+                                });
 
                                 describe("when the mouse moves away from the existing vertex", function() {
 
@@ -350,7 +354,7 @@ define(['lib/Squire'], function(Squire) {
 
                     it("keeps the edge highlighted", function() {
                         expect(designer.highlightEdges[0]).toEqual(designer.network[3]);
-                    })
+                    });
 
                     describe("when the mouse is released and moved a little", function() {
 
@@ -560,7 +564,7 @@ define(['lib/Squire'], function(Squire) {
                             {x: edge.vb.x, y: edge.vb.y},
                             NetworkDesigner.EDGE_COLOUR
                         );
-                    })
+                    });
                 });
 
                 describe("and an edge and vertex are highlighted", function() {
@@ -659,7 +663,7 @@ define(['lib/Squire'], function(Squire) {
                 var expectedSpec = {
                     width: 500,
                     height: 500
-                }
+                };
                 expect(Display.create).toHaveBeenCalledWith(expectedSpec);
             });
 
@@ -671,7 +675,7 @@ define(['lib/Squire'], function(Squire) {
                 var expectedSpec = {
                     update: designer.update,
                     timeout: 60
-                }
+                };
                 expect(UpdateLoop.create).toHaveBeenCalledWith(expectedSpec);
             });
 

@@ -4,13 +4,14 @@ define(['lib/Squire'], function(Squire) {
         var sandbox,
             container,
             Sandbox,
-            sandbox,
-            startAllLink;
+            startAllLink,
+            VoronoiDrip,
+            injector;
 
         beforeEach(function() {
             container = document.createElement('div');
 
-            VoronoiDrip = jasmine.createSpyObj('VoronoiDrip', ['create'])
+            VoronoiDrip = jasmine.createSpyObj('VoronoiDrip', ['create']);
 
             injector = new Squire();
             injector.mock('app/voronoi-drip', VoronoiDrip);

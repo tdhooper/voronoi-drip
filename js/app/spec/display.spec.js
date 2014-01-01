@@ -30,11 +30,11 @@ define(['app/display'], function(Display) {
 
                 afterEach(function() {
                     document.body.removeChild(canvas);
-                })
+                });
 
                 it("returns a new canvas element", function() {
                     expect(canvas.nodeName).toBe('CANVAS');
-                })
+                });
 
                 it("appends the new canvas element to the body", function() {
                     expect(canvas.parentNode).toBe(document.body);

@@ -14,7 +14,7 @@ define(function() {
             var targetLevel = that.metrics.getFluidLevel(pipe, vertex),
                 heightFromVertex = that.metrics.pointsMatch(pipe.va, vertex) ? pipe.vb.y - pipe.va.y : pipe.va.y - pipe.vb.y;
 
-            if (heightFromVertex == 0) {
+            if (heightFromVertex === 0) {
                 return false;
             }
 
@@ -24,23 +24,25 @@ define(function() {
 
         that.distributePressureBetweenTargets = function(targets, pressure, nextHighestLevel) {
             var targetCount = targets.length,
+                target,
+                volumeNeededToReachLevel,
                 totalVolume = 0,
-                minCapacityScale = null;
+                minCapacityScale = null,
                 otherVertex = that.metrics.pointsMatch(targets[0].vertex, targets[0].pipe.va) ? targets[0].pipe.vb : targets[0].pipe.va,
                 direction = (otherVertex.y - targets[0].vertex.y) > 0 ? 1 : -1,
                 highestPossibleLevel = targets[0].level + (pressure * direction);
                 highestPossibleLevel = nextHighestLevel !== null ? nextHighestLevel : highestPossibleLevel;
 
             while (targetCount--) {
-                var target = targets[targetCount],
-                    volumeNeededToReachLevel = that.getVolumeNeededToReachLevel(target.pipe, target.vertex, highestPossibleLevel);
+                target = targets[targetCount];
+                volumeNeededToReachLevel = that.getVolumeNeededToReachLevel(target.pipe, target.vertex, highestPossibleLevel);
                 target.volumeToAdd = volumeNeededToReachLevel !== false && volumeNeededToReachLevel > 0 ? volumeNeededToReachLevel : target.pipe.capacity;
                 totalVolume += target.volumeToAdd;
 
                 var availableCapacity = that.metrics.getAvailableCapacity(target.pipe);
                 if (availableCapacity < target.volumeToAdd) {
                     var capacityScale = availableCapacity / target.volumeToAdd;
-                    if (minCapacityScale == null) {
+                    if (minCapacityScale === null) {
                         minCapacityScale = capacityScale;
                     } else {
                         minCapacityScale = Math.min(minCapacityScale, capacityScale);
@@ -50,11 +52,11 @@ define(function() {
 
             var volumeToAdd = Math.min(totalVolume, pressure),
                 pressureScale = volumeToAdd / totalVolume,
-                scale = minCapacityScale !== null ? Math.min(minCapacityScale, pressureScale) : pressureScale,
-                targetCount = targets.length;
+                scale = minCapacityScale !== null ? Math.min(minCapacityScale, pressureScale) : pressureScale;
+            targetCount = targets.length;
 
             while (targetCount--) {
-                var target = targets[targetCount];
+                target = targets[targetCount];
                 target.volumeToAdd *= scale;
 
                 if (target.volumeToAdd > that.metrics.MINIMUM_FLUID_VOLUME) {
@@ -77,18 +79,22 @@ define(function() {
         };
 
         that.findLowestLevelTargets = function(targets) {
-            var targets = targets.map(that.addFluidLevel),
-                targets = targets.sort(that.fluidLevelLowToHigh),
-                sameLevelTargets = [],
+            var sameLevelTargets = [],
                 nextHighestLevel = null,
-                targetCount = 0;
+                targetCount = 0,
+                previousLevel,
+                previousTarget,
+                target;
+
+            targets = targets.map(that.addFluidLevel);
+            targets = targets.sort(that.fluidLevelLowToHigh);
 
             while (targetCount < targets.length) {
-                var target = targets[targetCount];
+                target = targets[targetCount];
                 previousLevel = target.level;
 
                 if (targetCount > 0) {
-                    var previousTarget = targets[targetCount - 1];
+                    previousTarget = targets[targetCount - 1];
                     previousLevel = previousTarget.level;
                 }
 

@@ -97,7 +97,7 @@ define(function() {
         };
 
         that.getAvailableCapacity = function(pipe) {
-            if ( ! pipe.fluids || pipe.fluids.length == 0) {
+            if ( ! pipe.fluids || pipe.fluids.length === 0) {
                 return pipe.capacity;
             }
 
@@ -108,7 +108,7 @@ define(function() {
             while(fluidCount--) {
                 fluid = pipe.fluids[fluidCount];
 
-                var overlapsA = fluid.position + fluid.volume > pipe.capacity;
+                var overlapsA = fluid.position + fluid.volume > pipe.capacity,
                     overlapsB = fluid.position < 0;
 
                 if (overlapsA && overlapsB) {

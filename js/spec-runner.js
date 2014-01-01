@@ -54,7 +54,7 @@ require(['jasmine-html'], function (jasmine) {
     }
 
     function execJasmine() {
-        require(specs, function(spec) {
+        require(specs, function() {
             jasmineEnv.execute();
         });
     }

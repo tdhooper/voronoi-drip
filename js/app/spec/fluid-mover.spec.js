@@ -2,9 +2,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
 
     describe("a Fluid Mover", function() {
         var metrics,
-            overlapSolver,
             targetCalculator,
-            fluidAdder,
             pressureSolver,
             fluidMover,
             pipes;
@@ -74,7 +72,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
                 gravity: 0.1
             });
             targetCalculator = jasmine.createSpyObj('targetCalculator', ['getCachedGroupContainingFullPipe', 'pipeEmpty']);
-            pressureSolver = jasmine.createSpyObj('pressureSolver', ['solve']);;
+            pressureSolver = jasmine.createSpyObj('pressureSolver', ['solve']);
             fluidMover = FluidMover.create({
                 pipes: pipes,
                 metrics: metrics,
@@ -122,14 +120,14 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
                     pipes[4].level = 50;
                     pipes[1].level = 50;
                     pipes[2].level = 50;
-                    spyOn(metrics, 'getFluidLevel').andCallFake(function(pipe, vertex) {
+                    spyOn(metrics, 'getFluidLevel').andCallFake(function(pipe) {
                         return pipe.level;
                     });
                 });
 
                 it("gets the pipe's fluid level", function() {
                     fluidMover.hasValidTarget(pipes[0], pipes[0].va);
-                    expect(metrics.getFluidLevel).toHaveBeenCalledWith(pipes[0], pipes[0].va)
+                    expect(metrics.getFluidLevel).toHaveBeenCalledWith(pipes[0], pipes[0].va);
                 });
 
                 it("gets the fluid level of each target", function() {
@@ -185,7 +183,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
                 expect(targetCalculator.pipeEmpty.callCount).toBe(1);
                 expect(targetCalculator.pipeEmpty).toHaveBeenCalledWith(fluidMover.pipes[0]);
             });
-        })
+        });
 
         describe("when update is called", function() {
 
@@ -210,7 +208,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
                 spyOn(metrics, 'getFluidVelocity').andCallThrough();
                 spyOn(metrics, 'hasCapacity').andCallThrough();
                 spyOn(fluidMover, 'moveFluidsInPipe');
-                spyOn(fluidMover, 'hasValidTarget').andCallFake(function(pipe, vertex) {
+                spyOn(fluidMover, 'hasValidTarget').andCallFake(function(pipe) {
                     if (pipe == pipes[3]) {
                         return true;
                     }
@@ -243,7 +241,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
 
                 it("calls hasValidTarget", function() {
                     expect(fluidMover.hasValidTarget.callCount).toBe(2);
-                })
+                });
 
                 it("with vertex B when there is a positive velocity", function() {
                     expect(fluidMover.hasValidTarget).toHaveBeenCalledWith(pipes[0], pipes[0].vb);
@@ -256,7 +254,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
                 it("for pipe with a valid target, it calls moveFluidsInPipe with the velocity", function() {
                     expect(fluidMover.moveFluidsInPipe.callCount).toBe(2);
                     expect(fluidMover.moveFluidsInPipe).toHaveBeenCalledWith(pipes[3], -0.1);
-                })
+                });
             });
         });
     });

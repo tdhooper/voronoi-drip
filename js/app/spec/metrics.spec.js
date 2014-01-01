@@ -4,16 +4,6 @@ define(['app/fluid-network-simulation', 'app/metrics'], function(FluidNetworkSim
         var metrics,
             pipes;
 
-        var roundToPrecision = function(value, precision) {
-            var power = Math.pow(10, precision - 1);
-            return Math.round(value * power) / power;
-        }
-
-        var round2dp = function(value) { return roundToPrecision(value, 3); }
-        var round3dp = function(value) { return roundToPrecision(value, 4); }
-        var round4dp = function(value) { return roundToPrecision(value, 5); }
-        var round5dp = function(value) { return roundToPrecision(value, 6); }
-
         /*
             Test pipe layout
 
@@ -141,57 +131,37 @@ define(['app/fluid-network-simulation', 'app/metrics'], function(FluidNetworkSim
             expect(metrics.getLength(pipe)).toBe(1);
 
             pipe.vb = {x: 2, y: 2};
-            expect(round2dp(
-                metrics.getLength(pipe)
-            )).toBe(2.83);
+            expect(metrics.getLength(pipe)).toBeCloseTo(2.83);
 
             pipe.vb = {x: -3, y: 1};
-            expect(round2dp(
-                metrics.getLength(pipe)
-            )).toBe(3.16);
+            expect(metrics.getLength(pipe)).toBeCloseTo(3.16);
 
             pipe.va = {x: 1, y: -1};
             pipe.vb = {x: -3, y: 1};
-            expect(round2dp(
-                metrics.getLength(pipe)
-            )).toBe(4.47);
+            expect(metrics.getLength(pipe)).toBeCloseTo(4.47);
         });
 
         it("calculateIncline should calculate an incline from 0 to 1 regardless of direction", function() {
             // 90˚
-            expect(round2dp(
-                metrics.calculateIncline( Math.PI * (1/2) )
-            )).toBe(0);
+            expect(metrics.calculateIncline( Math.PI * (1/2) )).toBeCloseTo(0);
 
             // 112.5˚
-            expect(round2dp(
-                metrics.calculateIncline( Math.PI * (5/8) )
-            )).toBe(0.25);
+            expect(metrics.calculateIncline( Math.PI * (5/8) )).toBeCloseTo(0.25);
 
             // 135˚
-            expect(round2dp(
-                metrics.calculateIncline( Math.PI * (3/4) )
-            )).toBe(0.5);
+            expect(metrics.calculateIncline( Math.PI * (3/4) )).toBeCloseTo(0.5);
 
             // 180˚
-            expect(round2dp(
-                metrics.calculateIncline( Math.PI )
-            )).toBe(1);
+            expect(metrics.calculateIncline( Math.PI )).toBeCloseTo(1);
 
             // 225˚
-            expect(round2dp(
-                metrics.calculateIncline( Math.PI * (5/4) )
-            )).toBe(0.5);
+            expect(metrics.calculateIncline( Math.PI * (5/4) )).toBeCloseTo(0.5);
 
             // 247.5˚
-            expect(round2dp(
-                metrics.calculateIncline( Math.PI * (11/8) )
-            )).toBe(0.25);
+            expect(metrics.calculateIncline( Math.PI * (11/8) )).toBeCloseTo(0.25);
 
             // 270˚
-            expect(round2dp(
-                metrics.calculateIncline( Math.PI * (3/2) )
-            )).toBe(0);
+            expect(metrics.calculateIncline( Math.PI * (3/2) )).toBeCloseTo(0);
         });
 
         describe("when start is called", function() {
@@ -211,10 +181,10 @@ define(['app/fluid-network-simulation', 'app/metrics'], function(FluidNetworkSim
 
             it("sets the capacity of all pipes", function() {
                 expect(metrics.pipes[0].capacity).toBe(10);
-                expect(round3dp(metrics.pipes[1].capacity)).toBe(14.142);
+                expect(metrics.pipes[1].capacity).toBeCloseTo(14.142);
                 expect(metrics.pipes[2].capacity).toBe(20);
                 expect(metrics.pipes[3].capacity).toBe(30);
-                expect(round3dp(metrics.pipes[4].capacity)).toBe(14.142);
+                expect(metrics.pipes[4].capacity).toBeCloseTo(14.142);
             });
         });
 

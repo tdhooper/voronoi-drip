@@ -1,7 +1,8 @@
 define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver'], function(FluidNetworkSimulation, Metrics, OverlapSolver) {
     describe("a Overlap Solver", function() {
         var overlapSolver,
-            pipes;
+            pipes,
+            metrics;
 
         /*
             Test pipe layout

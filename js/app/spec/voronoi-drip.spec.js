@@ -9,7 +9,8 @@ define(['lib/Squire'], function(Squire) {
             UpdateLoop,
             mockUpdateLoop = jasmine.createSpyObj('updateLoop', ['start', 'stop']),
             FluidNetworkSimulation,
-            Display;
+            Display,
+            injector;
 
         beforeEach(function() {
             edges = [
@@ -55,11 +56,11 @@ define(['lib/Squire'], function(Squire) {
                 network: edges
             };
 
-            UpdateLoop = jasmine.createSpyObj('UpdateLoop', ['create'])
+            UpdateLoop = jasmine.createSpyObj('UpdateLoop', ['create']);
             UpdateLoop.create.andReturn(mockUpdateLoop);
 
-            FluidNetworkSimulation = jasmine.createSpyObj('FluidNetworkSimulation', ['create'])
-            Display = jasmine.createSpyObj('Display', ['create'])
+            FluidNetworkSimulation = jasmine.createSpyObj('FluidNetworkSimulation', ['create']);
+            Display = jasmine.createSpyObj('Display', ['create']);
 
             injector = new Squire();
             injector.mock('app/update-loop', UpdateLoop);
@@ -78,7 +79,7 @@ define(['lib/Squire'], function(Squire) {
 
             runs(function() {
                 voronoiDrip = VoronoiDrip.create(spec);
-            })
+            });
         });
 
         afterEach(function() {
@@ -160,7 +161,7 @@ define(['lib/Squire'], function(Squire) {
                 var expectedSpec = {
                     pipes: spec.network,
                     gravity: 3
-                }
+                };
                 expect(FluidNetworkSimulation.create).toHaveBeenCalledWith(expectedSpec);
                 expect(voronoiDrip.fluidNetworkSimulation).toBe(mockSimulation);
             });
@@ -174,7 +175,7 @@ define(['lib/Squire'], function(Squire) {
                     width: 300,
                     height: 300,
                     container: container
-                }
+                };
                 expect(Display.create).toHaveBeenCalledWith(expectedSpec);
                 expect(voronoiDrip.display).toBe(mockDisplay);
             });
@@ -187,7 +188,7 @@ define(['lib/Squire'], function(Squire) {
                 var expectedSpec = {
                     update: voronoiDrip.update,
                     timeout: 60
-                }
+                };
                 expect(UpdateLoop.create).toHaveBeenCalledWith(expectedSpec);
             });
 
@@ -204,7 +205,7 @@ define(['lib/Squire'], function(Squire) {
                 var expectedSpec = {
                     update: voronoiDrip.update,
                     timeout: VoronoiDrip.TIMEOUT
-                }
+                };
                 expect(UpdateLoop.create).toHaveBeenCalledWith(expectedSpec);
             });
 

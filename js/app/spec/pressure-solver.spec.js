@@ -2,7 +2,11 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
 
     describe("a Pressure Solver", function() {
         var pressureSolver,
-            pipes;
+            pipes,
+            metrics,
+            overlapSolver,
+            targetCalculator,
+            fluidAdder;
 
         /*
             Test pipe layout
@@ -292,7 +296,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
                     var volume = pressureSolver.getVolumeNeededToReachLevel(pipe, pipe.va, level + 1);
                     expect(volume).toBe(false);
                 });
-            })
+            });
         });
 
         describe("when addFluidLevel is called", function() {
@@ -365,7 +369,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
                 }];
                 var target = pressureSolver.findDownwardPointingTarget(targets);
                 expect(target).toBe(targets[2]);
-            })
+            });
         });
 
         describe("when findLowestLevelTargets is called", function() {
@@ -376,7 +380,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
                 addLevelSpy = spyOn(pressureSolver, 'addFluidLevel').andCallFake(function(target) {
                     return target;
                 });
-            })
+            });
 
             it("adds the fluid level for each target", function() {
                 var targets = ['A', 'B'];
@@ -551,7 +555,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
 
                 it("moves the pressure into the most downward pipe", function() {
                     pressureSolver.redistributePressure(pipes[1], pipes[1].vb, 5);
-                    expect(fluidAdder.add).toHaveBeenCalledWith(pipes[1], pipes[1].vb, 5)
+                    expect(fluidAdder.add).toHaveBeenCalledWith(pipes[1], pipes[1].vb, 5);
                 });
             });
 
@@ -608,7 +612,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
                     beforeEach(function() {
                         spyOn(pressureSolver, 'getVolumeNeededToReachLevel').andReturn(3.3);
                         pressureSolver.redistributePressure(pipes[1], pipes[1].va, 20);
-                    })
+                    });
 
                     it("matches the level of the next highest fluid", function() {
                         var nextLevel = metrics.getFluidLevel(pipes[3], pipes[3].va);
@@ -677,7 +681,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
             });
 
             it("removes the pressure from the pipe", function() {
-                expect(pressureSolver.removePressureInPipeAtVertex).toHaveBeenCalledWith(pipes[0], pipes[0].vb)
+                expect(pressureSolver.removePressureInPipeAtVertex).toHaveBeenCalledWith(pipes[0], pipes[0].vb);
             });
 
             it("calls redistributePressure", function() {

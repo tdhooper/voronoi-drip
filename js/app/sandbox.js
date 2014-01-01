@@ -53,7 +53,7 @@ define(['app/voronoi-drip', 'app/display'], function(VoronoiDrip, Display) {
             that.update = function() {
                 updateSuper();
                 drawCacheGroups();
-            }
+            };
 
             return that;
         };
@@ -115,7 +115,7 @@ define(['app/voronoi-drip', 'app/display'], function(VoronoiDrip, Display) {
             that.tests.push({
                 voronoiDrip: voronoiDrip,
                 spec: testSpec
-            })
+            });
         };
 
         return that;

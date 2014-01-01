@@ -7,16 +7,6 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
             fluidAdder,
             pipes;
 
-        var roundToPrecision = function(value, precision) {
-            var power = Math.pow(10, precision - 1);
-            return Math.round(value * power) / power;
-        }
-
-        var round2dp = function(value) { return roundToPrecision(value, 3); }
-        var round3dp = function(value) { return roundToPrecision(value, 4); }
-        var round4dp = function(value) { return roundToPrecision(value, 5); }
-        var round5dp = function(value) { return roundToPrecision(value, 6); }
-
         /*
             Test pipe layout
 

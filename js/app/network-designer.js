@@ -1,7 +1,7 @@
 define(['app/display', 'app/update-loop', 'lib/toxi/geom/Vec2D', 'lib/toxi/geom/Line2D'], function(Display, UpdateLoop, Vec2D, Line2D) {
     var NetworkDesigner = {};
 
-    NetworkDesigner.EDGE_COLOUR = '#000',
+    NetworkDesigner.EDGE_COLOUR = '#000';
     NetworkDesigner.HIGHLIGHT_COLOUR = '#5df';
     NetworkDesigner.SELECTED_COLOUR = '#09f';
     NetworkDesigner.MOVE_COLOUR = NetworkDesigner.HIGHLIGHT_COLOUR;
@@ -138,8 +138,8 @@ define(['app/display', 'app/update-loop', 'lib/toxi/geom/Vec2D', 'lib/toxi/geom/
 
             // Count backwards so we can remove items as we go
             while (connectionsCount--) {
-                var index = connections[connectionsCount],
-                    edge = that.network[index];
+                var index = connections[connectionsCount];
+                edge = that.network[index];
 
                 var connectedIndexA = edge.ca.indexOf(targetIndex);
                 if (connectedIndexA !== -1) {
@@ -156,7 +156,7 @@ define(['app/display', 'app/update-loop', 'lib/toxi/geom/Vec2D', 'lib/toxi/geom/
                         connections.splice(connectionsCount, 1);
                     }
                 }
-            };
+            }
         };
 
         var deleteEdge = function(edge) {
@@ -164,22 +164,22 @@ define(['app/display', 'app/update-loop', 'lib/toxi/geom/Vec2D', 'lib/toxi/geom/
 
             var removeDeleted = function(connectedIndex) {
                 return connectedIndex !== deleteIndex;
-            }
+            };
 
             var updateIndex = function(connectedIndex) {
                 if (connectedIndex > deleteIndex) {
                     return connectedIndex - 1;
                 }
                 return connectedIndex;
-            }
+            };
 
-            that.network.forEach(function(edge, index) {
+            that.network.forEach(function(edge) {
                 edge.ca = edge.ca.filter(removeDeleted).map(updateIndex);
                 edge.cb = edge.cb.filter(removeDeleted).map(updateIndex);
             });
 
             that.network.splice(deleteIndex, 1);
-        }
+        };
 
         var mouseDownListener = function(evt) {
             that.selectedEdge = null;
@@ -235,7 +235,7 @@ define(['app/display', 'app/update-loop', 'lib/toxi/geom/Vec2D', 'lib/toxi/geom/
                     disconnectTargetFromOthers(that.moveTarget);
                 }
                 return;
-            };
+            }
 
             if (closeTargets.length > 0) {
                 that.highlightEdges = [closeTargets[0].edge];
@@ -246,7 +246,7 @@ define(['app/display', 'app/update-loop', 'lib/toxi/geom/Vec2D', 'lib/toxi/geom/
             }
         };
 
-        var mouseUpListener = function(evt) {
+        var mouseUpListener = function() {
             startVertex = null;
             that.moveTarget = null;
         };

@@ -132,7 +132,6 @@ define(function() {
         that.getForVertex = function(pipe, vertex) {
             var vertexPipes = that.metrics.getVertexPipes(pipe, vertex),
                 pipeCount = vertexPipes.length,
-                pipe,
                 cachedGroup;
             while(pipeCount--) {
                 pipe = vertexPipes[pipeCount];
@@ -147,8 +146,7 @@ define(function() {
                     targets: [],
                     fullPipes: []
                 },
-                pipeGroup,
-                targets = [];
+                pipeGroup;
             while(pipeCount--) {
                 pipe = vertexPipes[pipeCount];
                 pipeGroup = that.getGroupForPipe(pipe, vertex);
@@ -166,7 +164,8 @@ define(function() {
             var cacheCount = that.cache.length,
                 targetCount,
                 group,
-                groups = [];
+                groups = [],
+                target;
             while (cacheCount--) {
                 group = that.cache[cacheCount];
                 targetCount = group.targets.length;
@@ -185,16 +184,18 @@ define(function() {
         };
 
         that.pipeFull = function(pipe) {
-            var groups = that.getCachedGroupsContainingTargetPipe(pipe);
+            var groups = that.getCachedGroupsContainingTargetPipe(pipe),
+                targetCount,
+                target,
+                mergedGroup;
 
             if ( ! groups) {
                 return;
             }
 
             if (groups.length == 2) {
-                var mergedGroup = that.mergeGroups(groups[0], groups[1]),
-                    targetCount = mergedGroup.targets.length,
-                    target;
+                mergedGroup = that.mergeGroups(groups[0], groups[1]);
+                targetCount = mergedGroup.targets.length;
                 // Count backwards so we can remove items as we go
                 while (targetCount--) {
                     target = mergedGroup.targets[targetCount];
@@ -209,8 +210,7 @@ define(function() {
             }
 
             if (groups.length == 1) {
-                var targetCount = groups[0].targets.length,
-                    target;
+                targetCount = groups[0].targets.length;
                 while (targetCount--) {
                     target = groups[0].targets[targetCount];
                     if (target.pipe == pipe) {
@@ -218,8 +218,8 @@ define(function() {
                         break;
                     }
                 }
-                var pipeGroup = that.getGroupForPipe(target.pipe, target.vertex),
-                    mergedGroup = that.mergeGroups(groups[0], pipeGroup);
+                var pipeGroup = that.getGroupForPipe(target.pipe, target.vertex);
+                mergedGroup = that.mergeGroups(groups[0], pipeGroup);
                 that.cacheGroup(mergedGroup);
                 that.uncacheGroup(groups[0]);
             }

@@ -2,7 +2,8 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
 
     describe("a Target Calculator", function() {
         var targetCalculator,
-            pipes;
+            pipes,
+            metrics;
 
         /*
             Test pipe layout
@@ -160,7 +161,6 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
             beforeEach(function() {
                 metrics.start();
 
-                var hasCapacity = metrics.hasCapacity;
                 spyOn(metrics, 'hasCapacity').andCallFake(function(pipe) {
                     if (fullPipes.indexOf(pipe) !== -1) {
                         return false;
@@ -417,7 +417,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                             pipes[2]
                         ]
                     };
-                    targetCalculator.cache = [groupA, groupB]
+                    targetCalculator.cache = [groupA, groupB];
                 });
 
                 it("returns the group that contains the pipe in it's full pipes list", function() {
@@ -440,7 +440,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                             pipes[2]
                         ]
                     };
-                    targetCalculator.cache = [groupA, groupB]
+                    targetCalculator.cache = [groupA, groupB];
                     targetCalculator.getCachedGroupContainingFullPipe(pipes[0]);
                 });
 
@@ -453,7 +453,9 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
 
         describe("when mergeGroups is called", function() {
 
-            var newGroup;
+            var newGroup,
+                groupA,
+                groupB;
 
             beforeEach(function() {
                 groupA = {
@@ -695,7 +697,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                         groupB.fullPipes = [];
                         groupC.fullPipes = [];
                         targetCalculator.getForVertex(pipes[0], pipes[0].vb);
-                    })
+                    });
 
                     it("doesn't cache them", function() {
                         expect(targetCalculator.cacheGroup).not.toHaveBeenCalled();
@@ -749,7 +751,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                             pipe: pipes[2]
                         }]
                     };
-                    targetCalculator.cache = [groupA, groupB]
+                    targetCalculator.cache = [groupA, groupB];
                 });
 
                 it("returns the group that contains the pipe in it's targets list", function() {
@@ -775,7 +777,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                             pipe: pipes[2]
                         }]
                     };
-                    targetCalculator.cache = [groupA, groupB]
+                    targetCalculator.cache = [groupA, groupB];
                 });
 
                 it("returns the group that contains the pipe in it's targets list", function() {
@@ -800,7 +802,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                             pipes[2]
                         ]
                     };
-                    targetCalculator.cache = [groupA, groupB]
+                    targetCalculator.cache = [groupA, groupB];
                 });
 
                 it("returns nothing", function() {
@@ -849,7 +851,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
             it("gets the cached groups containing the target pipe", function() {
                 targetCalculator.pipeFull(pipes[0]);
                 expect(getCacheSpy).toHaveBeenCalledWith(pipes[0]);
-            })
+            });
 
             describe("and there are two groups containing the target pipe", function() {
 
@@ -871,7 +873,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                             pipes[4],
                             pipes[5]
                         ]
-                    }
+                    };
                     mergeSpy = spyOn(targetCalculator, 'mergeGroups').andReturn(mergedGroup);
                     targetCalculator.pipeFull(pipes[0]);
                 });
@@ -934,7 +936,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                             pipes[4],
                             pipes[0]
                         ]
-                    }
+                    };
                     mergeSpy = spyOn(targetCalculator, 'mergeGroups').andReturn(mergedGroup);
                     getCacheSpy.andReturn([groupA]);
                     targetCalculator.pipeFull(pipes[0]);
