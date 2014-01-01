@@ -5,9 +5,11 @@ define(function() {
     Metrics.create = function(spec) {
         var that = {};
 
-        that.pipes = spec.pipes;
-        that.gravity = spec.gravity;
         that.MINIMUM_FLUID_VOLUME = 0.00001;
+        that.GRAVITY = 5;
+
+        that.pipes = spec.pipes;
+        that.gravity = spec.hasOwnProperty('gravity') && spec.gravity ? spec.gravity : that.GRAVITY;
 
         that.pointsMatch = function(pointA, pointB) {
             return (pointA.x == pointB.x) && (pointA.y == pointB.y);
@@ -136,6 +138,14 @@ define(function() {
                 heightFromVertex = that.pointsMatch(pipe.va, vertex) ? pipe.vb.y - pipe.va.y : pipe.va.y - pipe.vb.y,
                 fluidHeight = fluid ? (fluid.volume / pipe.capacity) * heightFromVertex : 0;
             return vertex.y + fluidHeight;
+        };
+
+        that.getVertexLevel = function(vertex) {
+            return vertex.y;
+        };
+
+        that.getHeightFromVertex = function(pipe, vertex) {
+            return that.pointsMatch(pipe.va, vertex) ? pipe.vb.y - pipe.va.y : pipe.va.y - pipe.vb.y;
         };
 
         that.start = function() {

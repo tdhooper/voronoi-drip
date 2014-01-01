@@ -12,14 +12,14 @@ define(function() {
 
         that.getVolumeNeededToReachLevel = function(pipe, vertex, level) {
             var targetLevel = that.metrics.getFluidLevel(pipe, vertex),
-                heightFromVertex = that.metrics.pointsMatch(pipe.va, vertex) ? pipe.vb.y - pipe.va.y : pipe.va.y - pipe.vb.y;
+                heightFromVertex = that.metrics.getHeightFromVertex(pipe, vertex);
 
             if (heightFromVertex === 0) {
                 return false;
             }
 
-            var heightToCapicity = pipe.capacity / heightFromVertex;
-            return (level - targetLevel) * heightToCapicity;
+            var heightToCapicityRatio = pipe.capacity / heightFromVertex;
+            return (level - targetLevel) * heightToCapicityRatio;
         };
 
         that.distributePressureBetweenTargets = function(targets, pressure, nextHighestLevel) {
@@ -28,11 +28,9 @@ define(function() {
                 volumeNeededToReachLevel,
                 totalVolume = 0,
                 minCapacityScale = null,
-                otherVertex = that.metrics.pointsMatch(targets[0].vertex, targets[0].pipe.va) ? targets[0].pipe.vb : targets[0].pipe.va,
-                direction = (otherVertex.y - targets[0].vertex.y) > 0 ? 1 : -1,
+                direction = that.metrics.getHeightFromVertex(targets[0].pipe, targets[0].vertex) > 0 ? 1 : -1,
                 highestPossibleLevel = targets[0].level + (pressure * direction);
                 highestPossibleLevel = nextHighestLevel !== null ? nextHighestLevel : highestPossibleLevel;
-
             while (targetCount--) {
                 target = targets[targetCount];
                 volumeNeededToReachLevel = that.getVolumeNeededToReachLevel(target.pipe, target.vertex, highestPossibleLevel);
@@ -70,7 +68,7 @@ define(function() {
 
         that.addFluidLevel = function(target) {
             var level = that.metrics.getFluidLevel(target.pipe, target.vertex);
-            target.level = Math.min(level, target.highestVertex.y);
+            target.level = Math.min(level, that.metrics.getVertexLevel(target.highestVertex));
             return target;
         };
 
@@ -115,11 +113,7 @@ define(function() {
         };
 
         that.downwardPointing = function(target) {
-            var otherVertex = that.metrics.pointsMatch(target.pipe.va, target.vertex) ? target.pipe.vb : target.pipe.va;
-            if (otherVertex.y < target.vertex.y) {
-                return false;
-            }
-            return true;
+            return that.metrics.getHeightFromVertex(target.pipe, target.vertex) > 0;
         };
 
         that.inclineLowToHigh = function(targetA, targetB) {

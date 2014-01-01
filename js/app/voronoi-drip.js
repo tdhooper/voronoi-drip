@@ -39,7 +39,7 @@
 
 */
 
-define(['app/fluid-network-simulation', 'app/display', 'app/update-loop'], function(FluidNetworkSimulation, Display, UpdateLoop) {
+define(['app/fluid-network-simulation', 'app/display', 'app/update-loop', 'app/metrics'], function(FluidNetworkSimulation, Display, UpdateLoop, Metrics) {
 
     var VoronoiDrip = {};
 
@@ -69,7 +69,7 @@ define(['app/fluid-network-simulation', 'app/display', 'app/update-loop'], funct
                     highestVertex = edge.va;
                 }
 
-                if (edge.vb.y < highestVertex.y) {
+                if (that.metrics.getVertexLevel(edge.vb) < that.metrics.getVertexLevel(highestVertex)) {
                     highestEdge = edge;
                     highestVertex = edge.vb;
                 }
@@ -132,9 +132,15 @@ define(['app/fluid-network-simulation', 'app/display', 'app/update-loop'], funct
         };
 
         that.start = function() {
-            that.fluidNetworkSimulation = FluidNetworkSimulation.create({
+            that.metrics = Metrics.create({
                 pipes: that.network,
                 gravity: spec.gravity
+            });
+            that.metrics.start();
+
+            that.fluidNetworkSimulation = FluidNetworkSimulation.create({
+                pipes: that.network,
+                metrics: that.metrics
             });
             that.fluidNetworkSimulation.start();
 

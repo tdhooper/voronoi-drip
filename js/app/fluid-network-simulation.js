@@ -23,28 +23,21 @@
             update the simulation
 */
 
-define(['app/metrics', 'app/overlap-solver', 'app/target-calculator', 'app/fluid-adder', 'app/pressure-solver', 'app/fluid-mover'], function(Metrics, OverlapSolver, TargetCalculator, FluidAdder, PressureSolver, FluidMover) {
+define(['app/overlap-solver', 'app/target-calculator', 'app/fluid-adder', 'app/pressure-solver', 'app/fluid-mover'], function(OverlapSolver, TargetCalculator, FluidAdder, PressureSolver, FluidMover) {
 
     var FluidNetworkSimulation = {};
-
-    FluidNetworkSimulation.GRAVITY = 5;
 
     FluidNetworkSimulation.create = function(spec) {
         var that = {};
 
         that.pipes = spec.pipes;
-        that.gravity = spec.hasOwnProperty('gravity') && spec.gravity ? spec.gravity : FluidNetworkSimulation.GRAVITY;
+        that.metrics = spec.metrics;
 
         that.addFluid = function(pipe, point, volume) {
             that.fluidAdder.add(pipe, point, volume);
         };
 
         that.start = function() {
-            that.metrics = Metrics.create({
-                pipes: that.pipes,
-                gravity: that.gravity
-            });
-            that.metrics.start();
             that.overlapSolver = OverlapSolver.create({
                 pipes: that.pipes,
                 metrics: that.metrics

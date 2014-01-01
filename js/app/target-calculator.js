@@ -41,7 +41,7 @@ define(function() {
                 };
             }
 
-            if (otherVertex.y < that.highestVertex.y) {
+            if (that.metrics.getVertexLevel(otherVertex) < that.metrics.getVertexLevel(that.highestVertex)) {
                 that.highestVertex = otherVertex;
             }
 

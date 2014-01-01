@@ -1,16 +1,10 @@
-define(['lib/Squire'], function(Squire) {
+define(['lib/Squire', 'app/voronoi-drip'], function(Squire, VoronoiDrip) {
 
     describe("a Voronoi Drip simulation", function() {
         var spec,
             edges,
             container,
-            VoronoiDrip,
-            voronoiDrip,
-            UpdateLoop,
-            mockUpdateLoop = jasmine.createSpyObj('updateLoop', ['start', 'stop']),
-            FluidNetworkSimulation,
-            Display,
-            injector;
+            voronoiDrip;
 
         beforeEach(function() {
             edges = [
@@ -56,30 +50,8 @@ define(['lib/Squire'], function(Squire) {
                 network: edges
             };
 
-            UpdateLoop = jasmine.createSpyObj('UpdateLoop', ['create']);
-            UpdateLoop.create.andReturn(mockUpdateLoop);
-
-            FluidNetworkSimulation = jasmine.createSpyObj('FluidNetworkSimulation', ['create']);
-            Display = jasmine.createSpyObj('Display', ['create']);
-
-            injector = new Squire();
-            injector.mock('app/update-loop', UpdateLoop);
-            injector.mock('app/fluid-network-simulation', FluidNetworkSimulation);
-            injector.mock('app/display', Display);
-
-            VoronoiDrip = null;
-
-            injector.require(['app/voronoi-drip'], function(VoronoiDripLoaded) {
-                VoronoiDrip = VoronoiDripLoaded;
-            });
-
-            waitsFor(function() {
-                return VoronoiDrip;
-            }, 'VoronoiDrip should be loaded', 750);
-
-            runs(function() {
-                voronoiDrip = VoronoiDrip.create(spec);
-            });
+            voronoiDrip = VoronoiDrip.create(spec);
+            voronoiDrip.start();
         });
 
         afterEach(function() {
@@ -146,21 +118,72 @@ define(['lib/Squire'], function(Squire) {
 
         describe("when start is called", function() {
 
-            var mockSimulation = jasmine.createSpyObj('fluidNetworkSimulation', ['start', 'addFluid']),
-                mockDisplay = jasmine.createSpyObj('display', ['start']);
+            var Metrics,
+                FluidNetworkSimulation,
+                Display,
+                UpdateLoop,
+                mockMetrics = jasmine.createSpyObj('metrics', ['start']),
+                mockSimulation = jasmine.createSpyObj('fluidNetworkSimulation', ['start', 'addFluid']),
+                mockDisplay = jasmine.createSpyObj('display', ['start']),
+                mockUpdateLoop = jasmine.createSpyObj('updateLoop', ['start', 'stop']),
+                injector;
 
             beforeEach(function() {
+
+                UpdateLoop = jasmine.createSpyObj('UpdateLoop', ['create']);
+                UpdateLoop.create.andReturn(mockUpdateLoop);
+
+                Metrics = jasmine.createSpyObj('Metrics', ['create']);
+                Metrics.create.andReturn(mockMetrics);
+
+                FluidNetworkSimulation = jasmine.createSpyObj('FluidNetworkSimulation', ['create']);
                 FluidNetworkSimulation.create.andReturn(mockSimulation);
+
+                Display = jasmine.createSpyObj('Display', ['create']);
                 Display.create.andReturn(mockDisplay);
-                spyOn(voronoiDrip, 'drawNetwork');
-                voronoiDrip.start();
+
+                injector = new Squire();
+                injector.mock('app/update-loop', UpdateLoop);
+                injector.mock('app/metrics', Metrics);
+                injector.mock('app/fluid-network-simulation', FluidNetworkSimulation);
+                injector.mock('app/display', Display);
+
+                VoronoiDrip = null;
+
+                injector.require(['app/voronoi-drip'], function(VoronoiDripLoaded) {
+                    VoronoiDrip = VoronoiDripLoaded;
+                });
+
+                waitsFor(function() {
+                    return VoronoiDrip;
+                }, 'VoronoiDrip should be loaded', 750);
+
+                runs(function() {
+                    voronoiDrip = VoronoiDrip.create(spec);
+                    spyOn(voronoiDrip, 'drawNetwork');
+                    voronoiDrip.start();
+                });
             });
 
-            it("creates a new fluid network simulation with the edges and gravity, and attaches it to the voronoiDrip", function() {
+            it("creates a new metrics with the network, and attaches it to the voronoiDrip", function() {
 
                 var expectedSpec = {
                     pipes: spec.network,
                     gravity: 3
+                };
+                expect(Metrics.create).toHaveBeenCalledWith(expectedSpec);
+                expect(voronoiDrip.metrics).toBe(mockMetrics);
+            });
+
+            it("starts the metrics", function() {
+                expect(mockMetrics.start).toHaveBeenCalled();
+            });
+
+            it("creates a new fluid network simulation with the edges and metrics, and attaches it to the voronoiDrip", function() {
+
+                var expectedSpec = {
+                    pipes: spec.network,
+                    metrics: mockMetrics
                 };
                 expect(FluidNetworkSimulation.create).toHaveBeenCalledWith(expectedSpec);
                 expect(voronoiDrip.fluidNetworkSimulation).toBe(mockSimulation);

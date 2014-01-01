@@ -504,7 +504,18 @@ define(['app/fluid-network-simulation', 'app/metrics'], function(FluidNetworkSim
                 expect(vertexPipes).toContain(pipes[4]);
 
             });
+        });
 
+        describe("when getHeightFromVertex is called", function() {
+
+            it("returns the difference in y position from the given vertex to the pipe's other vertex", function() {
+                expect(metrics.getHeightFromVertex(pipes[0], pipes[0].va)).toBe(10);
+                expect(metrics.getHeightFromVertex(pipes[0], pipes[0].vb)).toBe(-10);
+                expect(metrics.getHeightFromVertex(pipes[1], pipes[1].va)).toBe(-10);
+                expect(metrics.getHeightFromVertex(pipes[1], pipes[1].vb)).toBe(10);
+                expect(metrics.getHeightFromVertex(pipes[2], pipes[2].va)).toBe(0);
+                expect(metrics.getHeightFromVertex(pipes[2], pipes[2].vb)).toBe(0);
+            });
         });
     });
 });
