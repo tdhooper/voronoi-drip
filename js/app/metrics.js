@@ -44,8 +44,8 @@ define(function() {
             return pipe.incline * that.gravity;
         };
 
-        that.getResistance = function(pipe, vertex) {
-            return that.pointsMatch(pipe.va, vertex) ? pipe.ra : pipe.rb;
+        that.getIncline = function(pipe, vertex) {
+            return that.pointsMatch(pipe.va, vertex) ? pipe.incline : pipe.incline * -1;
         };
 
         that.getFluidAtVertex = function(pipe, vertex) {
@@ -141,17 +141,13 @@ define(function() {
         that.start = function() {
             var pipeCount = that.pipes.length,
                 pipe,
-                angle,
-                resistance;
+                angle;
 
             while (pipeCount--) {
                 pipe = that.pipes[pipeCount];
                 angle = that.getAngle(pipe, pipe.va);
                 pipe.incline = that.calculateIncline(angle);
                 pipe.capacity = that.getLength(pipe);
-                resistance = (pipe.incline + 1) / 2;
-                pipe.ra = (1 - resistance) * that.gravity;
-                pipe.rb = resistance * that.gravity;
             }
         };
 

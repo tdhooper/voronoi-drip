@@ -30,7 +30,6 @@ define(function() {
                 movementA,
                 movementB,
                 movement,
-                resistance,
                 minPosition;
 
             while (fluidCountA--) {

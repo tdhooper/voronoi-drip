@@ -1,4 +1,3 @@
-// Rename resistance to slope
 define(['app/fluid-network-simulation', 'app/metrics'], function(FluidNetworkSimulation, Metrics) {
 
     describe("a Metrics", function() {
@@ -202,6 +201,7 @@ define(['app/fluid-network-simulation', 'app/metrics'], function(FluidNetworkSim
             });
 
             it("sets the incline of all pipes from the va vertex", function() {
+                // 1 is pointing downwards, -1 is pointing upwards
                 expect(metrics.pipes[0].incline).toBe(1);
                 expect(metrics.pipes[1].incline).toBe(-0.5);
                 expect(metrics.pipes[2].incline).toBe(0);
@@ -216,14 +216,25 @@ define(['app/fluid-network-simulation', 'app/metrics'], function(FluidNetworkSim
                 expect(metrics.pipes[3].capacity).toBe(30);
                 expect(round3dp(metrics.pipes[4].capacity)).toBe(14.142);
             });
+        });
 
-            it("calculates the resistance to entry at each vertex as a factor of gravity and incline", function() {
-                expect(metrics.pipes[0].ra).toBe(0);
-                expect(metrics.pipes[0].rb).toBe(0.1);
-                expect(round3dp(metrics.pipes[1].ra)).toBe(0.075);
-                expect(metrics.pipes[1].rb).toBe(0.025);
-                expect(metrics.pipes[2].ra).toBe(0.05);
-                expect(metrics.pipes[2].rb).toBe(0.05);
+        describe("when getIncline is called", function() {
+
+            beforeEach(function() {
+                metrics.start();
+            });
+
+            it("returns the incline relative to the vertex", function() {
+                expect(metrics.getIncline(pipes[0], pipes[0].va)).toBe(1);
+                expect(metrics.getIncline(pipes[0], pipes[0].vb)).toBe(-1);
+                expect(metrics.getIncline(pipes[1], pipes[1].va)).toBe(-0.5);
+                expect(metrics.getIncline(pipes[1], pipes[1].vb)).toBe(0.5);
+                expect(metrics.getIncline(pipes[2], pipes[2].va)).toBe(0);
+                expect(metrics.getIncline(pipes[2], pipes[2].vb)).toBe(0);
+                expect(metrics.getIncline(pipes[3], pipes[3].va)).toBe(-1);
+                expect(metrics.getIncline(pipes[3], pipes[3].vb)).toBe(1);
+                expect(metrics.getIncline(pipes[4], pipes[4].va)).toBe(0.5);
+                expect(metrics.getIncline(pipes[4], pipes[4].vb)).toBe(-0.5);
             });
         });
 

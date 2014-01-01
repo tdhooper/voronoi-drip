@@ -116,10 +116,10 @@ define(function() {
             return true;
         };
 
-        that.resistanceLowToHigh = function(targetA, targetB) {
-            var resistanceA = that.metrics.getResistance(targetA.pipe, targetA.vertex),
-                resistanceB = that.metrics.getResistance(targetB.pipe, targetB.vertex);
-            return resistanceA > resistanceB;
+        that.inclineLowToHigh = function(targetA, targetB) {
+            var inclineA = that.metrics.getIncline(targetA.pipe, targetA.vertex),
+                inclineB = that.metrics.getIncline(targetB.pipe, targetB.vertex);
+            return inclineA < inclineB;
         };
 
         that.findDownwardPointingTarget = function(targets) {
@@ -127,7 +127,7 @@ define(function() {
             if ( ! downwardPointingTargets.length) {
                 return false;
             }
-            downwardPointingTargets.sort(that.resistanceLowToHigh);
+            downwardPointingTargets.sort(that.inclineLowToHigh);
             return downwardPointingTargets[0];
         };
 

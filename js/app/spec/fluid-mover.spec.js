@@ -1,4 +1,3 @@
-// Rename resistance to slope
 define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'app/target-calculator', 'app/fluid-adder', 'app/pressure-solver', 'app/fluid-mover'], function(FluidNetworkSimulation, Metrics, OverlapSolver, TargetCalculator, FluidAdder, PressureSolver, FluidMover) {
 
     describe("a Fluid Mover", function() {
