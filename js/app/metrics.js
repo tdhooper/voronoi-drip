@@ -135,9 +135,9 @@ define(function() {
 
         that.getFluidLevel = function(pipe, vertex) {
             var fluid = that.getFluidAtVertex(pipe, vertex),
-                heightFromVertex = that.pointsMatch(pipe.va, vertex) ? pipe.vb.y - pipe.va.y : pipe.va.y - pipe.vb.y,
+                heightFromVertex = that.getHeightFromVertex(pipe, vertex),
                 fluidHeight = fluid ? (fluid.volume / pipe.capacity) * heightFromVertex : 0;
-            return vertex.y + fluidHeight;
+            return that.getVertexLevel(vertex) + fluidHeight;
         };
 
         that.getVertexLevel = function(vertex) {
@@ -145,7 +145,9 @@ define(function() {
         };
 
         that.getHeightFromVertex = function(pipe, vertex) {
-            return that.pointsMatch(pipe.va, vertex) ? pipe.vb.y - pipe.va.y : pipe.va.y - pipe.vb.y;
+            var vertexALevel = that.getVertexLevel(pipe.va),
+                vertexBLevel = that.getVertexLevel(pipe.vb);
+            return that.pointsMatch(pipe.va, vertex) ? vertexBLevel - vertexALevel : vertexALevel - vertexBLevel;
         };
 
         that.start = function() {
