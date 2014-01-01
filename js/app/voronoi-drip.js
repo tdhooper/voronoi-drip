@@ -64,7 +64,7 @@ define(['app/fluid-network-simulation', 'app/display', 'app/update-loop', 'app/m
             while (edgeCount--) {
                 var edge = that.network[edgeCount];
 
-                if ( ! highestVertex || edge.va.y < highestVertex.y) {
+                if ( ! highestVertex || that.metrics.getVertexLevel(edge.va) < that.metrics.getVertexLevel(highestVertex)) {
                     highestEdge = edge;
                     highestVertex = edge.va;
                 }
