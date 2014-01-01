@@ -85,7 +85,6 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
             overlapSolver = jasmine.createSpyObj('overlapSolver', ['solve']);
             targetCalculator = jasmine.createSpyObj('targetCalculator', ['pipeFull']);
             fluidAdder = FluidAdder.create({
-                pipes: pipes,
                 metrics: metrics,
                 overlapSolver: overlapSolver,
                 targetCalculator: targetCalculator

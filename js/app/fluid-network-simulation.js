@@ -54,7 +54,6 @@ define(['app/metrics', 'app/overlap-solver', 'app/target-calculator', 'app/fluid
                 metrics: that.metrics
             });
             that.fluidAdder = FluidAdder.create({
-                pipes: that.pipes,
                 metrics: that.metrics,
                 overlapSolver: that.overlapSolver,
                 targetCalculator: that.targetCalculator
