@@ -93,7 +93,7 @@ define(['lib/Squire', 'app/voronoi-drip'], function(Squire, VoronoiDrip) {
                 var voronoiDrip = VoronoiDrip.create(spec);
                 voronoiDrip.display = mockDisplay;
                 voronoiDrip.drawNetwork();
-                expect(mockDisplay.drawLine.mostRecentCall.args[2]).toBe(VoronoiDrip.PIPE_COLOUR);
+                expect(mockDisplay.drawLine.calls.mostRecent().args[2]).toBe(VoronoiDrip.PIPE_COLOUR);
             });
         });
 
@@ -128,19 +128,19 @@ define(['lib/Squire', 'app/voronoi-drip'], function(Squire, VoronoiDrip) {
                 mockUpdateLoop = jasmine.createSpyObj('updateLoop', ['start', 'stop']),
                 injector;
 
-            beforeEach(function() {
+            beforeEach(function(done) {
 
                 UpdateLoop = jasmine.createSpyObj('UpdateLoop', ['create']);
-                UpdateLoop.create.andReturn(mockUpdateLoop);
+                UpdateLoop.create.and.returnValue(mockUpdateLoop);
 
                 Metrics = jasmine.createSpyObj('Metrics', ['create']);
-                Metrics.create.andReturn(mockMetrics);
+                Metrics.create.and.returnValue(mockMetrics);
 
                 FluidNetworkSimulation = jasmine.createSpyObj('FluidNetworkSimulation', ['create']);
-                FluidNetworkSimulation.create.andReturn(mockSimulation);
+                FluidNetworkSimulation.create.and.returnValue(mockSimulation);
 
                 Display = jasmine.createSpyObj('Display', ['create']);
-                Display.create.andReturn(mockDisplay);
+                Display.create.and.returnValue(mockDisplay);
 
                 injector = new Squire();
                 injector.mock('app/update-loop', UpdateLoop);
@@ -148,20 +148,12 @@ define(['lib/Squire', 'app/voronoi-drip'], function(Squire, VoronoiDrip) {
                 injector.mock('app/fluid-network-simulation', FluidNetworkSimulation);
                 injector.mock('app/display', Display);
 
-                VoronoiDrip = null;
-
-                injector.require(['app/voronoi-drip'], function(VoronoiDripLoaded) {
-                    VoronoiDrip = VoronoiDripLoaded;
-                });
-
-                waitsFor(function() {
-                    return VoronoiDrip;
-                }, 'VoronoiDrip should be loaded', 750);
-
-                runs(function() {
+                injector.require(['app/voronoi-drip'], function(MockedVoronoiDrip) {
+                    VoronoiDrip = MockedVoronoiDrip;
                     voronoiDrip = VoronoiDrip.create(spec);
                     spyOn(voronoiDrip, 'drawNetwork');
                     voronoiDrip.start();
+                    done();
                 });
             });
 
@@ -265,7 +257,7 @@ define(['lib/Squire', 'app/voronoi-drip'], function(Squire, VoronoiDrip) {
                 };
 
                 beforeEach(function() {
-                    spyOn(voronoiDrip, 'getHighestEdgeAndVertex').andReturn(highestEdgeAndVertex);
+                    spyOn(voronoiDrip, 'getHighestEdgeAndVertex').and.returnValue(highestEdgeAndVertex);
                     voronoiDrip.addFluid(50);
                 });
 
@@ -359,7 +351,7 @@ define(['lib/Squire', 'app/voronoi-drip'], function(Squire, VoronoiDrip) {
                 voronoiDrip.fluidNetworkSimulation = mockSimulation;
                 voronoiDrip.display = mockDisplay;
                 voronoiDrip.drawFluids();
-                expect(mockDisplay.drawLine.mostRecentCall.args[2]).toBe(VoronoiDrip.FLUID_COLOUR);
+                expect(mockDisplay.drawLine.calls.mostRecent().args[2]).toBe(VoronoiDrip.FLUID_COLOUR);
             });
         });
 

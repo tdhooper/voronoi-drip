@@ -6,17 +6,21 @@ define(['app/update-loop'], function(UpdateLoop) {
             update = jasmine.createSpy('update');
 
         beforeEach(function() {
+            jasmine.clock().install();
             updateLoop = UpdateLoop.create({
                 update: update,
                 timeout: 60
             });
         });
 
+        afterEach(function() {
+            jasmine.clock().uninstall();
+        });
+
         describe("when tick is called", function() {
 
             beforeEach(function() {
-                spyOn(updateLoop, 'tick').andCallThrough();
-                jasmine.Clock.useMock();
+                spyOn(updateLoop, 'tick').and.callThrough();
                 updateLoop.tick();
             });
 
@@ -25,9 +29,9 @@ define(['app/update-loop'], function(UpdateLoop) {
             });
 
             it("should call itself again in the allotted time", function() {
-                expect(updateLoop.tick.callCount).toBe(1);
-                jasmine.Clock.tick(60 + 1);
-                expect(updateLoop.tick.callCount).toBe(2);
+                expect(updateLoop.tick.calls.count()).toBe(1);
+                jasmine.clock().tick(60 + 1);
+                expect(updateLoop.tick.calls.count()).toBe(2);
             });
         });
 
@@ -44,12 +48,11 @@ define(['app/update-loop'], function(UpdateLoop) {
         });
 
         it("should stop the tick loop when stop is called", function() {
-            spyOn(updateLoop, 'tick').andCallThrough();
-            jasmine.Clock.useMock();
+            spyOn(updateLoop, 'tick').and.callThrough();
             updateLoop.tick();
             updateLoop.stop();
-            jasmine.Clock.tick(11);
-            expect(updateLoop.tick.callCount).toBe(1);
+            jasmine.clock().tick(11);
+            expect(updateLoop.tick.calls.count()).toBe(1);
         });
     });
 });

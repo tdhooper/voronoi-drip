@@ -302,7 +302,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
         describe("when addFluidLevel is called", function() {
 
             it("uses the fluid level if it is higher than the highestVertex", function() {
-                spyOn(metrics, 'getFluidLevel').andReturn(6);
+                spyOn(metrics, 'getFluidLevel').and.returnValue(6);
                 var target = {
                     pipe: pipes[0],
                     vertex: pipes[0].va,
@@ -314,7 +314,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
             });
 
             it("uses the highestVertex if it is higher than the fluid level", function() {
-                spyOn(metrics, 'getFluidLevel').andReturn(52);
+                spyOn(metrics, 'getFluidLevel').and.returnValue(52);
                 var target = {
                     pipe: pipes[0],
                     vertex: pipes[0].va,
@@ -377,7 +377,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
             var addLevelSpy;
 
             beforeEach(function() {
-                addLevelSpy = spyOn(pressureSolver, 'addFluidLevel').andCallFake(function(target) {
+                addLevelSpy = spyOn(pressureSolver, 'addFluidLevel').and.callFake(function(target) {
                     return target;
                 });
             });
@@ -385,9 +385,9 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
             it("adds the fluid level for each target", function() {
                 var targets = ['A', 'B'];
                 pressureSolver.findLowestLevelTargets(targets);
-                expect(addLevelSpy.callCount).toBe(2);
-                expect(addLevelSpy.calls[0].args[0]).toBe('A');
-                expect(addLevelSpy.calls[1].args[0]).toBe('B');
+                expect(addLevelSpy.calls.count()).toBe(2);
+                expect(addLevelSpy.calls.argsFor(0)[0]).toBe('A');
+                expect(addLevelSpy.calls.argsFor(1)[0]).toBe('B');
             });
 
             it("returns the target with the lowest fluid level", function() {
@@ -454,8 +454,8 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
                     }],
                     nextHighestLevel: 5
                 };
-                targetsSpy = spyOn(targetCalculator, 'getForVertex').andReturn(targets);
-                lowestLevelSpy = spyOn(pressureSolver, 'findLowestLevelTargets').andReturn(lowestLevelTargets);
+                targetsSpy = spyOn(targetCalculator, 'getForVertex').and.returnValue(targets);
+                lowestLevelSpy = spyOn(pressureSolver, 'findLowestLevelTargets').and.returnValue(lowestLevelTargets);
                 downwardPointingSpy = spyOn(pressureSolver, 'findDownwardPointingTarget');
             });
 
@@ -477,7 +477,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
             describe("when there is a downward pointing target", function() {
 
                 beforeEach(function() {
-                    downwardPointingSpy.andReturn(targets[0]);
+                    downwardPointingSpy.and.returnValue(targets[0]);
                 });
 
                 it("returns it", function() {
@@ -495,7 +495,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
             describe("when there isn't a downward pointing target", function() {
 
                 beforeEach(function() {
-                    downwardPointingSpy.andReturn(false);
+                    downwardPointingSpy.and.returnValue(false);
                 });
 
                 it("returns the lowest level targets", function() {
@@ -521,7 +521,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
             beforeEach(function() {
                 metrics.start();
                 vertex = pipes[1].va;
-                targetsSpy = spyOn(targetCalculator, 'getForVertex').andReturn([{
+                targetsSpy = spyOn(targetCalculator, 'getForVertex').and.returnValue([{
                     pipe: pipes[3],
                     vertex: pipes[3].va,
                     highestVertex: pipes[3].va
@@ -531,7 +531,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
                     highestVertex: pipes[1].va
                 }]);
                 spyOn(fluidAdder, 'add');
-                distributionSpy = spyOn(pressureSolver, 'getDistributionTargets').andCallThrough();
+                distributionSpy = spyOn(pressureSolver, 'getDistributionTargets').and.callThrough();
             });
 
             it("gets targets from getDistributionTargets", function() {
@@ -542,7 +542,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
             describe("and the returned targets are pointing down, with the same fluid level", function() {
 
                 beforeEach(function() {
-                    targetsSpy.andReturn([{
+                    targetsSpy.and.returnValue([{
                         pipe: pipes[1],
                         vertex: pipes[1].vb,
                         highestVertex: pipes[1].vb
@@ -572,7 +572,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
                     }];
                     // 4 is full
 
-                    targetsSpy.andReturn([{
+                    targetsSpy.and.returnValue([{
                         pipe: pipes[3],
                         vertex: pipes[3].va,
                         highestVertex: pipes[3].va
@@ -585,8 +585,8 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
 
                 it("moves fluid into the pipe with the lowest level", function() {
                     pressureSolver.redistributePressure(pipes[1], pipes[1].va, 5);
-                    expect(fluidAdder.add.callCount).toBe(1);
-                    var args = fluidAdder.add.mostRecentCall.args;
+                    expect(fluidAdder.add.calls.count()).toBe(1);
+                    var args = fluidAdder.add.calls.mostRecent().args;
                     expect(args[0]).toBe(pipes[1]);
                     expect(args[1]).toBe(pipes[1].va);
                 });
@@ -595,14 +595,14 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
 
                     it("moves all of the fluid", function() {
                         pressureSolver.redistributePressure(pipes[1], pipes[1].va, 5);
-                        var volume = fluidAdder.add.mostRecentCall.args[2];
+                        var volume = fluidAdder.add.calls.mostRecent().args[2];
                         expect(volume).toBe(5);
                     });
 
                     it("doesn't put any pipe over capacity", function() {
-                        spyOn(metrics, 'getAvailableCapacity').andReturn(2);
+                        spyOn(metrics, 'getAvailableCapacity').and.returnValue(2);
                         pressureSolver.redistributePressure(pipes[1], pipes[1].va, 5);
-                        var volume = fluidAdder.add.calls[0].args[2];
+                        var volume = fluidAdder.add.calls.argsFor(0)[2];
                         expect(volume).toBe(2);
                     });
                 });
@@ -610,7 +610,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
                 describe("when the new level would be higher than the next highest", function() {
 
                     beforeEach(function() {
-                        spyOn(pressureSolver, 'getVolumeNeededToReachLevel').andReturn(3.3);
+                        spyOn(pressureSolver, 'getVolumeNeededToReachLevel').and.returnValue(3.3);
                         pressureSolver.redistributePressure(pipes[1], pipes[1].va, 20);
                     });
 
@@ -621,7 +621,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
                                 pipes[1].va,
                                 nextLevel
                             );
-                        var volume = fluidAdder.add.calls[0].args[2];
+                        var volume = fluidAdder.add.calls.argsFor(0)[2];
                         expect(volume).toBe(3.3);
                     });
                 });
@@ -631,7 +631,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
                     beforeEach(function() {
                         pipes[3].fluids[0].volume = pipes[3].capacity;
                         var pressure = metrics.getAvailableCapacity(pipes[1]) + 3;
-                        spyOn(pressureSolver, 'redistributePressure').andCallThrough();
+                        spyOn(pressureSolver, 'redistributePressure').and.callThrough();
                         pressureSolver.redistributePressure(pipes[1], pipes[1].va, pressure);
                     });
 
@@ -651,7 +651,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
                         pipes[1].fluids[0].volume += volume + (metrics.MINIMUM_FLUID_VOLUME / 2);
                         originalLevelA = metrics.getFluidLevel(pipes[1], pipes[1].va);
                         originalLevelB = metrics.getFluidLevel(pipes[3], pipes[3].va);
-                        fluidAdder.add.andCallThrough();
+                        fluidAdder.add.and.callThrough();
                         pressureSolver.redistributePressure(pipes[1], pipes[1].va, 1);
                     });
 
@@ -675,7 +675,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
 
             beforeEach(function() {
                 metrics.start();
-                spyOn(pressureSolver, 'removePressureInPipeAtVertex').andReturn(5);
+                spyOn(pressureSolver, 'removePressureInPipeAtVertex').and.returnValue(5);
                 spyOn(pressureSolver, 'redistributePressure');
                 pressureSolver.solve(pipes[0], pipes[0].vb);
             });

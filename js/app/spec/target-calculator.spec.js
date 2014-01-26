@@ -161,7 +161,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
             beforeEach(function() {
                 metrics.start();
 
-                spyOn(metrics, 'hasCapacity').andCallFake(function(pipe) {
+                spyOn(metrics, 'hasCapacity').and.callFake(function(pipe) {
                     if (fullPipes.indexOf(pipe) !== -1) {
                         return false;
                     }
@@ -352,13 +352,13 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                     targetCalculator.pipes = pipes;
                     metrics.pipes = pipes;
                     fullPipes = [pipes[0], pipes[1], pipes[2]];
-                    spyOn(targetCalculator, 'getGroupForPipe').andCallThrough();
-                    connectedSpy = spyOn(metrics, 'getConnectedPipes').andCallThrough();
+                    spyOn(targetCalculator, 'getGroupForPipe').and.callThrough();
+                    connectedSpy = spyOn(metrics, 'getConnectedPipes').and.callThrough();
                 });
 
                 it("does not re-check already checked pipe and vertex combinations", function() {
                     targetCalculator.getGroupForPipe(pipes[0], pipes[0].va);
-                    expect(connectedSpy.callCount).toBe(3);
+                    expect(connectedSpy.calls.count()).toBe(3);
                     expect(connectedSpy).toHaveBeenCalledWith(pipes[0], pipes[0].vb);
                     expect(connectedSpy).toHaveBeenCalledWith(pipes[2], pipes[2].vb);
                     expect(connectedSpy).toHaveBeenCalledWith(pipes[1], pipes[1].va);
@@ -592,7 +592,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                     ]
                 };
                 groupSpy = spyOn(targetCalculator, 'getGroupForPipe');
-                groupSpy.andCallFake(function(pipeIndex) {
+                groupSpy.and.callFake(function(pipeIndex) {
                     switch (pipeIndex) {
                         case pipes[0]:
                             return groupA;
@@ -603,7 +603,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                     }
                 });
                 metrics.start();
-                spyOn(metrics, 'getVertexPipes').andReturn([
+                spyOn(metrics, 'getVertexPipes').and.returnValue([
                     pipes[0],
                     pipes[2],
                     pipes[1]
@@ -617,7 +617,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
 
             it("checks the cache for each of the vertex pipes", function() {
                 targetCalculator.getForVertex(pipes[0], pipes[0].vb);
-                expect(cachedGroupSpy.callCount).toBe(3);
+                expect(cachedGroupSpy.calls.count()).toBe(3);
                 expect(cachedGroupSpy).toHaveBeenCalledWith(pipes[0]);
                 expect(cachedGroupSpy).toHaveBeenCalledWith(pipes[2]);
                 expect(cachedGroupSpy).toHaveBeenCalledWith(pipes[1]);
@@ -632,7 +632,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                         targets: ['C', 'D', 'E'],
                         fullPipes: [3, 4, 5]
                     };
-                    cachedGroupSpy.andReturn(cachedGroup);
+                    cachedGroupSpy.and.returnValue(cachedGroup);
                 });
 
                 it("returns the cached group's targets", function() {
@@ -649,7 +649,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
 
                 it("calls getGroupForPipe for each pipe", function() {
                     targetCalculator.getForVertex(pipes[0], pipes[0].vb);
-                    expect(groupSpy.callCount).toBe(3);
+                    expect(groupSpy.calls.count()).toBe(3);
                     expect(groupSpy).toHaveBeenCalledWith(pipes[0], pipes[0].vb);
                     expect(groupSpy).toHaveBeenCalledWith(pipes[1], pipes[0].vb);
                     expect(groupSpy).toHaveBeenCalledWith(pipes[2], pipes[0].vb);
@@ -658,7 +658,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                 it("concatenates and removes duplicates from the getGroupForPipe groups and caches them", function() {
                     targetCalculator.getForVertex(pipes[0], pipes[0].vb);
                     expect(targetCalculator.cacheGroup).toHaveBeenCalled();
-                    var cachedGroup = targetCalculator.cacheGroup.mostRecentCall.args[0];
+                    var cachedGroup = targetCalculator.cacheGroup.calls.mostRecent().args[0];
 
                     expect(cachedGroup.targets.length).toBe(5);
                     expect(cachedGroup.targets).toContain({
@@ -856,7 +856,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
             describe("and there are two groups containing the target pipe", function() {
 
                 beforeEach(function() {
-                    getCacheSpy.andReturn([groupA, groupB]);
+                    getCacheSpy.and.returnValue([groupA, groupB]);
                     mergedGroup = {
                         targets: [{
                             pipe: pipes[0],
@@ -874,7 +874,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                             pipes[5]
                         ]
                     };
-                    mergeSpy = spyOn(targetCalculator, 'mergeGroups').andReturn(mergedGroup);
+                    mergeSpy = spyOn(targetCalculator, 'mergeGroups').and.returnValue(mergedGroup);
                     targetCalculator.pipeFull(pipes[0]);
                 });
 
@@ -922,7 +922,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                             pipes[0]
                         ]
                     };
-                    getGroupSpy = spyOn(targetCalculator, 'getGroupForPipe').andReturn(pipeGroup);
+                    getGroupSpy = spyOn(targetCalculator, 'getGroupForPipe').and.returnValue(pipeGroup);
                     mergedGroup = {
                         targets: [{
                             pipe: pipes[1],
@@ -937,8 +937,8 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                             pipes[0]
                         ]
                     };
-                    mergeSpy = spyOn(targetCalculator, 'mergeGroups').andReturn(mergedGroup);
-                    getCacheSpy.andReturn([groupA]);
+                    mergeSpy = spyOn(targetCalculator, 'mergeGroups').and.returnValue(mergedGroup);
+                    getCacheSpy.and.returnValue([groupA]);
                     targetCalculator.pipeFull(pipes[0]);
                 });
 
@@ -984,7 +984,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
             describe("and there is a cached group", function() {
 
                 beforeEach(function() {
-                    getCacheSpy.andReturn('A');
+                    getCacheSpy.and.returnValue('A');
                 });
 
                 it("uncaches the returned group", function() {

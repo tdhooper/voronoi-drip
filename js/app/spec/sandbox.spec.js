@@ -3,12 +3,11 @@ define(['lib/Squire'], function(Squire) {
     describe("a Sandbox", function() {
         var sandbox,
             container,
-            Sandbox,
             startAllLink,
             VoronoiDrip,
             injector;
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             container = document.createElement('div');
 
             VoronoiDrip = jasmine.createSpyObj('VoronoiDrip', ['create']);
@@ -16,20 +15,11 @@ define(['lib/Squire'], function(Squire) {
             injector = new Squire();
             injector.mock('app/voronoi-drip', VoronoiDrip);
 
-            Sandbox = null;
-
-            injector.require(['app/sandbox'], function(SandboxLoaded) {
-                Sandbox = SandboxLoaded;
-            });
-
-            waitsFor(function() {
-                return Sandbox;
-            }, 'Sandbox should be loaded', 750);
-
-            runs(function() {
-                sandbox = Sandbox.create({
+            injector.require(['app/sandbox'], function(MockedSandbox) {
+                sandbox = MockedSandbox.create({
                     container: container
                 });
+                done();
             });
         });
 
@@ -82,7 +72,7 @@ define(['lib/Squire'], function(Squire) {
                         }
                     };
                     mockDrip = jasmine.createSpyObj('voronoiDrip', ['start', 'draw', 'play', 'addFluid']);
-                    VoronoiDrip.create.andReturn(mockDrip);
+                    VoronoiDrip.create.and.returnValue(mockDrip);
                     sandbox.add(spec);
                     dripContainer = container.getElementsByClassName('sandbox-voronoi-drip')[0];
                     startLink = dripContainer.getElementsByClassName('sandbox-start')[0];
@@ -133,7 +123,7 @@ define(['lib/Squire'], function(Squire) {
                             addFluid: {},
                         };
                         anotherMockDrip = jasmine.createSpyObj('voronoiDrip', ['start', 'draw', 'play', 'addFluid']);
-                        VoronoiDrip.create.andReturn(anotherMockDrip);
+                        VoronoiDrip.create.and.returnValue(anotherMockDrip);
                         sandbox.add(anotherSpec);
                         anotherDripContainer = container.getElementsByClassName('sandbox-voronoi-drip')[1];
                         anotherStartLink = anotherDripContainer.getElementsByClassName('sandbox-start')[0];

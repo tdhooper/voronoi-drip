@@ -84,7 +84,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
 
             beforeEach(function() {
                 metrics.start();
-                spyOn(metrics, 'hasCapacity').andReturn(true);
+                spyOn(metrics, 'hasCapacity').and.returnValue(true);
             });
 
             describe("with a volume less than the minimum", function() {
@@ -157,13 +157,13 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
                         });
 
                         it("solves overlaps", function() {
-                            expect(overlapSolver.solve.callCount).toBe(2);
-                            expect(overlapSolver.solve.mostRecentCall.args[0]).toBe(pipes[0]);
+                            expect(overlapSolver.solve.calls.count()).toBe(2);
+                            expect(overlapSolver.solve.calls.mostRecent().args[0]).toBe(pipes[0]);
                         });
 
                         it("checks the pipe's capacity", function() {
-                            expect(metrics.hasCapacity.callCount).toBe(2);
-                            expect(metrics.hasCapacity.mostRecentCall.args[0]).toBe(pipes[0]);
+                            expect(metrics.hasCapacity.calls.count()).toBe(2);
+                            expect(metrics.hasCapacity.calls.mostRecent().args[0]).toBe(pipes[0]);
                         });
                     });
 
@@ -178,11 +178,11 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
                         });
 
                         it("doesn't solve overlaps", function() {
-                            expect(overlapSolver.solve.callCount).toBe(1);
+                            expect(overlapSolver.solve.calls.count()).toBe(1);
                         });
 
                         it("doesn't check the pipe's capacity", function() {
-                            expect(metrics.hasCapacity.callCount).toBe(1);
+                            expect(metrics.hasCapacity.calls.count()).toBe(1);
                         });
                     });
                 });
@@ -202,7 +202,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/overlap-solver', 'ap
             describe("and the pipe becomes full", function() {
 
                 beforeEach(function() {
-                    metrics.hasCapacity.andReturn(false);
+                    metrics.hasCapacity.and.returnValue(false);
                     fluidAdder.add(pipes[0], pipes[0].va, 2);
                 });
 

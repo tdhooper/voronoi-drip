@@ -420,12 +420,12 @@ define(['app/fluid-network-simulation', 'app/metrics'], function(FluidNetworkSim
             });
 
             it("returns true when the pipe has the minumum available", function() {
-                availableSpy.andReturn(metrics.MINIMUM_FLUID_VOLUME);
+                availableSpy.and.returnValue(metrics.MINIMUM_FLUID_VOLUME);
                 expect(metrics.hasCapacity(pipes[3])).toBe(true);
             });
 
             it("returns false when the pipe has less available than the minumum", function() {
-                availableSpy.andReturn(metrics.MINIMUM_FLUID_VOLUME * 0.9);
+                availableSpy.and.returnValue(metrics.MINIMUM_FLUID_VOLUME * 0.9);
                 expect(metrics.hasCapacity(pipes[3])).toBe(false);
             });
 
@@ -485,13 +485,13 @@ define(['app/fluid-network-simulation', 'app/metrics'], function(FluidNetworkSim
         describe("when getVertexPipes is called", function() {
 
             it("gets the connected pipes", function() {
-                spyOn(metrics, 'getConnectedPipes').andCallThrough();
+                spyOn(metrics, 'getConnectedPipes').and.callThrough();
                 metrics.getVertexPipes(pipes[0], pipes[0].vb);
                 expect(metrics.getConnectedPipes).toHaveBeenCalledWith(pipes[0], pipes[0].vb);
             });
 
             it("returns the connected pipes and the seed pipe", function() {
-                spyOn(metrics, 'getConnectedPipes').andReturn([
+                spyOn(metrics, 'getConnectedPipes').and.returnValue([
                     pipes[1],
                     pipes[2],
                     pipes[4],

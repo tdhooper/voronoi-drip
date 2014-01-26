@@ -1,35 +1,32 @@
-require.config({
+// From http://stackoverflow.com/a/20851265/2443435
+
+(function() {
+  'use strict';
+
+  // Configure RequireJS to shim Jasmine
+  require.config({
     paths: {
-        jasmine: 'lib/jasmine-1.3.1/jasmine',
-        'jasmine-html': 'lib/jasmine-1.3.1/jasmine-html'
+      'jasmine': 'lib/jasmine-2.0.0/jasmine',
+      'jasmine-html': 'lib/jasmine-2.0.0/jasmine-html',
+      'boot': 'lib/jasmine-2.0.0/boot'
     },
     shim: {
-        jasmine: {
-            exports: 'jasmine'
-        },
-        'jasmine-html': {
-            deps: ['jasmine'],
-            exports: 'jasmine'
-        }
+      'jasmine': {
+        exports: 'jasmine'
+      },
+      'jasmine-html': {
+        deps: ['jasmine'],
+        exports: 'jasmine'
+      },
+      'boot': {
+        deps: ['jasmine', 'jasmine-html'],
+        exports: 'jasmine'
+      }
     }
-});
+  });
 
-var jasmineEnv;
-
-require(['jasmine-html'], function (jasmine) {
-
-    jasmineEnv = jasmine.getEnv();
-    jasmineEnv.updateInterval = 1000;
-
-    var htmlReporter = new jasmine.HtmlReporter();
-
-    jasmineEnv.addReporter(htmlReporter);
-
-    jasmineEnv.specFilter = function(spec) {
-        return htmlReporter.specFilter(spec);
-    };
-
-    var specs = [
+  // Define all of your specs here. These are RequireJS modules.
+  var specs = [
         'app/spec/display.spec',
         'app/spec/fluid-adder.spec',
         'app/spec/fluid-mover.spec',
@@ -42,20 +39,19 @@ require(['jasmine-html'], function (jasmine) {
         'app/spec/update-loop.spec',
         'app/spec/voronoi-drip.spec',
         'app/spec/voronoi-network-generator.spec'
+  ];
 
-    ];
+  // Load Jasmine - This will still create all of the normal Jasmine browser globals unless `boot.js` is re-written to use the
+  // AMD or UMD specs. `boot.js` will do a bunch of configuration and attach it's initializers to `window.onload()`. Because
+  // we are using RequireJS `window.onload()` has already been triggered so we have to manually call it again. This will
+  // initialize the HTML Reporter and execute the environment.
+  require(['boot'], function () {
 
-    if (document.readyState == 'complete') {
-        execJasmine();
-    } else {
-        window.onload = function() {
-            execJasmine();
-        };
-    }
+    // Load the specs
+    require(specs, function () {
 
-    function execJasmine() {
-        require(specs, function() {
-            jasmineEnv.execute();
-        });
-    }
-});
+      // Initialize the HTML Reporter and execute the environment (setup by `boot.js`)
+      window.onload();
+    });
+  });
+})();

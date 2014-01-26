@@ -44,40 +44,31 @@ define(['lib/Squire'], function(Squire) {
             document.dispatchEvent(oEvent);
         };
 
-        beforeEach(function() {
+        beforeEach(function(done) {
             mockDisplay = jasmine.createSpyObj('display', ['start', 'drawLine', 'drawPoint', 'clear']);
             canvas = document.createElement('canvas');
             document.body.appendChild(canvas);
             mockDisplay.canvas = canvas;
 
             UpdateLoop = jasmine.createSpyObj('UpdateLoop', ['create']);
-            UpdateLoop.create.andReturn(mockUpdateLoop);
+            UpdateLoop.create.and.returnValue(mockUpdateLoop);
 
             Display = jasmine.createSpyObj('Display', ['create']);
-            Display.create.andReturn(mockDisplay);
+            Display.create.and.returnValue(mockDisplay);
 
             injector = new Squire();
             injector.mock('app/update-loop', UpdateLoop);
             injector.mock('app/display', Display);
 
-            NetworkDesigner = null;
-
-            injector.require(['app/network-designer'], function(NetworkDesignerLoaded) {
-                NetworkDesigner = NetworkDesignerLoaded;
-            });
-
-            waitsFor(function() {
-                return NetworkDesigner;
-            }, 'NetworkDesigner should be loaded', 750);
-
-            runs(function() {
+            injector.require(['app/network-designer'], function(MockedNetworkDesigner) {
+                NetworkDesigner = MockedNetworkDesigner;
                 designer = NetworkDesigner.create({
                     width: 500,
                     height: 500,
                     timeout: 60
                 });
-
                 designer.start();
+                done();
             });
         });
 

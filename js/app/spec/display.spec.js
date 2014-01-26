@@ -61,7 +61,7 @@ define(['app/display'], function(Display) {
         describe("when start is called", function() {
 
             beforeEach(function() {
-                spyOn(display, 'createCanvas').andReturn(mockCanvas);
+                spyOn(display, 'createCanvas').and.returnValue(mockCanvas);
                 display.start();
             });
 
@@ -87,12 +87,12 @@ define(['app/display'], function(Display) {
             });
 
             it("draws a line between two points in the specified colour", function() {
-                expect(mockContext.beginPath.callCount).toBe(1);
+                expect(mockContext.beginPath.calls.count()).toBe(1);
                 expect(mockContext.strokeStyle).toBe('#f0f');
                 expect(mockContext.lineWidth).toBe(5);
                 expect(mockContext.moveTo).toHaveBeenCalledWith(10, 12);
                 expect(mockContext.lineTo).toHaveBeenCalledWith(39, 53);
-                expect(mockContext.stroke.callCount).toBe(1);
+                expect(mockContext.stroke.calls.count()).toBe(1);
             });
         });
 

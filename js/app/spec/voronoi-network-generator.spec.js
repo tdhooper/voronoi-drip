@@ -12,24 +12,18 @@ define(['lib/Squire', 'app/voronoi-network-generator'], function(Squire, Voronoi
             var voronoi,
                 injector;
 
-            beforeEach(function() {
+            beforeEach(function(done) {
                 vng = null;
                 voronoi = {
-                    compute: jasmine.createSpy('compute').andReturn('some diagram')
+                    compute: jasmine.createSpy('compute').and.returnValue('some diagram')
                 };
 
                 injector = new Squire();
                 injector.mock('lib/Javascript-Voronoi/rhill-voronoi-core', Squire.Helpers.returns(voronoi));
-                injector.require(['app/voronoi-network-generator'], function(VoronoiNetworkGenerator) {
-                    vng = VoronoiNetworkGenerator.create();
-                });
-
-                waitsFor(function() {
-                    return vng;
-                }, 'VoronoiNetworkGenerator should be loaded', 750);
-
-                runs(function() {
+                injector.require(['app/voronoi-network-generator'], function(MockedVoronoiNetworkGenerator) {
+                    vng = MockedVoronoiNetworkGenerator.create();
                     vng.createRandomDiagram(8, 100, 100);
+                    done();
                 });
             });
 
@@ -39,12 +33,12 @@ define(['lib/Squire', 'app/voronoi-network-generator'], function(Squire, Voronoi
             });
 
             it("with the specified number of sites", function() {
-                var sites = voronoi.compute.mostRecentCall.args[0];
+                var sites = voronoi.compute.calls.mostRecent().args[0];
                 expect(sites.length).toBe(8);
             });
 
             it("within the width and height", function() {
-                var boundingBox = voronoi.compute.mostRecentCall.args[1];
+                var boundingBox = voronoi.compute.calls.mostRecent().args[1];
                 expect(boundingBox).toEqual({
                     xl: 0,
                     xr: 100,
