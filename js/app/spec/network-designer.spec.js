@@ -1,5 +1,6 @@
 define(['lib/Squire'], function(Squire) {
 
+
     describe("a Network Designer", function() {
 
         var NetworkDesigner,
@@ -18,30 +19,19 @@ define(['lib/Squire'], function(Squire) {
             target.dispatchEvent(evt);
         };
 
-        // from http://stackoverflow.com/questions/10455626/keydown-simulation-in-chrome-fires-normally-but-not-the-correct-key/10520017#10520017
+        // from http://jsbin.com/awenaq/3
         var keyEvent = function(k) {
-            var oEvent = document.createEvent('KeyboardEvent');
-            // Chromium Hack
-            Object.defineProperty(oEvent, 'keyCode', {
-                get : function() {
-                    return this.keyCodeVal;
-                }
-            });
-            Object.defineProperty(oEvent, 'which', {
-                get : function() {
-                    return this.keyCodeVal;
-                }
-            });
-            if (oEvent.initKeyboardEvent) {
-                oEvent.initKeyboardEvent("keydown", true, true, document.defaultView, false, false, false, false, k, k);
-            } else {
-                oEvent.initKeyEvent("keydown", true, true, document.defaultView, false, false, false, false, k, 0);
+            var eventObj = document.createEventObject ?
+                document.createEventObject() : document.createEvent("Events");
+          
+            if(eventObj.initEvent){
+              eventObj.initEvent("keydown", true, true);
             }
-            oEvent.keyCodeVal = k;
-            if (oEvent.keyCode !== k) {
-                alert("keyCode mismatch " + oEvent.keyCode + "(" + oEvent.which + ")");
-            }
-            document.dispatchEvent(oEvent);
+          
+            eventObj.keyCode = k;
+            eventObj.which = k;
+            
+            document.dispatchEvent ? document.dispatchEvent(eventObj) : document.fireEvent("onkeydown", eventObj); 
         };
 
         beforeEach(function(done) {
