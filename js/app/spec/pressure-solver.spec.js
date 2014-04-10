@@ -359,7 +359,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
             it("returns the most downward pointing when there are many", function() {
                 var targets = [{
                     pipe: pipes[0],
-                    vertex: pipes[0].vb
+                    vertex: pipes[0].va
                 },{
                     pipe: pipes[2],
                     vertex: pipes[2].va
@@ -368,7 +368,7 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/fluid-adder', 'app/t
                     vertex: pipes[1].vb
                 }];
                 var target = pressureSolver.findDownwardPointingTarget(targets);
-                expect(target).toBe(targets[2]);
+                expect(target).toBe(targets[0]);
             });
         });
 

@@ -119,7 +119,7 @@ define(function() {
         that.inclineLowToHigh = function(targetA, targetB) {
             var inclineA = that.metrics.getIncline(targetA.pipe, targetA.vertex),
                 inclineB = that.metrics.getIncline(targetB.pipe, targetB.vertex);
-            return inclineA < inclineB;
+            return inclineB - inclineA;
         };
 
         that.findDownwardPointingTarget = function(targets) {
