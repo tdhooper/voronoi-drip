@@ -72,7 +72,7 @@ define(['app/display', 'app/update-loop', 'lib/toxi/geom/Vec2D', 'lib/toxi/geom/
             });
 
             targets = targets.sort(function(targetA, targetB) {
-                return targetA.distance > targetB.distance;
+                return (targetB.distance < targetA.distance) ? 1 : (targetB.distance > targetA.distance) ? -1 : 0;
             });
 
             targets = targets.map(function(target) {
