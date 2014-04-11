@@ -1,4 +1,4 @@
-define(['lib/Squire', 'app/voronoi-network-generator'], function(Squire, VoronoiNetworkGenerator) {
+define(['dev/squire', 'app/voronoi-network-generator'], function(Squire, VoronoiNetworkGenerator) {
 
     describe("a Voronoi Network Generator", function() {
         var vng;

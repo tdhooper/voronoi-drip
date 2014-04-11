@@ -1,4 +1,4 @@
-define(['lib/Squire'], function(Squire) {
+define(['dev/squire'], function(Squire) {
 
     describe("a Sandbox", function() {
         var sandbox,

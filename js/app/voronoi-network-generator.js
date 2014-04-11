@@ -7,7 +7,7 @@
 
 */
 
-define(['lib/Javascript-Voronoi/rhill-voronoi-core'], function(RhillVoronoi) {
+define(['lib/rhill-voronoi'], function(RhillVoronoi) {
 
     var VoronoiNetworkGenerator = {};
 

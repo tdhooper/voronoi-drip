@@ -1,0 +1,22 @@
+{
+  "name": "voronoi-drip",
+  "version": "0.0.1",
+  "homepage": "https://github.com/tdhooper/voronoi-drip",
+  "authors": [
+    "Thomas Hooper"
+  ],
+  "description": "Simulation of fluid dripping through a voronoi network of pipes",
+  "main": "js/main.js",
+  "license": "MIT",
+  "dependencies": {
+    "toxiclibsjs": "0.2.7",
+    "jasmine": "2.0.0",
+    "squire": "0.2.0"
+  },    
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "bower_components",
+    "spec"
+  ]
+}

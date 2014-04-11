@@ -1,4 +1,4 @@
-define(['lib/Squire', 'app/voronoi-drip'], function(Squire, VoronoiDrip) {
+define(['dev/squire', 'app/voronoi-drip'], function(Squire, VoronoiDrip) {
 
     describe("a Voronoi Drip simulation", function() {
         var spec,
