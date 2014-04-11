@@ -73,19 +73,11 @@ define(function() {
             }
         };
 
-        that.getConnectedPipeIndexes = function(pipeIndex, vertex) {
-            var pipes = [],
-                pipe = that.pipes[pipeIndex],
-                connectedPipes = (pipe.va == vertex) ? pipe.ca : pipe.cb,
-                connectedPipeCount = connectedPipes ? connectedPipes.length : 0;
-            while (connectedPipeCount--) {
-                pipes.push(connectedPipes[connectedPipeCount]);
-            }
-            return pipes;
-        };
-
         that.getConnectedPipes = function(pipe, vertex) {
-            var pipeIndexes = that.getConnectedPipeIndexes(that.pipes.indexOf(pipe), vertex);
+            var pipeIndexes = that.pointsMatch(pipe.va, vertex) ? pipe.ca : pipe.cb;
+            if ( ! pipeIndexes) {
+                return [];
+            }
             var pipes = pipeIndexes.map(function(index) {
                 return that.pipes[index];
             });
