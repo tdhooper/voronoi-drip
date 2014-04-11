@@ -13,7 +13,7 @@ define(['dev/squire'], function(Squire) {
             VoronoiDrip = jasmine.createSpyObj('VoronoiDrip', ['create']);
 
             injector = new Squire();
-            injector.mock('app/voronoi-drip', VoronoiDrip);
+            injector.mock('app/debug-voronoi-drip', VoronoiDrip);
 
             injector.require(['app/sandbox'], function(MockedSandbox) {
                 sandbox = MockedSandbox.create({
