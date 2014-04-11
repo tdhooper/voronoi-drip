@@ -1,4 +1,4 @@
-define(['dev/squire', 'app/voronoi-network-generator'], function(Squire, VoronoiNetworkGenerator) {
+define(['dev/squire', 'app/voronoi-network-generator', 'app/spec/fixtures/rhill-voronoi-output.json'], function(Squire, VoronoiNetworkGenerator, rhillVoronoiOutput) {
 
     describe("a Voronoi Network Generator", function() {
         var vng;
@@ -19,7 +19,7 @@ define(['dev/squire', 'app/voronoi-network-generator'], function(Squire, Voronoi
                 };
 
                 injector = new Squire();
-                injector.mock('lib/Javascript-Voronoi/rhill-voronoi-core', Squire.Helpers.returns(voronoi));
+                injector.mock('lib/rhill-voronoi', Squire.Helpers.returns(voronoi));
                 injector.require(['app/voronoi-network-generator'], function(MockedVoronoiNetworkGenerator) {
                     vng = MockedVoronoiNetworkGenerator.create();
                     vng.createRandomDiagram(8, 100, 100);
@@ -46,6 +46,46 @@ define(['dev/squire', 'app/voronoi-network-generator'], function(Squire, Voronoi
                     yb: 100
                 });
             });
+        });
+
+        describe("when removeBorderEdges is called", function() {
+
+            var edgeCount,
+                edge;
+            
+            var closeTo = function(a, b, precision) {
+                return jasmine.matchers.toBeCloseTo().compare(a, b, precision).pass;
+            };
+
+            beforeEach(function() {
+                vng.diagram = rhillVoronoiOutput;
+                vng.removeBorderEdges(100, 300);
+            });
+
+            it("removes edges that lie on the bounding box", function() {
+                expect(vng.diagram.edges.length).toBeGreaterThan(0);
+                vng.diagram.edges.forEach(function(edge) {
+                    expect(closeTo(edge.va.x, edge.vb.x, 10) && closeTo(edge.vb.x, 0, 10)).toBe(false);
+                    expect(closeTo(edge.va.y, edge.vb.y, 10) && closeTo(edge.vb.y, 0, 10)).toBe(false);
+                    expect(closeTo(edge.va.x, edge.vb.x, 10) && closeTo(edge.vb.x, 100, 10)).toBe(false);
+                    expect(closeTo(edge.va.y, edge.vb.y, 10) && closeTo(edge.vb.y, 300, 10)).toBe(false);
+                });
+            });
+
+            it("removes cell halfedges that lie on the bounding box", function() {
+                var edge;
+                vng.diagram.cells.forEach(function(cell) {
+                    expect(cell.halfedges.length).toBeGreaterThan(0);
+                    cell.halfedges.forEach(function(halfedge) {
+                        edge = halfedge.edge;
+                        expect(closeTo(edge.va.x, edge.vb.x, 10) && closeTo(edge.vb.x, 0, 10)).toBe(false);
+                        expect(closeTo(edge.va.y, edge.vb.y, 10) && closeTo(edge.vb.y, 0, 10)).toBe(false);
+                        expect(closeTo(edge.va.x, edge.vb.x, 10) && closeTo(edge.vb.x, 100, 10)).toBe(false);
+                        expect(closeTo(edge.va.y, edge.vb.y, 10) && closeTo(edge.vb.y, 300, 10)).toBe(false);
+                    });
+                });
+            });            
+
         });
 
         describe("when connectEdges is called", function() {
@@ -118,10 +158,9 @@ define(['dev/squire', 'app/voronoi-network-generator'], function(Squire, Voronoi
 
             beforeEach(function() {
                 spyOn(vng, 'createRandomDiagram');
+                spyOn(vng, 'removeBorderEdges');
                 spyOn(vng, 'connectEdges');
-                vng.diagram = {
-                    edges: 'some edges'
-                };
+                vng.diagram = rhillVoronoiOutput;
                 network = vng.generate(3, 50, 60);
             });
 
@@ -129,12 +168,16 @@ define(['dev/squire', 'app/voronoi-network-generator'], function(Squire, Voronoi
                 expect(vng.createRandomDiagram).toHaveBeenCalledWith(3, 50, 60);
             });
 
+            it("removes border edges", function() {
+                expect(vng.removeBorderEdges).toHaveBeenCalledWith(50, 60);
+            });
+
             it("connects it's edges", function() {
                expect(vng.connectEdges).toHaveBeenCalled();
             });
 
             it("returns the edges", function() {
-                expect(network).toBe('some edges');
+                expect(network).toBe(rhillVoronoiOutput.edges);
             });
         });
     });

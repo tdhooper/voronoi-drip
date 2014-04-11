@@ -34,6 +34,40 @@ define(['lib/rhill-voronoi'], function(RhillVoronoi) {
             that.diagram = that.voronoi.compute(sites, boundingBox);
         };
 
+        that.equalToPrecision = function(a, b, precision) {
+            return Math.abs(a - b) < (Math.pow(10, -precision) / 2);
+        };
+
+        that.allEqualToPrecision = function(numbers, precision) {
+            var numbersCount = numbers.length - 1;
+            while (numbersCount--) {
+                var a = numbers[numbersCount],
+                    b = numbers[numbersCount + 1];
+                if ( ! that.equalToPrecision(a, b, precision)) {
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        that.removeBorderEdges = function(width, height) {
+            var precision = 10;
+            var isNotOnBorder = function(edge) {
+                var onBorder = 
+                    that.allEqualToPrecision([edge.va.x, edge.vb.x, 0], precision) ||
+                    that.allEqualToPrecision([edge.va.y, edge.vb.y, 0], precision) ||
+                    that.allEqualToPrecision([edge.va.x, edge.vb.x, width], precision) ||
+                    that.allEqualToPrecision([edge.va.y, edge.vb.y, height], precision)
+                return ! onBorder;
+            };
+            that.diagram.edges = that.diagram.edges.filter(isNotOnBorder);
+            that.diagram.cells.forEach(function(cell) {
+                cell.halfedges = cell.halfedges.filter(function(halfedge) {
+                    return isNotOnBorder(halfedge.edge);
+                });
+            });
+        };
+
         that.getCell = function(id) {
             var cellCount = that.diagram.cells.length;
             while (cellCount--) {
@@ -99,6 +133,7 @@ define(['lib/rhill-voronoi'], function(RhillVoronoi) {
 
         that.generate = function(numSites, width, height) {
             that.createRandomDiagram(numSites, width, height);
+            that.removeBorderEdges(width, height);
             that.connectEdges();
             return that.diagram.edges;
         };

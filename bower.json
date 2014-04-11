@@ -11,7 +11,8 @@
   "dependencies": {
     "toxiclibsjs": "0.2.7",
     "jasmine": "2.0.0",
-    "squire": "0.2.0"
+    "squire": "0.2.0",
+    "rhill-voronoi": "git://github.com/gorhill/Javascript-Voronoi"
   },    
   "private": true,
   "ignore": [
