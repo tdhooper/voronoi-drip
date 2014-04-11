@@ -16,11 +16,13 @@ define(['app/debug-voronoi-drip'], function(DebugVoronoiDrip) {
             startAllLink.onclick = function(e) {
                 e.preventDefault();
                 that.tests.forEach(function(test) {
-                    test.voronoiDrip.addFluid(
-                        test.spec.addFluid.volume,
-                        test.spec.addFluid.pipe,
-                        test.spec.addFluid.vertex
-                    );
+                    if (test.spec.hasOwnProperty('addFluid')) {
+                        test.voronoiDrip.addFluid(
+                            test.spec.addFluid.volume,
+                            test.spec.addFluid.pipe,
+                            test.spec.addFluid.vertex
+                        );
+                    }
                     test.voronoiDrip.play();
                 });
             };
@@ -54,11 +56,13 @@ define(['app/debug-voronoi-drip'], function(DebugVoronoiDrip) {
 
             startLink.onclick = function(e) {
                 e.preventDefault();
-                voronoiDrip.addFluid(
-                    testSpec.addFluid.volume,
-                    testSpec.addFluid.pipe,
-                    testSpec.addFluid.vertex
-                );
+                if (testSpec.hasOwnProperty('addFluid')) {
+                    voronoiDrip.addFluid(
+                        testSpec.addFluid.volume,
+                        testSpec.addFluid.pipe,
+                        testSpec.addFluid.vertex
+                    );
+                }
                 voronoiDrip.play();
             };
 

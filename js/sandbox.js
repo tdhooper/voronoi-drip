@@ -41,7 +41,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 10,
             timeout: 100,
             network: network
@@ -72,7 +71,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 20,
             timeout: 500,
             network: network
@@ -98,7 +96,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 10,
             timeout: 500,
             network: network
@@ -149,7 +146,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 10,
             timeout: 100,
             network: network
@@ -180,7 +176,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 90,
             timeout: 500,
             network: network
@@ -211,7 +206,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 10,
             timeout: 10,
             network: network
@@ -237,7 +231,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 100,
             timeout: 500,
             network: network
@@ -283,7 +276,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 10,
             timeout: 500,
             network: network
@@ -334,7 +326,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 5,
             timeout: 5,
             network: network
@@ -375,7 +366,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 5,
             timeout: 5,
             network: network
@@ -421,7 +411,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 5,
             timeout: 5,
             network: network
@@ -472,7 +461,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 5,
             timeout: 5,
             network: network
@@ -531,7 +519,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 5,
             timeout: 50,
             network: network
@@ -575,7 +562,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 5,
             timeout: 5,
             network: network
@@ -611,7 +597,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 5,
             timeout: 5,
             network: network
@@ -647,7 +632,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 5,
             timeout: 5,
             network: network
@@ -1070,16 +1054,14 @@ require(['global.config'], function() {
         }];
         sandbox.add({
             voronoiDrip: {
-            width: 500,
-            height: 500,
-            pipeColour: "#eee",
-            fluidColour: "#000",
-            startVolume: 200,
-            gravity: 5,
-            timeout: 5,
-            network: network
-            },
-            addFluid: {}
+                width: 500,
+                height: 500,
+                pipeColour: "#eee",
+                fluidColour: "#000",
+                gravity: 5,
+                timeout: 5,
+                network: network
+            }
         });
 
         network = [{
@@ -1419,16 +1401,14 @@ require(['global.config'], function() {
         }];
         sandbox.add({
             voronoiDrip: {
-            width: 500,
-            height: 500,
-            pipeColour: "#eee",
-            fluidColour: "#000",
-            startVolume: 200,
-            gravity: 5,
-            timeout: 5,
-            network: network
-            },
-            addFluid: {}
+                width: 500,
+                height: 500,
+                pipeColour: "#eee",
+                fluidColour: "#000",
+                gravity: 5,
+                timeout: 5,
+                network: network
+            }
         });
 
         network = [{"va":{"x":15,"y":8},"vb":{"x":128,"y":105},"ca":[],"cb":[1]},{"va":{"x":128,"y":105},"vb":{"x":186,"y":122},"ca":[0],"cb":[3,4]},{"va":{"x":222,"y":137},"vb":{"x":220,"y":87},"ca":[6],"cb":[3]},{"va":{"x":186,"y":122},"vb":{"x":220,"y":87},"ca":[1,4],"cb":[2]},{"va":{"x":190,"y":158},"vb":{"x":186,"y":122},"ca":[5,6],"cb":[1,3]},{"va":{"x":153,"y":150},"vb":{"x":190,"y":158},"ca":[],"cb":[4,6]},{"va":{"x":222,"y":137},"vb":{"x":190,"y":158},"ca":[2],"cb":[4,5]}];
@@ -1438,7 +1418,6 @@ require(['global.config'], function() {
             height: 300,
             pipeColour: "#eee",
             fluidColour: "#000",
-            startVolume: 200,
             gravity: 5,
             timeout: 5,
             network: network
@@ -1515,5 +1494,6 @@ require(['global.config'], function() {
                 volume: 750
             }
         });
+
     });
 });
