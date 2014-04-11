@@ -257,28 +257,62 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
 
                 beforeEach(function() {
                     fullPipes = [pipes[4], pipes[1], pipes[2]];
-                    group = targetCalculator.getGroupForPipe(pipes[4], pipes[4].vb);
                 });
 
-                it("adds the connected pipes of the full pipes to the targets list", function() {
-                    expect(group.targets.length).toBe(2);
-                    expect(group.targets).toContain({
-                        pipe: pipes[0],
-                        vertex: pipes[0].vb,
-                        highestVertex: pipes[1].vb
+                describe("and starting from an end", function() {
+
+                    beforeEach(function() {
+                        group = targetCalculator.getGroupForPipe(pipes[4], pipes[4].vb);
                     });
-                    expect(group.targets).toContain({
-                        pipe: pipes[3],
-                        vertex: pipes[3].va,
-                        highestVertex: pipes[1].vb
+                
+                    it("adds the connected pipes of the full pipes to the targets list", function() {
+                        expect(group.targets.length).toBe(2);
+                        expect(group.targets).toContain({
+                            pipe: pipes[0],
+                            vertex: pipes[0].vb,
+                            highestVertex: pipes[1].vb
+                        });
+                        expect(group.targets).toContain({
+                            pipe: pipes[3],
+                            vertex: pipes[3].va,
+                            highestVertex: pipes[1].vb
+                        });
+                    });
+
+                    it("adds the full pipes to the full pipes list", function() {
+                        expect(group.fullPipes.length).toBe(3);
+                        expect(group.fullPipes).toContain(pipes[4]);
+                        expect(group.fullPipes).toContain(pipes[1]);
+                        expect(group.fullPipes).toContain(pipes[2]);
                     });
                 });
 
-                it("adds the full pipes to the full pipes list", function() {
-                    expect(group.fullPipes.length).toBe(3);
-                    expect(group.fullPipes).toContain(pipes[4]);
-                    expect(group.fullPipes).toContain(pipes[1]);
-                    expect(group.fullPipes).toContain(pipes[2]);
+                describe("and starting from the middle", function() {
+
+                    beforeEach(function() {
+                        group = targetCalculator.getGroupForPipe(pipes[1], pipes[1].va);
+                    });
+                
+                    it("adds the connected pipes of the full pipes to the targets list", function() {
+                        expect(group.targets.length).toBe(2);
+                        expect(group.targets).toContain({
+                            pipe: pipes[0],
+                            vertex: pipes[0].vb,
+                            highestVertex: pipes[1].vb
+                        });
+                        expect(group.targets).toContain({
+                            pipe: pipes[3],
+                            vertex: pipes[3].va,
+                            highestVertex: pipes[1].vb
+                        });
+                    });
+
+                    it("adds the full pipes to the full pipes list", function() {
+                        expect(group.fullPipes.length).toBe(3);
+                        expect(group.fullPipes).toContain(pipes[4]);
+                        expect(group.fullPipes).toContain(pipes[1]);
+                        expect(group.fullPipes).toContain(pipes[2]);
+                    });
                 });
             });
 
@@ -291,8 +325,18 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
                     group = targetCalculator.getGroupForPipe(pipes[4], pipes[4].va);
                 });
 
-                it("returns an empty array for the targets list", function() {
-                    expect(group.targets).toEqual([]);
+                it("adds the connected pipes on the other end to the targets list", function() {
+                    expect(group.targets.length).toBe(2);
+                    expect(group.targets).toContain({
+                        pipe: pipes[3],
+                        vertex: pipes[3].va,
+                        highestVertex: pipes[4].va
+                    });
+                    expect(group.targets).toContain({
+                        pipe: pipes[1],
+                        vertex: pipes[1].va,
+                        highestVertex: pipes[4].va
+                    });
                 });
 
                 it("adds the full pipe to the full pipes list", function() {
@@ -325,44 +369,41 @@ define(['app/fluid-network-simulation', 'app/metrics', 'app/target-calculator'],
 
             describe("and there is a loop of full pipes", function() {
 
-                var connectedSpy;
-
                 beforeEach(function() {
-                    pipes = [
-                        {
-                            // 0
-                            va: {x: 10, y: 10},
-                            vb: {x: 0, y: 20},
-                            ca: [1],
-                            cb: [2],
-                        },{
-                            // 1
-                            va: {x: 10, y: 10},
-                            vb: {x: 20, y: 20},
-                            ca: [0],
-                            cb: [2],
-                        },{
-                            // 2
-                            va: {x: 0, y: 20},
-                            vb: {x: 20, y: 20},
-                            ca: [0],
-                            cb: [1],
-                        }
-                    ];
-                    targetCalculator.pipes = pipes;
-                    metrics.pipes = pipes;
-                    fullPipes = [pipes[0], pipes[1], pipes[2]];
+                    pipes.push({
+                        // 5
+                        va: {x: 0, y: 30},
+                        vb: {x: -20, y: 10},
+                        ca: [4],
+                        cb: [2]
+                    });
+                    pipes[4].cb = [5];
+                    pipes[2].cb = [5];
+                    fullPipes = [pipes[0], pipes[1], pipes[2], pipes[3], pipes[4], pipes[5]];
                     spyOn(targetCalculator, 'getGroupForPipe').and.callThrough();
-                    connectedSpy = spyOn(metrics, 'getConnectedPipes').and.callThrough();
                 });
 
-                it("does not re-check already checked pipe and vertex combinations", function() {
+                it("checks each pipe exactly once when starting from an end", function() {
                     targetCalculator.getGroupForPipe(pipes[0], pipes[0].va);
-                    expect(connectedSpy.calls.count()).toBe(3);
-                    expect(connectedSpy).toHaveBeenCalledWith(pipes[0], pipes[0].vb);
-                    expect(connectedSpy).toHaveBeenCalledWith(pipes[2], pipes[2].vb);
-                    expect(connectedSpy).toHaveBeenCalledWith(pipes[1], pipes[1].va);
+                    expect(metrics.hasCapacity.calls.count()).toBe(6);
+                    expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[0]);
+                    expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[1]);
+                    expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[2]);
+                    expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[3]);
+                    expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[4]);
+                    expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[5]);
                 });
+
+                it("checks each pipe exactly once when starting from the middle", function() {
+                    targetCalculator.getGroupForPipe(pipes[0], pipes[0].vb);
+                    expect(metrics.hasCapacity.calls.count()).toBe(6);
+                    expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[0]);
+                    expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[1]);
+                    expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[2]);
+                    expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[3]);
+                    expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[4]);
+                    expect(metrics.hasCapacity).toHaveBeenCalledWith(pipes[5]);
+                });                
 
             });
 

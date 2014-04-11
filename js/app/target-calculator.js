@@ -9,37 +9,47 @@ define(function() {
         that.metrics = spec.metrics;
         that.cache = [];
 
-        that.getTargetHash = function(pipe, vertex) {
-            var pipeIndex = that.pipes.indexOf(pipe);
-            return pipeIndex + ':' + vertex.x + ':' + vertex.y;
-        };
-
-        that.getGroupForPipe = function(pipe, vertex, isRecursive) {
+        that.getGroupForPipe = function(pipe, entryVertex, isRecursive) {
             if ( ! isRecursive) {
-                that.highestVertex = vertex;
+                that.highestVertex = entryVertex;
                 that.connectedPipesChecked = [];
             }
-            var targetHash = that.getTargetHash(pipe, vertex);
-            if (that.connectedPipesChecked.indexOf(targetHash) !== -1) {
+            if (that.connectedPipesChecked.indexOf(pipe) !== -1) {
                 return false;
             }
-            that.connectedPipesChecked.push(targetHash);
+            that.connectedPipesChecked.push(pipe);
 
-            var hasCapacity = that.metrics.hasCapacity(pipe),
-                otherVertex = that.metrics.pointsMatch(pipe.va, vertex) ? pipe.vb : pipe.va,
-                connectedPipes = that.metrics.getConnectedPipes(pipe, otherVertex),
-                connectedCount = connectedPipes.length;
+            var hasCapacity = that.metrics.hasCapacity(pipe);
 
             if (hasCapacity) {
                 return {
                     targets: [{
                         pipe: pipe,
-                        vertex: vertex,
+                        vertex: entryVertex,
                         highestVertex: that.highestVertex
                     }],
                     fullPipes: []
                 };
             }
+
+            var convertToTarget = function(vertex) {
+                return function(pipe) {
+                    return {
+                        pipe: pipe,
+                        vertex: vertex
+                    };
+                };
+            };
+
+            var notYetChecked = function(connectedTarget) {
+                return that.connectedPipesChecked.indexOf(connectedTarget.pipe) == -1;
+            }
+
+            var otherVertex = that.metrics.pointsMatch(pipe.va, entryVertex) ? pipe.vb : pipe.va,
+                connectedTargetsOther = that.metrics.getConnectedPipes(pipe, otherVertex).map(convertToTarget(otherVertex)),
+                connectedTargetsEntry = that.metrics.getConnectedPipes(pipe, entryVertex).map(convertToTarget(entryVertex)),
+                connectedTargets = connectedTargetsOther.concat(connectedTargetsEntry).filter(notYetChecked),
+                connectedCount = connectedTargets.length;
 
             if (that.metrics.getVertexLevel(otherVertex) < that.metrics.getVertexLevel(that.highestVertex)) {
                 that.highestVertex = otherVertex;
@@ -54,11 +64,11 @@ define(function() {
                 return group;
             }
 
-            var connectedPipe,
+            var connectedTarget,
                 connectedGroup;
             while (connectedCount--) {
-                connectedPipe = connectedPipes[connectedCount];
-                connectedGroup = that.getGroupForPipe(connectedPipe, otherVertex, true);
+                connectedTarget = connectedTargets[connectedCount];
+                connectedGroup = that.getGroupForPipe(connectedTarget.pipe, connectedTarget.vertex, true);
                 if (connectedGroup.targets) {
                     group.targets = group.targets.concat(connectedGroup.targets);
                 }
